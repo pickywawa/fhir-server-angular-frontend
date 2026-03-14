@@ -1,0 +1,61 @@
+<div class="patient-list-container">
+  <!-- Afficher le formulaire si un patient est sélectionné -->
+  <app-patient-form *ngIf="selectedPatient$ | async"></app-patient-form>
+
+  <!-- Afficher la liste si aucun patient n'est sélectionné -->
+  <div *ngIf="!(selectedPatient$ | async)">
+    <h1>Liste des Patients</h1>
+
+    <div *ngIf="loading$ | async" class="loading">
+      Chargement en cours...
+    </div>
+
+    <div *ngIf="error$ | async as error" class="error">
+      Erreur: {{ error.message }}
+    </div>
+
+    <div class="patient-grid" *ngIf="!(loading$ | async)">
+      <div *ngFor="let patient of patients$ | async" class="patient-card">
+        <div class="patient-header">
+          <h3>{{ patient.firstName }} {{ patient.lastName }}</h3>
+          <span class="patient-id">ID: {{ patient.id }}</span>
+        </div>
+
+        <div class="patient-details">
+          <div class="detail-row">
+            <span class="label">Date de naissance:</span>
+            <span class="value">{{ patient.dateOfBirth | date:'dd/MM/yyyy' }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Genre:</span>
+            <span class="value">{{ patient.gender }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="patient.email">
+            <span class="label">Email:</span>
+            <span class="value">{{ patient.email }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="patient.phone">
+            <span class="label">Téléphone:</span>
+            <span class="value">{{ patient.phone }}</span>
+          </div>
+        </div>
+
+        <div class="patient-actions">
+          <button class="btn btn-edit" (click)="onEditPatient(patient)">
+            Modifier
+          </button>
+          <button class="btn btn-delete" (click)="onDeletePatient(patient.id!)">
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="(patients$ | async)?.length === 0 && !(loading$ | async)" class="no-data">
+      Aucun patient trouvé
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home",
+            "default": true
+        },
+        {
+            "name": "JavaSE-21",
+            "path": "/Users/apicard/.jdk/jdk-21.0.8/jdk-21.0.8+9/Contents/Home"
+        }
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
