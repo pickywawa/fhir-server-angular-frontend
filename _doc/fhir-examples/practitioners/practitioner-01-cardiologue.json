@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-001",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT001"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Dubois",
+      "given": ["Pierre"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 23 45 67 89"
+    },
+    {
+      "system": "email",
+      "value": "pierre.dubois@hospital.fr"
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1965-03-15",
+  "address": [
+    {
+      "use": "work",
+      "line": ["123 Rue de la Clinique"],
+      "city": "Paris",
+      "postalCode": "75001",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "17561000"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "17561000",
+            "display": "Cardiologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université Paris-Sorbonne"
+      },
+      "period": {
+        "start": "1990-06-01"
+      }
+    }
+  ]
+}

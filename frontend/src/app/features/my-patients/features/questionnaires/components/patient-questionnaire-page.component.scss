@@ -1,0 +1,76 @@
+.questionnaire-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.editor-layout {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.model-picker {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.model-row {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 0.2rem;
+
+  &:hover {
+    background: var(--card-bg-soft, #f8fafc);
+  }
+
+  strong {
+    color: var(--text-primary);
+  }
+
+  span {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+  }
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.45rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.btn.secondary {
+  background: var(--card-bg-soft, #f8fafc);
+  border-color: var(--border-color);
+  color: var(--chip-text, #334155);
+}
+
+.state {
+  color: var(--text-secondary);
+}
+
+.state.error {
+  color: #b91c1c;
+}

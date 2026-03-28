@@ -1,0 +1,145 @@
+<app-bubble-card [title]="'practitioners.form.title' | translate">
+  <div bubbleActions>
+    @if (!editMode) {
+      <button type="button" class="btn btn-primary" (click)="toggleEdit()">{{ 'myPatients.identity.edit' | translate }}</button>
+    }
+    @if (editMode) {
+      <button type="button" class="btn btn-neutral" (click)="cancelEdit()" [disabled]="loading">{{ 'common.cancel' | translate }}</button>
+      <button type="submit" class="btn btn-primary" form="practitioner-details-form" [disabled]="loading || form.invalid">{{ createMode ? ('patients.form.add' | translate) : ('common.save' | translate) }}</button>
+    }
+  </div>
+  <form id="practitioner-details-form" [formGroup]="form" class="details-form" (ngSubmit)="submit()">
+    <div class="grid">
+      <div class="field">
+        <app-form-control-field
+          [label]="('practitioners.form.mainIdentifier' | translate) + ' *'"
+          forId="mainIdentifier"
+          formControlName="mainIdentifier"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'practitioners.form.prefix' | translate" forId="prefix" formControlName="prefix"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="('patients.form.lastName' | translate) + ' *'" forId="lastName" formControlName="lastName"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="('patients.form.firstName' | translate) + ' *'" forId="firstName" formControlName="firstName"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'practitioners.form.profession' | translate" forId="profession" formControlName="profession"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'practitioners.form.specialty' | translate" forId="specialty" formControlName="specialty"></app-form-control-field>
+      </div>
+      <div class="field full">
+        <app-form-control-field [label]="'practitioners.form.specialization' | translate" forId="specialization" formControlName="specialization"></app-form-control-field>
+      </div>
+    </div>
+
+    <div class="array-section">
+      <h3>{{ 'practitioners.form.emailContacts' | translate }}</h3>
+      <div formArrayName="emails">
+        @for (control of emails.controls; track control; let i = $index) {
+          <div class="array-row">
+            <input [formControlName]="i" type="email" [placeholder]="'practitioners.form.emailPlaceholder' | translate" [class.invalid]="control.invalid && control.touched" />
+            <button type="button" class="btn icon danger" (click)="removeField(emails, i)" [disabled]="emails.length <= 1 || !editMode" [attr.aria-label]="'common.delete' | translate" [attr.title]="'common.delete' | translate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M19 6l-1 14H6L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-neutral" (click)="addField(emails)" [disabled]="!editMode">{{ 'practitioners.form.addEmail' | translate }}</button>
+    </div>
+
+    <div class="array-section">
+      <h3>{{ 'practitioners.form.phones' | translate }}</h3>
+      <div formArrayName="phones">
+        @for (control of phones.controls; track control; let i = $index) {
+          <div class="array-row">
+            <input [formControlName]="i" type="text" [placeholder]="'practitioners.form.phonePlaceholder' | translate" [class.invalid]="control.invalid && control.touched" />
+            <button type="button" class="btn icon danger" (click)="removeField(phones, i)" [disabled]="phones.length <= 1 || !editMode" [attr.aria-label]="'common.delete' | translate" [attr.title]="'common.delete' | translate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M19 6l-1 14H6L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-neutral" (click)="addField(phones)" [disabled]="!editMode">{{ 'practitioners.form.addPhone' | translate }}</button>
+    </div>
+
+    <div class="array-section">
+      <h3>{{ 'practitioners.form.addresses' | translate }}</h3>
+      <div formArrayName="addresses">
+        @for (control of addresses.controls; track control; let i = $index) {
+          <div class="array-row">
+            <div class="address-input-wrap">
+              <input
+                [formControlName]="i"
+                type="text"
+                [placeholder]="'practitioners.form.addressPlaceholder' | translate"
+                [class.invalid]="control.invalid && control.touched"
+                (input)="onAddressInput(i)"
+                />
+              @if (addressSuggestions[i]?.length) {
+                <div class="address-suggestions">
+                  @for (suggestion of addressSuggestions[i]; track suggestion) {
+                    <button
+                      type="button"
+                      class="address-suggestion"
+                      (click)="selectAddress(i, suggestion)"
+                      >
+                      {{ suggestion.label }}
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+            <button type="button" class="btn icon danger" (click)="removeField(addresses, i)" [disabled]="addresses.length <= 1 || !editMode" [attr.aria-label]="'common.delete' | translate" [attr.title]="'common.delete' | translate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M19 6l-1 14H6L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-neutral" (click)="addField(addresses)" [disabled]="!editMode">{{ 'practitioners.form.addAddress' | translate }}</button>
+    </div>
+
+    <div class="array-section">
+      <h3>{{ 'practitioners.form.otherContacts' | translate }}</h3>
+      <div formArrayName="contacts">
+        @for (control of contacts.controls; track control; let i = $index) {
+          <div class="array-row">
+            <input [formControlName]="i" type="text" [placeholder]="'practitioners.form.contactPlaceholder' | translate" [class.invalid]="control.invalid && control.touched" />
+            <button type="button" class="btn icon danger" (click)="removeField(contacts, i)" [disabled]="contacts.length <= 1 || !editMode" [attr.aria-label]="'common.delete' | translate" [attr.title]="'common.delete' | translate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M19 6l-1 14H6L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-neutral" (click)="addField(contacts)" [disabled]="!editMode">{{ 'practitioners.form.addContact' | translate }}</button>
+    </div>
+
+  </form>
+</app-bubble-card>

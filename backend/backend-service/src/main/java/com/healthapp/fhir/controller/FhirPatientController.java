@@ -28,11 +28,15 @@ public class FhirPatientController {
     @GetMapping("/Patient")
     public ResponseEntity<String> searchPatients(
             @RequestParam(required = false) String family,
-            @RequestParam(required = false) String given) {
+            @RequestParam(required = false) String given,
+            @RequestParam(required = false) String birthDate,
+            @RequestParam(defaultValue = "20") Integer limit) {
 
         List<Patient> patients = patientResourceProvider.search(
             family != null ? new org.hl7.fhir.r4.model.StringType(family) : null,
-            given != null ? new org.hl7.fhir.r4.model.StringType(given) : null
+            given != null ? new org.hl7.fhir.r4.model.StringType(given) : null,
+            birthDate != null ? new org.hl7.fhir.r4.model.DateType(birthDate) : null,
+            limit
         );
 
         Bundle bundle = new Bundle();

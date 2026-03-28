@@ -1,0 +1,43 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="page">
+    <app-bubble-card [title]="'codeSystems.list.title' | translate">
+      <div bubbleActions>
+        <button type="button" class="btn btn-primary" (click)="goToCreatePage()">{{ 'codeSystems.list.add' | translate }}</button>
+      </div>
+
+      @if (loading) {
+        <div class="state">{{ 'common.loading' | translate }}</div>
+      }
+
+      @if (!loading && error) {
+        <div class="state error">{{ error }}</div>
+      }
+
+      @if (!loading && !error) {
+        <div class="worklist">
+          @for (item of items; track item.id) {
+            <button
+              type="button"
+              class="row"
+              (click)="goToDetailPage(item)"
+              (keydown)="goToDetailPageFromKeyboard($event, item)"
+            >
+              <div class="identity">
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.url }}</span>
+              </div>
+              <div class="meta">
+                <span class="status">{{ item.status }}</span>
+                <span>{{ item.conceptCount }} {{ 'codeSystems.list.values' | translate }}</span>
+              </div>
+            </button>
+          }
+
+          @if (items.length === 0) {
+            <div class="state">{{ 'codeSystems.list.empty' | translate }}</div>
+          }
+        </div>
+      }
+    </app-bubble-card>
+  </div>
+</app-module-shell>

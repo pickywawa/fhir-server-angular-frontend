@@ -1,0 +1,190 @@
+<app-bubble-card [title]="'myPatients.documents.title' | translate">
+  <div class="header-row">
+    <app-button-primary (click)="openAddModal()">{{ 'myPatients.documents.add' | translate }}</app-button-primary>
+  </div>
+
+  @if (loading) {
+    <p class="placeholder">{{ 'myPatients.documents.loading' | translate }}</p>
+  }
+  @if (!loading && error) {
+    <p class="placeholder error">{{ error }}</p>
+  }
+
+  @if (!loading && !error && documents.length) {
+    <div class="documents-list">
+      @for (document of documents; track document) {
+      <button type="button" class="document-row" (click)="openDocumentViewer(document)">
+        <div class="doc-main">
+          <strong>{{ document.title }}</strong>
+          <small>{{ document.classLabel }} · {{ document.typeLabel }}</small>
+          @if (document.authorLabel) {
+            <small>{{ 'myPatients.documents.author' | translate }}: {{ document.authorLabel }}</small>
+          }
+        </div>
+        <div class="doc-meta">
+          <span>{{ document.contentType }}</span>
+          @if (document.sizeBytes) {
+            <span>{{ document.sizeBytes | number }} {{ 'myPatients.documents.bytes' | translate }}</span>
+          }
+        </div>
+        <div class="doc-date">
+          <span>{{ document.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </button>
+      }
+    </div>
+  }
+
+  @if (!loading && !error && !documents.length) {
+    <p class="placeholder">
+      {{ 'myPatients.documents.empty' | translate }}
+    </p>
+  }
+</app-bubble-card>
+
+@if (showAddModal) {
+  <app-modal [title]="'myPatients.documents.addModal.title' | translate" (close)="closeAddModal()">
+    <form class="doc-form" [formGroup]="documentsForm" (ngSubmit)="submitDocument()">
+      <div class="field">
+        <label for="doc-title">{{ 'myPatients.documents.addModal.fields.title' | translate }}</label>
+        <input id="doc-title" formControlName="title" type="text" [class.invalid]="documentsForm.get('title')?.invalid && (documentsForm.get('title')?.dirty || documentsForm.get('title')?.touched)" />
+      </div>
+      <div class="field">
+        <label for="doc-class">{{ 'myPatients.documents.addModal.fields.class' | translate }}</label>
+        <select id="doc-class" formControlName="classCode">
+          @for (option of classOptions; track option) {
+            <option [value]="option.code">{{ option.display }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="doc-type">{{ 'myPatients.documents.addModal.fields.type' | translate }}</label>
+        <select id="doc-type" formControlName="typeCode">
+          @for (option of typeOptions; track option) {
+            <option [value]="option.code">{{ option.display }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="doc-file">{{ 'myPatients.documents.addModal.fields.file' | translate }}</label>
+        <input id="doc-file" type="file" (change)="onFileSelected($event)" [class.invalid]="documentsForm.get('file')?.invalid && (documentsForm.get('file')?.dirty || documentsForm.get('file')?.touched)" />
+        @if (selectedFile) {
+          <small class="file-name">{{ selectedFile.name }}</small>
+        }
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-neutral" (click)="closeAddModal()" [disabled]="saving">{{ 'common.cancel' | translate }}</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving || documentsForm.invalid">{{ saving ? ('myPatients.documents.addModal.saving' | translate) : ('common.save' | translate) }}</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (showViewerModal) {
+  <app-modal
+    [title]="selectedDocument?.title || ('myPatients.documents.viewer.title' | translate)"
+    (close)="closeViewerModal()"
+    >
+    <div class="viewer-shell" id="patient-document-viewer-shell">
+      <div class="viewer-toolbar">
+        <div class="viewer-tabs" role="tablist" [attr.aria-label]="'myPatients.documents.viewer.tabs.aria' | translate">
+          <button
+            type="button"
+            class="viewer-tab"
+            [class.active]="activeViewerTab === 'preview'"
+            (click)="onViewerTabChange('preview')"
+            >
+            {{ 'myPatients.documents.viewer.tabs.preview' | translate }}
+          </button>
+          <button
+            type="button"
+            class="viewer-tab"
+            [class.active]="activeViewerTab === 'details'"
+            (click)="onViewerTabChange('details')"
+            >
+            {{ 'myPatients.documents.viewer.tabs.details' | translate }}
+          </button>
+        </div>
+        <button type="button" class="fullscreen-btn" (click)="toggleViewerFullscreen()">
+          {{ isViewerFullscreen ? ('myPatients.documents.viewer.exitFullscreen' | translate) : ('myPatients.documents.viewer.fullscreen' | translate) }}
+        </button>
+      </div>
+      @if (activeViewerTab === 'preview' && viewerLoading) {
+        <div class="viewer-state">{{ 'myPatients.documents.viewer.loading' | translate }}</div>
+      }
+      @if (activeViewerTab === 'preview' && !viewerLoading && viewerError) {
+        <div class="viewer-state error">{{ viewerError }}</div>
+      }
+      @if (activeViewerTab === 'preview' && !viewerLoading && !viewerError) {
+        <div class="viewer-content">
+          @if (viewerType === 'pdf' && viewerResourceUrl) {
+            <iframe
+              class="viewer-frame"
+              [src]="viewerResourceUrl"
+              [title]="'myPatients.documents.viewer.pdfTitle' | translate"
+            ></iframe>
+          }
+          @if (viewerType === 'image' && viewerImageUrl) {
+            <img class="viewer-image" [src]="viewerImageUrl" [alt]="'myPatients.documents.viewer.imageAlt' | translate" />
+          }
+          @if (viewerType === 'text') {
+            <pre class="viewer-text">{{ viewerTextContent }}</pre>
+          }
+          @if (viewerType === 'unsupported') {
+            <div class="viewer-fallback">
+              <p>{{ 'myPatients.documents.viewer.previewUnavailable' | translate }}</p>
+              @if (viewerDownloadUrl) {
+                <a [href]="viewerDownloadUrl" [download]="selectedDocument?.title || 'document'">{{ 'myPatients.documents.viewer.downloadDocument' | translate }}</a>
+              }
+            </div>
+          }
+        </div>
+      }
+      @if (activeViewerTab === 'details' && selectedDocument) {
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.title' | translate }}</span>
+            <span>{{ selectedDocument.title }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.author' | translate }}</span>
+            <span>{{ selectedDocument.authorLabel || selectedDocument.authorReference || ('myPatients.documents.details.notProvided' | translate) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.patient' | translate }}</span>
+            <span>{{ selectedDocument.patientReference || ('Patient/' + patientId) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.class' | translate }}</span>
+            <span>{{ selectedDocument.classLabel }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.type' | translate }}</span>
+            <span>{{ selectedDocument.typeLabel }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.format' | translate }}</span>
+            <span>{{ selectedDocument.contentType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.size' | translate }}</span>
+            <span>{{ selectedDocument.sizeBytes ? (selectedDocument.sizeBytes | number) + ' ' + ('myPatients.documents.bytes' | translate) : ('myPatients.documents.details.notProvided' | translate) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.date' | translate }}</span>
+            <span>{{ selectedDocument.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">{{ 'myPatients.documents.details.documentId' | translate }}</span>
+            <span>{{ selectedDocument.id }}</span>
+          </div>
+          <div class="detail-actions">
+            @if (viewerDownloadUrl) {
+              <a [href]="viewerDownloadUrl" [download]="selectedDocument.title || 'document'">{{ 'myPatients.documents.details.download' | translate }}</a>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </app-modal>
+}

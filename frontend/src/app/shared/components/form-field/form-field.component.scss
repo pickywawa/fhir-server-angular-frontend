@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-field label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+:host ::ng-deep input,
+:host ::ng-deep select,
+:host ::ng-deep textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--input-border, #cbd5e1);
+  border-radius: 10px;
+  padding: 0.5rem 0.7rem;
+  font-family: inherit;
+  background: var(--input-bg, #ffffff);
+  color: var(--input-text, #0f172a);
+}
+
+:host ::ng-deep input:disabled,
+:host ::ng-deep select:disabled,
+:host ::ng-deep textarea:disabled {
+  background: var(--disabled-bg, color-mix(in oklab, var(--card-bg-soft, #f1f5f9) 85%, white));
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+  border-style: dashed;
+  opacity: 1;
+  cursor: not-allowed;
+}

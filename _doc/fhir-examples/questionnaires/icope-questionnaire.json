@@ -1,0 +1,169 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "active",
+  "title": "ICOPE Screening Questionnaire",
+  "description": "Example FHIR Questionnaire for WHO ICOPE intrinsic capacity screening in older adults.",
+  "subjectType": ["Patient"],
+  "date": "2026-03-21T00:00:00Z",
+  "item": [
+    {
+      "linkId": "grp-demographics",
+      "text": "Patient context",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "visit-date",
+          "text": "Screening date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "linkId": "setting",
+          "text": "Assessment setting",
+          "type": "choice",
+          "answerOption": [
+            { "valueString": "Primary care" },
+            { "valueString": "Home visit" },
+            { "valueString": "Hospital outpatient" },
+            { "valueString": "Community center" }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-cognition",
+      "text": "Cognitive decline",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "orientation-problem",
+          "text": "Does the person report memory or orientation difficulties?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "orientation-score",
+          "text": "Mini-Cog or short orientation score",
+          "type": "integer",
+          "enableWhen": [
+            {
+              "question": "orientation-problem",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-mobility",
+      "text": "Mobility limitation",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "chair-rise-difficulty",
+          "text": "Difficulty rising from a chair five times?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "walk-time",
+          "text": "Time for 4-meter walk in seconds",
+          "type": "quantity",
+          "enableWhen": [
+            {
+              "question": "chair-rise-difficulty",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-nutrition",
+      "text": "Nutrition and weight loss",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "weight-loss",
+          "text": "Unintentional weight loss during the last 3 months?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "appetite-loss",
+          "text": "Loss of appetite?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "current-weight",
+          "text": "Current weight in kg",
+          "type": "quantity"
+        }
+      ]
+    },
+    {
+      "linkId": "grp-vision-hearing",
+      "text": "Sensory losses",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "vision-problem",
+          "text": "Does the person report visual difficulty?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "hearing-problem",
+          "text": "Does the person report hearing difficulty?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "uses-aid",
+          "text": "Uses glasses or hearing aid",
+          "type": "choice",
+          "repeats": true,
+          "answerOption": [
+            { "valueString": "Glasses" },
+            { "valueString": "Hearing aid" },
+            { "valueString": "None" }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-mood",
+      "text": "Psychological well-being",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "depressed-mood",
+          "text": "Felt down, depressed, or hopeless in the last 2 weeks?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "loss-interest",
+          "text": "Little interest or pleasure in doing things?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "mood-comment",
+          "text": "Clinical comment",
+          "type": "text",
+          "enableWhen": [
+            {
+              "question": "depressed-mood",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

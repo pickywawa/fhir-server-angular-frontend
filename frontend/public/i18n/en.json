@@ -1,0 +1,424 @@
+{
+  "menu": {
+    "myPatients": "My Patients",
+    "agenda": "Agenda",
+    "discussions": "Discussions",
+    "search": "Search",
+    "professionals": "Professionals",
+    "codeSystems": "Code systems",
+    "questionnaires": "Questionnaires",
+    "patients": "Patients",
+    "support": "Support",
+    "settings": "Settings",
+    "administration": "Administration",
+    "expand": "Expand menu",
+    "collapse": "Collapse menu"
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "hero": {
+      "title": "Personalize your workspace",
+      "subtitle": "Choose your visual theme and interface language.",
+      "badge": "Settings Module"
+    },
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "lightDesc": "Bright interface with soft contrast",
+      "dark": "Dark",
+      "darkDesc": "Visual comfort in low-light environments"
+    },
+    "language": {
+      "title": "Language",
+      "fr": "French",
+      "en": "English",
+      "it": "Italian",
+      "de": "German",
+      "hint": "Your choice is automatically saved for your next session."
+    }
+  },
+  "support": {
+    "title": "Support",
+    "center": "Support Center",
+    "needHelp": "Need help?",
+    "intro": "This center gathers quick assistance, common answers and a request form.",
+    "team": "Support Team",
+    "faq": "Frequently Asked Questions",
+    "ticket": "Open a Ticket"
+  },
+  "search": {
+    "title": "Search",
+    "fhir": "FHIR Search",
+    "results": "Results",
+    "placeholder": "Search patient, professional, appointment, document...",
+    "button": "Search",
+    "loading": "Searching...",
+    "emptyPrompt": "Enter a term to start searching.",
+    "empty": "No result.",
+    "error": "Search error"
+  },
+  "agenda": {
+    "title": "Agenda",
+    "list": "List",
+    "planning": "Planning",
+    "add": "Add appointment",
+    "loading": "Loading appointments..."
+  },
+  "practitioners": {
+    "search": {
+      "title": "Practitioner search",
+      "family": "Last name",
+      "given": "First name",
+      "identifier": "Primary ID",
+      "familyPlaceholder": "Doe",
+      "givenPlaceholder": "Marie",
+      "identifierPlaceholder": "PRO-001"
+    },
+    "worklist": {
+      "title": "Practitioner worklist",
+      "add": "Add practitioner",
+      "prompt": "Run a search to display practitioners.",
+      "empty": "No practitioner found."
+    },
+    "detail": {
+      "practitioner": "Practitioner",
+      "newPractitioner": "New practitioner",
+      "noProfession": "Profession not provided",
+      "noIdentifier": "ID not provided",
+      "createdSuccess": "Practitioner created successfully!",
+      "updatedSuccess": "Practitioner updated successfully!"
+    },
+    "form": {
+      "title": "Practitioner information",
+      "mainIdentifier": "Primary ID",
+      "prefix": "Prefix",
+      "profession": "Profession",
+      "specialty": "Specialty",
+      "specialization": "Specialization",
+      "emailContacts": "Email contacts",
+      "phones": "Phones",
+      "addresses": "Addresses",
+      "otherContacts": "Other contacts",
+      "emailPlaceholder": "email@example.com",
+      "phonePlaceholder": "+33 6 12 34 56 78",
+      "addressPlaceholder": "Full address",
+      "contactPlaceholder": "system: value",
+      "addEmail": "Add email",
+      "addPhone": "Add phone",
+      "addAddress": "Add address",
+      "addContact": "Add contact"
+    }
+  },
+  "questionnaires": {
+    "search": {
+      "title": "Questionnaire search",
+      "titleField": "Title",
+      "titlePlaceholder": "Example: Admission questionnaire",
+      "statusField": "Status"
+    },
+    "worklist": {
+      "title": "Questionnaire worklist",
+      "add": "Add questionnaire",
+      "empty": "No questionnaire found.",
+      "noCommon": "No questionnaire available.",
+      "noDescription": "No description",
+      "items": "item(s)"
+    },
+    "detail": {
+      "titleSingle": "Questionnaire",
+      "new": "New questionnaire",
+      "createdSuccess": "Questionnaire created successfully!",
+      "updatedSuccess": "Questionnaire updated successfully!"
+    },
+    "status": {
+      "all": "All",
+      "draft": "Draft",
+      "active": "Active",
+      "retired": "Retired",
+      "unknown": "Unknown"
+    },
+    "itemType": {
+      "group": "Group",
+      "string": "Short text",
+      "text": "Long text",
+      "boolean": "Boolean",
+      "integer": "Integer",
+      "quantity": "Quantity",
+      "date": "Date",
+      "choice": "Choice"
+    },
+    "form": {
+      "title": "Questionnaire editor",
+      "fields": {
+        "title": "Title",
+        "description": "Description",
+        "status": "Status"
+      },
+      "items": {
+        "title": "Items",
+        "addQuestion": "Add question",
+        "addGroup": "Add group",
+        "empty": "Add a question or group to get started.",
+        "group": "Group",
+        "question": "Question",
+        "text": "Text",
+        "type": "Type",
+        "required": "Required",
+        "repeats": "Repeatable",
+        "answerOptions": "Answer options",
+        "addOption": "Add option",
+        "enableWhen": "Enable conditions",
+        "addCondition": "Add condition",
+        "selectQuestion": "Source question",
+        "answerValue": "Expected value",
+        "groupChildren": "Group content",
+        "emptyGroup": "This group is empty"
+      }
+    },
+    "preview": {
+      "title": "Form preview",
+      "empty": "This questionnaire does not contain any displayable item yet.",
+      "untitledGroup": "Untitled group",
+      "booleanLabel": "Yes / no",
+      "selectOption": "Select an option",
+      "resize": "Resize preview panel"
+    }
+  },
+  "codeSystems": {
+    "list": {
+      "title": "Value sets (CodeSystem)",
+      "add": "Add CodeSystem",
+      "values": "value(s)",
+      "empty": "No CodeSystem found."
+    },
+    "form": {
+      "title": "Add CodeSystem",
+      "editTitle": "Edit CodeSystem",
+      "url": "URL",
+      "urlPlaceholder": "https://.../CodeSystem/.../fr_FR",
+      "valuesTitle": "Values",
+      "addValue": "Add value",
+      "code": "Code",
+      "display": "Display",
+      "saving": "Creating...",
+      "createdSuccess": "CodeSystem created successfully.",
+      "updatedSuccess": "CodeSystem updated successfully.",
+      "errors": {
+        "noValues": "Add at least one valid value."
+      }
+    }
+  },
+  "patients": {
+    "detailPage": {
+      "patient": "Patient",
+      "newPatient": "New patient",
+      "unknownGender": "Gender not provided",
+      "createdSuccess": "Patient created successfully!",
+      "updatedSuccess": "Patient updated successfully!"
+    },
+    "form": {
+      "title": "Patient information",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "birthDate": "Birth date",
+      "genderLabel": "Gender",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Street",
+      "city": "City",
+      "postalCode": "Postal code",
+      "country": "Country",
+      "requiredFirstName": "First name is required.",
+      "requiredLastName": "Last name is required.",
+      "add": "Add",
+      "gender": {
+        "unknown": "Unknown",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      }
+    },
+    "search": {
+      "title": "Patient search",
+      "titleSingle": "Patient search",
+      "family": "Last name",
+      "given": "First name",
+      "birthDate": "Birth date",
+      "familyPlaceholder": "Doe",
+      "givenPlaceholder": "John",
+      "reset": "Reset"
+    },
+    "worklist": {
+      "title": "Patient worklist",
+      "add": "Add patient",
+      "empty": "No patient found",
+      "prompt": "Run a search to display patients.",
+      "error": "Error"
+    }
+  },
+  "myPatients": {
+    "form": {
+      "newTitle": "New Patient",
+      "editTitle": "Edit Patient",
+      "personalInfo": "Personal Information",
+      "requiredBirthDate": "Birth date is required",
+      "requiredGender": "Gender is required",
+      "invalidEmail": "Email must be valid",
+      "select": "Select...",
+      "saving": "Saving...",
+      "create": "Create patient"
+    },
+    "detail": {
+      "tabs": {
+        "overview": "Overview",
+        "careTeam": "Care team",
+        "questionnaires": "Questionnaires",
+        "discussions": "Discussions",
+        "identity": "Identity",
+        "documents": "Documents"
+      },
+      "idPrefix": "ID",
+      "errorPrefix": "Error"
+    },
+    "identity": {
+      "title": "Identity card",
+      "edit": "Edit",
+      "fields": {
+        "lastName": "Last name",
+        "firstName": "First name",
+        "birthDate": "Birth date",
+        "gender": "Gender",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "city": "City",
+        "region": "Region",
+        "zipCode": "Postal code",
+        "country": "Country"
+      }
+    },
+    "careTeam": {
+      "title": "Care team",
+      "add": "Add team member",
+      "remove": "Remove",
+      "deleteSuccess": "{{name}} was removed from the care team.",
+      "loading": "Loading care team...",
+      "empty": "No care team member found for this patient.",
+      "loadError": "Error while loading care team",
+      "confirm": {
+        "title": "Confirm removal",
+        "message": "Do you really want to remove {{name}} from this patient's care team?",
+        "confirm": "Remove",
+        "deleting": "Removing..."
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "add": "Add document",
+      "loading": "Loading documents...",
+      "empty": "No document linked to this patient.",
+      "author": "Author",
+      "bytes": "bytes",
+      "addModal": {
+        "title": "Add document",
+        "saving": "Saving...",
+        "fields": {
+          "title": "Title",
+          "class": "XDS class",
+          "type": "XDS type",
+          "file": "Local file"
+        }
+      },
+      "viewer": {
+        "title": "Document viewer",
+        "tabs": {
+          "aria": "Document tabs",
+          "preview": "Preview",
+          "details": "Details"
+        },
+        "fullscreen": "Fullscreen",
+        "exitFullscreen": "Exit fullscreen",
+        "loading": "Loading document...",
+        "pdfTitle": "PDF viewer",
+        "imageAlt": "Document image",
+        "previewUnavailable": "Preview is not available for this document type.",
+        "downloadDocument": "Download document"
+      },
+      "details": {
+        "title": "Title",
+        "author": "Author",
+        "patient": "Patient",
+        "class": "XDS class",
+        "type": "XDS type",
+        "format": "Format",
+        "size": "Size",
+        "date": "Date",
+        "documentId": "Document ID",
+        "download": "Download",
+        "notProvided": "Not provided"
+      },
+      "errors": {
+        "patientNotFound": "Patient not found for document upload.",
+        "invalidClassType": "Invalid document class/type.",
+        "authorNotFound": "Author not found for this upload.",
+        "save": "Error while saving document",
+        "load": "Error while loading documents",
+        "noBinary": "Document has no binary content.",
+        "loadViewer": "Unable to load document",
+        "textDecode": "Unable to display text content."
+      }
+    },
+    "questionnaires": {
+      "title": "Patient questionnaires",
+      "add": "Add questionnaire",
+      "empty": "No questionnaire response found for this patient.",
+      "modelPickerTitle": "Choose a questionnaire template",
+      "noModel": "No questionnaire template available.",
+      "createResponse": "Create response",
+      "saved": "Response saved successfully.",
+      "saving": "Saving...",
+      "errors": {
+        "missingQuestionnaireId": "Unable to identify questionnaire for save."
+      }
+    },
+    "discussions": {
+      "title": "Discussions",
+      "loading": "Loading discussions...",
+      "newDiscussion": "New discussion",
+      "threadPrefix": "Discussion",
+      "messageCount": "message(s)",
+      "empty": "No discussion for this patient.",
+      "prompt": "Create or select a discussion.",
+      "noMessages": "No message in this discussion.",
+      "sender": "Sender",
+      "recipient": "Recipient",
+      "undetermined": "Undetermined",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Type your message...",
+      "sending": "Sending...",
+      "send": "Send",
+      "unknownSender": "Unknown",
+      "errors": {
+        "patientNotFound": "Patient not found.",
+        "selectDiscussion": "Select or create a discussion.",
+        "senderNotFound": "Unable to resolve connected professional (Keycloak scope).",
+        "recipientNotFound": "Unable to resolve recipient care team.",
+        "send": "Error while sending message",
+        "load": "Error while loading discussions"
+      }
+    }
+  },
+  "common": {
+    "breadcrumb": "Breadcrumb",
+    "tabNavigation": "Tab navigation",
+    "modal": "Modal",
+    "close": "Close",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "loading": "Loading...",
+    "unknownError": "Unknown error"
+  }
+}

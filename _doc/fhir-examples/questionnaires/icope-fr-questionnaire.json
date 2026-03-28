@@ -1,0 +1,165 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "active",
+  "title": "Icope - Evaluation de l'autonomie",
+  "description": "Questionnaire ICOPE (inspire des domaines OMS) pour depister les declins des capacites intrinseques et l'autonomie de la personne agee.",
+  "subjectType": ["Patient"],
+  "date": "2026-03-21T00:00:00Z",
+  "item": [
+    {
+      "linkId": "ctx",
+      "text": "Contexte de l'evaluation",
+      "type": "group",
+      "item": [
+        { "linkId": "date-eval", "text": "Date de l'evaluation", "type": "date", "required": true },
+        {
+          "linkId": "lieu",
+          "text": "Lieu de l'evaluation",
+          "type": "choice",
+          "answerOption": [
+            { "valueString": "Domicile" },
+            { "valueString": "Cabinet" },
+            { "valueString": "Hopital" },
+            { "valueString": "EHPAD" }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "cognition",
+      "text": "Cognition",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "cog-plainte",
+          "text": "Plainte de memoire ou desorientation signalee",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "cog-score",
+          "text": "Score de depistage cognitif (0-5)",
+          "type": "integer",
+          "enableWhen": [
+            { "question": "cog-plainte", "operator": "exists", "answerBoolean": true }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "mobilite",
+      "text": "Mobilite et risque de chute",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "mob-chaise",
+          "text": "Difficulte a se lever 5 fois d'une chaise",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "mob-marche",
+          "text": "Temps de marche sur 4 metres (secondes)",
+          "type": "quantity"
+        },
+        {
+          "linkId": "fall-12m",
+          "text": "Nombre de chutes sur 12 mois",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "linkId": "nutrition",
+      "text": "Nutrition",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "nutri-perte-poids",
+          "text": "Perte de poids involontaire recente",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "nutri-appetit",
+          "text": "Diminution de l'appetit",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "nutri-poids",
+          "text": "Poids actuel (kg)",
+          "type": "quantity"
+        }
+      ]
+    },
+    {
+      "linkId": "sensoriel",
+      "text": "Vision et audition",
+      "type": "group",
+      "item": [
+        { "linkId": "vis-baisse", "text": "Baisse de la vision", "type": "boolean", "required": true },
+        { "linkId": "aud-baisse", "text": "Baisse de l'audition", "type": "boolean", "required": true },
+        {
+          "linkId": "aide-sensorielle",
+          "text": "Aides utilisees",
+          "type": "choice",
+          "repeats": true,
+          "answerOption": [
+            { "valueString": "Lunettes" },
+            { "valueString": "Appareil auditif" },
+            { "valueString": "Aucune" }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "psychique",
+      "text": "Humeur et motivation",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "psy-tristesse",
+          "text": "Se sent triste/deprime ces 2 dernieres semaines",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "psy-interet",
+          "text": "Perte d'interet ou de plaisir dans les activites",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "psy-commentaire",
+          "text": "Commentaire clinique",
+          "type": "text",
+          "enableWhen": [
+            { "question": "psy-tristesse", "operator": "exists", "answerBoolean": true }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "autonomie",
+      "text": "Autonomie fonctionnelle",
+      "type": "group",
+      "item": [
+        { "linkId": "adl-toilette", "text": "Aide necessaire pour la toilette", "type": "boolean" },
+        { "linkId": "adl-habillage", "text": "Aide necessaire pour l'habillage", "type": "boolean" },
+        { "linkId": "iadl-medicaments", "text": "Aide necessaire pour la prise de medicaments", "type": "boolean" },
+        {
+          "linkId": "autonomie-niveau",
+          "text": "Niveau global d'autonomie",
+          "type": "choice",
+          "answerOption": [
+            { "valueString": "Autonome" },
+            { "valueString": "Fragile" },
+            { "valueString": "Dependance moderee" },
+            { "valueString": "Dependance severe" }
+          ]
+        }
+      ]
+    }
+  ]
+}

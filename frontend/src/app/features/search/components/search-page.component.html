@@ -1,0 +1,41 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <section class="search-page">
+    <app-bubble-card [title]="'search.fhir' | translate">
+      <form [formGroup]="form" (ngSubmit)="search()" class="search-form">
+        <div class="search-bar">
+          <input type="text" formControlName="query" [placeholder]="'search.placeholder' | translate" />
+          <button type="submit" class="btn btn-primary">{{ 'search.button' | translate }}</button>
+        </div>
+      </form>
+    </app-bubble-card>
+
+    <app-bubble-card [title]="'search.results' | translate">
+      @if (loading) {
+        <div class="state">{{ 'search.loading' | translate }}</div>
+      }
+      @if (!loading && error) {
+        <div class="state error">{{ error | translate }}</div>
+      }
+      @if (!loading && !error && !hasSearched) {
+        <div class="state">{{ 'search.emptyPrompt' | translate }}</div>
+      }
+      @if (!loading && !error && hasSearched) {
+        <div class="results">
+          @for (result of results; track result.id + '-' + result.type) {
+            <button type="button" class="result-row" (click)="openResult(result)">
+              <div class="type-pill">{{ typeLabel(result) }}</div>
+              <div class="content">
+                <strong>{{ result.title }}</strong>
+                <span>{{ result.subtitle }}</span>
+                <small>{{ result.description }}</small>
+              </div>
+            </button>
+          }
+          @if (!results.length) {
+            <div class="state">{{ 'search.empty' | translate }}</div>
+          }
+        </div>
+      }
+    </app-bubble-card>
+  </section>
+</app-module-shell>

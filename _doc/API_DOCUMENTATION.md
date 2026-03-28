@@ -4,7 +4,7 @@
 
 ```
 Production: http://localhost:8080 (API Gateway)
-Dev Patient Service: http://localhost:8081
+Dev Patient Service: http://localhost:8080
 Dev FHIR Service: http://localhost:8082
 ```
 
@@ -337,7 +337,7 @@ curl http://localhost:8080/actuator/health
 
 ### Vérifier la santé du Patient Service
 ```bash
-curl http://localhost:8081/actuator/health
+curl http://localhost:8080/actuator/health
 ```
 
 ### Vérifier le serveur FHIR

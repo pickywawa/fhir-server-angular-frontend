@@ -1,0 +1,15 @@
+{
+  "resourceType": "CarePlan",
+  "identifier": [{ "system": "urn:ietf:rfc:3986", "value": "urn:uuid:PATIENT_1112_UUID" }],
+  "status": "on-hold",
+  "intent": "plan",
+  "title": "Plan de reeducation fonctionnelle",
+  "description": "Programme de kinesitherapie et ergotherapie visant a restaurer l autonomie fonctionnelle du patient.",
+  "subject": { "reference": "Patient/1112", "display": "Pascal Sandra" },
+  "created": "2025-04-04",
+  "category": [{
+    "coding": [{ "system": "https://healthapp.local/fhir/CodeSystem/care-plan-category/fr_FR", "code": "rehabilitation", "display": "Plan de reeducation / readaptation" }],
+    "text": "Plan de reeducation / readaptation"
+  }],
+  "note": [{ "text": "3 seances de kinesitherapie par semaine. Objectif : reprise marche autonome a 3 mois." }]
+}

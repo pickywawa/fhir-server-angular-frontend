@@ -1,0 +1,331 @@
+.state {
+  color: var(--text-secondary);
+}
+
+.state.error {
+  color: #b91c1c;
+}
+
+.discussions-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0.9rem;
+  min-height: 560px;
+}
+
+.threads-pane {
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+}
+
+.threads-header {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg-soft);
+}
+
+.threads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.65rem;
+  overflow: auto;
+}
+
+.thread-item {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.55rem;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--card-bg-soft);
+  }
+}
+
+.thread-item.active {
+  border-color: var(--focus-ring, #3b82f6);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+}
+
+.thread-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--btn-primary-bg, #0f172a) 15%, var(--card-bg-soft));
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.thread-content {
+  min-width: 0;
+  display: grid;
+  gap: 0.1rem;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  small {
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.thread-meta {
+  display: grid;
+  justify-items: end;
+  gap: 0.2rem;
+
+  small {
+    color: var(--text-secondary);
+    font-size: 0.74rem;
+  }
+}
+
+.thread-count {
+  min-width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: var(--card-bg-soft);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.messages-pane {
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: var(--card-bg);
+}
+
+.messages-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.messages-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+
+  h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.96rem;
+  }
+
+  small {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+  }
+}
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 240px;
+  max-height: 420px;
+  overflow: auto;
+  padding: 0.35rem;
+}
+
+.message-row {
+  display: flex;
+  justify-content: flex-start;
+
+  &.mine {
+    justify-content: flex-end;
+  }
+}
+
+.message-bubble {
+  max-width: min(78%, 560px);
+  border-radius: 14px;
+  padding: 0.6rem 0.75rem;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+
+  p {
+    margin: 0;
+    line-height: 1.35;
+  }
+}
+
+.bubble-other {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+
+  p {
+    color: var(--text-primary);
+  }
+}
+
+.bubble-mine {
+  background: var(--btn-primary-bg, #0f172a);
+  color: var(--btn-primary-text, #ffffff);
+  border: 1px solid var(--btn-primary-bg, #0f172a);
+
+  p {
+    color: var(--btn-primary-text, #ffffff);
+  }
+}
+
+.message-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  align-items: center;
+  margin-bottom: 0.3rem;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  span,
+  small {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+  }
+}
+
+.message-time {
+  margin-top: 0.32rem;
+  text-align: right;
+
+  small {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+  }
+}
+
+.bubble-other .message-time small {
+  color: var(--text-secondary);
+}
+
+.bubble-mine .message-time small {
+  color: color-mix(in oklab, var(--btn-primary-text, #ffffff) 78%, transparent);
+}
+
+.compose-form {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.fixed-routing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: var(--card-bg-soft);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+
+  span {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+  }
+}
+
+.fixed-routing.compact {
+  padding: 0.45rem 0.6rem;
+}
+
+.compose-inline {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: end;
+
+  textarea {
+    border: 1px solid var(--input-border, #cbd5e1);
+    border-radius: 12px;
+    padding: 0.58rem 0.75rem;
+    font-family: inherit;
+    background: var(--input-bg, #ffffff);
+    color: var(--input-text, #0f172a);
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--focus-ring, #3b82f6);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+    }
+
+    &:disabled {
+      background: var(--disabled-bg, #f1f5f9);
+      color: var(--disabled-text, #64748b);
+      border-color: var(--border-color);
+      border-style: dashed;
+      opacity: 1;
+    }
+  }
+}
+
+.btn-send {
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--btn-primary-bg, #0f172a);
+  color: var(--btn-primary-text, #ffffff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  span {
+    font-size: 1rem;
+    line-height: 1;
+    transform: translateX(1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 1000px) {
+  .discussions-layout {
+    grid-template-columns: 1fr;
+  }
+}

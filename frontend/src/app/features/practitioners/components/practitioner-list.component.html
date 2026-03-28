@@ -1,0 +1,70 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="page">
+    <app-bubble-card [title]="'practitioners.search.title' | translate">
+      <form [formGroup]="searchForm" (ngSubmit)="search()" class="search-form">
+        <div class="search-grid">
+          <div class="search-field">
+            <label for="family">{{ 'practitioners.search.family' | translate }}</label>
+            <input id="family" type="text" formControlName="family" [placeholder]="'practitioners.search.familyPlaceholder' | translate" />
+          </div>
+          <div class="search-field">
+            <label for="given">{{ 'practitioners.search.given' | translate }}</label>
+            <input id="given" type="text" formControlName="given" [placeholder]="'practitioners.search.givenPlaceholder' | translate" />
+          </div>
+          <div class="search-field">
+            <label for="identifier">{{ 'practitioners.search.identifier' | translate }}</label>
+            <input id="identifier" type="text" formControlName="identifier" [placeholder]="'practitioners.search.identifierPlaceholder' | translate" />
+          </div>
+        </div>
+        <div class="search-actions">
+          <button type="submit" class="btn btn-primary">{{ 'search.button' | translate }}</button>
+          <button type="button" class="btn btn-neutral" (click)="resetSearch()">{{ 'patients.search.reset' | translate }}</button>
+        </div>
+      </form>
+    </app-bubble-card>
+
+    <app-bubble-card [title]="'practitioners.worklist.title' | translate">
+      <div bubbleActions>
+        <button type="button" class="btn btn-primary" (click)="addPractitioner()">{{ 'practitioners.worklist.add' | translate }}</button>
+      </div>
+
+      @if (loading) {
+        <div class="state">{{ 'common.loading' | translate }}</div>
+      }
+      @if (!loading && error) {
+        <div class="state error">{{ error }}</div>
+      }
+      @if (!loading && !error && !hasSearched) {
+        <div class="state">{{ 'practitioners.worklist.prompt' | translate }}</div>
+      }
+
+      @if (!loading && !error && hasSearched) {
+        <div class="worklist">
+          @for (item of results; track item) {
+            <app-result-list-item (rowClick)="openPractitioner(item)">
+              <div class="identity result-start">
+                <strong>{{ item.lastName }} {{ item.firstName }}</strong>
+                <span>{{ item.profession || '-' }}</span>
+                @if (item.specialty) {
+                  <span>{{ item.specialty }}</span>
+                }
+              </div>
+              <div class="middle result-center">
+                @if (item.emails && item.emails.length > 0) {
+                  <span>{{ item.emails[0] }}</span>
+                }
+                @if (item.phones && item.phones.length > 0) {
+                  <span>{{ item.phones[0] }}</span>
+                }
+              </div>
+              <div class="meta result-end">{{ item.mainIdentifier || '-' }}</div>
+            </app-result-list-item>
+          }
+          @if (results.length === 0) {
+            <div class="state">{{ 'practitioners.worklist.empty' | translate }}</div>
+          }
+        </div>
+      }
+    </app-bubble-card>
+  </div>
+</app-module-shell>

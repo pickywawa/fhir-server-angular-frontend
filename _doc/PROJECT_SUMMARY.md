@@ -55,7 +55,7 @@ angular-test/
 │   │   └── src/main/java/com/healthapp/gateway/
 │   │       └── ApiGatewayApplication.java
 │   │
-│   ├── patient-service/               # Port 8081 - Clean Architecture
+│   ├── patient-service/               # Port 8080 - Clean Architecture
 │   │   └── src/main/java/com/healthapp/patient/
 │   │       ├── domain/                # Entités métier
 │   │       │   ├── model/            # Patient, Address
@@ -138,7 +138,7 @@ Frontend: http://localhost:4200
 |---------|-----|------|
 | **Frontend Angular** | http://localhost:4200 | 4200 |
 | **API Gateway** | http://localhost:8080 | 8080 |
-| **Patient Service** | http://localhost:8081 | 8081 |
+| **Patient Service** | http://localhost:8080 | 8080 |
 | **FHIR Service** | http://localhost:8082 | 8082 |
 | **PostgreSQL Patient** | localhost:5432 | 5432 |
 | **PostgreSQL FHIR** | localhost:5433 | 5433 |

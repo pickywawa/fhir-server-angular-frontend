@@ -1,0 +1,386 @@
+.patient-list-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  input,
+  select {
+    height: 38px;
+    border: 1px solid var(--input-border, #cbd5e1);
+    border-radius: 10px;
+    padding: 0 0.75rem;
+    font-size: 0.9rem;
+    background: var(--input-bg, #ffffff);
+    color: var(--input-text, #0f172a);
+
+    &:focus {
+      outline: none;
+      border-color: var(--focus-ring, #3b82f6);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 22%, transparent);
+    }
+  }
+}
+
+.search-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.56rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg, #0f172a);
+  color: var(--btn-primary-text, #fff);
+}
+
+.btn-neutral {
+  background: var(--btn-neutral-bg, #f1f5f9);
+  border-color: var(--btn-neutral-border, #dbe3ea);
+  color: var(--btn-neutral-text, #334155);
+}
+
+.btn-add-careplan {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.worklist {
+  display: flex;
+  flex-direction: column;
+}
+
+.worklist-columns {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(180px, 0.9fr) minmax(220px, 1fr) minmax(260px, 1.4fr);
+  gap: 0.8rem;
+  padding: 0.1rem 0.2rem 0.35rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 0.1rem;
+}
+
+.col-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 22px;
+
+  span {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.sort-btn {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #dbe3ea;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 0.68rem;
+  line-height: 1;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+
+  &:hover {
+    color: #0f172a;
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+.worklist-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(180px, 0.9fr) minmax(220px, 1fr) minmax(260px, 1.4fr);
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  text-align: left;
+  background: var(--card-bg);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.78rem 0.2rem;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background: var(--card-bg-soft, #f8fafc);
+  }
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 0.98rem;
+    line-height: 1.25;
+  }
+
+  span {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+  }
+}
+
+.meta {
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.category {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.tag-green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.tag-amber {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tag-red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.tag-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tag-slate {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.tag-violet {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.tag-cyan {
+  background: #cffafe;
+  color: #0e7490;
+}
+
+.tag-indigo {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.tag-zinc {
+  background: #f4f4f5;
+  color: #3f3f46;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  span {
+    color: #64748b;
+    font-size: 0.82rem;
+    line-height: 1.2;
+  }
+}
+
+.state-message {
+  text-align: center;
+  color: #64748b;
+  padding: 1rem;
+}
+
+.state-message.error {
+  color: #b91c1c;
+}
+
+.careplan-create-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem 0.8rem;
+}
+
+.careplan-create-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  input,
+  select,
+  textarea {
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.9rem;
+    background: #fff;
+    color: #0f172a;
+
+    &:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.careplan-create-form .span-2 {
+  grid-column: span 2;
+}
+
+.create-actions {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.35rem;
+  background: #ffffff;
+}
+
+.results button {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  text-align: left;
+  padding: 0.45rem 0.55rem;
+  cursor: pointer;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  border: 1px solid #dbe3ea;
+  background: #f8fafc;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 0.28rem 0.6rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .search-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .worklist-row {
+    grid-template-columns: 1fr;
+    padding: 0.8rem 0.1rem;
+  }
+
+  .worklist-columns {
+    display: none;
+  }
+
+  .meta {
+    font-size: 0.85rem;
+  }
+
+  .careplan-create-form {
+    grid-template-columns: 1fr;
+  }
+
+  .careplan-create-form .span-2,
+  .create-actions {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+}

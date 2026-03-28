@@ -1,0 +1,186 @@
+<app-bubble-card [title]="'myPatients.relatedPerson.title' | translate">
+  <div class="card-header">
+    <app-button-primary (click)="openAddDialog()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>{{ 'myPatients.relatedPerson.add' | translate }}</span>
+    </app-button-primary>
+  </div>
+
+  @if (loading) {
+    <div class="state-message">{{ 'myPatients.relatedPerson.loading' | translate }}</div>
+  }
+
+  @if (!loading && error) {
+    <div class="state-message error">{{ error }}</div>
+  }
+
+  @if (!loading && !error && members.length > 0) {
+    <div class="member-list">
+      @for (member of members; track member.id) {
+        <button type="button" class="member-row" (click)="openMemberDialog(member)">
+          <div class="member-main">
+            <div class="avatar">{{ member.name.charAt(0) | uppercase }}</div>
+            <div class="content">
+              <strong>{{ member.name }}</strong>
+              <span>{{ member.roleDisplay }}</span>
+              <small>
+                {{ member.gender }}
+                @if (member.birthDate) {
+                  <span>• {{ member.birthDate | date:'dd/MM/yyyy' }}</span>
+                }
+                @if (member.phone) {
+                  <span>• {{ member.phone }}</span>
+                }
+                @if (member.email) {
+                  <span>• {{ member.email }}</span>
+                }
+              </small>
+              @if (member.address) {
+                <small>{{ member.address }}</small>
+              }
+              @if (member.language) {
+                <small>{{ 'myPatients.relatedPerson.language' | translate }}: {{ member.language }}</small>
+              }
+            </div>
+          </div>
+          <button type="button" class="member-remove" (click)="$event.stopPropagation(); confirmDelete(member)">
+            {{ 'myPatients.relatedPerson.remove' | translate }}
+          </button>
+        </button>
+      }
+    </div>
+  }
+
+  @if (!loading && !error && members.length === 0) {
+    <div class="state-message">
+      {{ 'myPatients.relatedPerson.empty' | translate }}
+    </div>
+  }
+</app-bubble-card>
+
+@if (showFormDialog) {
+  <app-modal [title]="(createMode ? 'myPatients.relatedPerson.addModal.title' : 'myPatients.relatedPerson.editModal.title') | translate" (close)="closeFormDialog()">
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid">
+        <div class="field span-2">
+          <app-form-control-field
+            [label]="('myPatients.relatedPerson.addModal.fields.name' | translate) + ' *'"
+            forId="rp-name"
+            [uiDisabled]="!editMode"
+            formControlName="name"></app-form-control-field>
+        </div>
+
+        <div class="field">
+          <app-form-control-field
+            [label]="('myPatients.relatedPerson.addModal.fields.role' | translate) + ' *'"
+            forId="rp-role"
+            kind="select"
+            [options]="relationshipOptions"
+            [uiDisabled]="!editMode"
+            formControlName="roleCode"></app-form-control-field>
+        </div>
+
+        <div class="field">
+          <app-form-control-field
+            [label]="('myPatients.relatedPerson.addModal.fields.gender' | translate) + ' *'"
+            forId="rp-gender"
+            kind="select"
+            [options]="genderOptions"
+            [uiDisabled]="!editMode"
+            formControlName="gender"></app-form-control-field>
+        </div>
+
+        <div class="field">
+          <app-form-control-field
+            [label]="('myPatients.relatedPerson.addModal.fields.birthDate' | translate) + ' *'"
+            forId="rp-birthDate"
+            type="date"
+            [uiDisabled]="!editMode"
+            formControlName="birthDate"></app-form-control-field>
+        </div>
+
+        <div class="field">
+          <app-form-control-field
+            [label]="'myPatients.relatedPerson.addModal.fields.phone' | translate"
+            forId="rp-phone"
+            [uiDisabled]="!editMode"
+            formControlName="phone"></app-form-control-field>
+        </div>
+
+        <div class="field span-2">
+          <label for="rp-address">{{ 'myPatients.relatedPerson.addModal.fields.address' | translate }} *</label>
+          <input
+            id="rp-address"
+            type="text"
+            formControlName="address"
+            (input)="onAddressChange(($any($event.target)).value)"
+            [disabled]="!editMode"
+            [placeholder]="'myPatients.relatedPerson.addModal.fields.addressPlaceholder' | translate"
+          />
+          @if (editMode && addressSuggestions.length > 0) {
+            <div class="suggestions">
+              @for (suggestion of addressSuggestions; track suggestion.label) {
+                <button type="button" (click)="selectAddress(suggestion)">
+                  <strong>{{ suggestion.label }}</strong>
+                  <span>{{ suggestion.postcode }} {{ suggestion.city }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="field">
+          <app-form-control-field
+            [label]="'myPatients.relatedPerson.addModal.fields.email' | translate"
+            forId="rp-email"
+            type="email"
+            [uiDisabled]="!editMode"
+            formControlName="email"></app-form-control-field>
+        </div>
+
+        <div class="field">
+          <app-form-control-field
+            [label]="'myPatients.relatedPerson.addModal.fields.language' | translate"
+            forId="rp-language"
+            [uiDisabled]="!editMode"
+            formControlName="language"></app-form-control-field>
+        </div>
+      </div>
+
+      @if (error) {
+        <p class="state-message error">{{ error }}</p>
+      }
+
+      <div class="actions">
+        @if (!createMode && !editMode) {
+          <button type="button" class="btn btn-neutral" (click)="cancelForm()">{{ 'common.close' | translate }}</button>
+          <button type="button" class="btn btn-primary" (click)="enableEditMode()">{{ 'myPatients.relatedPerson.editModal.edit' | translate }}</button>
+        }
+        @if (createMode || editMode) {
+          <button type="button" class="btn btn-neutral" (click)="cancelForm()" [disabled]="saving">{{ 'common.cancel' | translate }}</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+            {{ saving
+              ? ('myPatients.relatedPerson.addModal.saving' | translate)
+              : (createMode ? ('common.create' | translate) : ('myPatients.relatedPerson.editModal.save' | translate))
+            }}
+          </button>
+        }
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (showDeleteDialog && selectedMember) {
+  <app-modal [title]="'myPatients.relatedPerson.confirm.title' | translate" (close)="closeDeleteDialog()">
+    <div class="confirm-delete">
+      <p>{{ 'myPatients.relatedPerson.confirm.message' | translate:{ name: selectedMember.name } }}</p>
+      <div class="confirm-actions">
+        <button type="button" class="btn btn-neutral" (click)="closeDeleteDialog()" [disabled]="deleting">{{ 'common.cancel' | translate }}</button>
+        <button type="button" class="btn danger" (click)="removeMember()" [disabled]="deleting">{{ deleting ? ('myPatients.relatedPerson.confirm.deleting' | translate) : ('myPatients.relatedPerson.confirm.confirm' | translate) }}</button>
+      </div>
+    </div>
+  </app-modal>
+}

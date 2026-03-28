@@ -1,5 +1,59 @@
 /* Styles globaux de l'application */
 
+:root {
+  --app-bg: #ffffff;
+  --surface-bg: #ffffff;
+  --card-bg: #ffffff;
+  --card-bg-soft: #f8fafc;
+  --sidebar-bg: #f8fafc;
+  --text-primary: #183153;
+  --text-secondary: #4c5d79;
+  --border-color: #dbe3ea;
+  --input-bg: #ffffff;
+  --input-text: #0f172a;
+  --input-border: #cbd5e1;
+  --chip-bg: #f1f5f9;
+  --chip-text: #334155;
+  --overlay-bg: rgba(15, 23, 42, 0.5);
+  --focus-ring: rgba(37, 99, 235, 0.15);
+  --disabled-bg: #f1f5f9;
+  --disabled-text: #64748b;
+  --btn-primary-bg: #0f172a;
+  --btn-primary-bg-hover: #1e293b;
+  --btn-primary-text: #ffffff;
+  --btn-neutral-bg: #f8fafc;
+  --btn-neutral-bg-hover: #eef2f7;
+  --btn-neutral-border: #dbe3ea;
+  --btn-neutral-text: #334155;
+}
+
+:root[data-theme='dark'] {
+  --app-bg: #0b1220;
+  --surface-bg: #0f172a;
+  --card-bg: #111b31;
+  --card-bg-soft: #16233f;
+  --sidebar-bg: #0d1629;
+  --text-primary: #e5ecf8;
+  --text-secondary: #9fb0cc;
+  --border-color: #2c3a57;
+  --input-bg: #16233f;
+  --input-text: #e5ecf8;
+  --input-border: #334767;
+  --chip-bg: #1b2a47;
+  --chip-text: #c7d4eb;
+  --overlay-bg: rgba(2, 6, 23, 0.75);
+  --focus-ring: rgba(96, 165, 250, 0.25);
+  --disabled-bg: #1a2742;
+  --disabled-text: #8ea2c3;
+  --btn-primary-bg: #60a5fa;
+  --btn-primary-bg-hover: #7ab8ff;
+  --btn-primary-text: #061326;
+  --btn-neutral-bg: #1a2742;
+  --btn-neutral-bg-hover: #223453;
+  --btn-neutral-border: #334767;
+  --btn-neutral-text: #d5e3f8;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -8,9 +62,158 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--app-bg);
+  color: var(--text-primary);
   line-height: 1.6;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.56rem 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn.btn-primary,
+.btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+}
+
+.btn.btn-primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+  background: var(--btn-primary-bg-hover);
+  border-color: var(--btn-primary-bg-hover);
+}
+
+.btn.btn-neutral,
+.btn-neutral,
+.btn.btn-secondary,
+.btn-secondary {
+  background: var(--btn-neutral-bg);
+  color: var(--btn-neutral-text);
+  border-color: var(--btn-neutral-border);
+}
+
+.btn.btn-neutral:hover:not(:disabled),
+.btn-neutral:hover:not(:disabled),
+.btn.btn-secondary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  background: var(--btn-neutral-bg-hover);
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-neutral:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+:root[data-theme='dark'] .modal-overlay,
+:root[data-theme='dark'] .dialog-overlay {
+  background: var(--overlay-bg);
+}
+
+:root[data-theme='dark'] .modal-container,
+:root[data-theme='dark'] .dialog-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+:root[data-theme='dark'] .modal-header,
+:root[data-theme='dark'] .dialog-header,
+:root[data-theme='dark'] .dialog-footer {
+  border-color: var(--border-color);
+  background: var(--card-bg-soft);
+}
+
+:root[data-theme='dark'] .modal-header h2,
+:root[data-theme='dark'] .dialog-header h2,
+:root[data-theme='dark'] .close-btn {
+  color: var(--text-primary);
+}
+
+:root[data-theme='dark'] .row,
+:root[data-theme='dark'] .worklist-row,
+:root[data-theme='dark'] .thread-item,
+:root[data-theme='dark'] .messages-pane,
+:root[data-theme='dark'] .threads-pane,
+:root[data-theme='dark'] .bubble-other,
+:root[data-theme='dark'] .preview-header,
+:root[data-theme='dark'] .state,
+:root[data-theme='dark'] .results,
+:root[data-theme='dark'] .results button {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+:root[data-theme='dark'] .threads-header,
+:root[data-theme='dark'] .fixed-routing,
+:root[data-theme='dark'] .btn.secondary,
+:root[data-theme='dark'] .btn-neutral,
+:root[data-theme='dark'] .btn-secondary,
+:root[data-theme='dark'] .chip,
+:root[data-theme='dark'] .sort-btn {
+  background: var(--card-bg-soft);
+  border-color: var(--border-color);
+  color: var(--chip-text);
+}
+
+:root[data-theme='dark'] .worklist-columns,
+:root[data-theme='dark'] .worklist-row,
+:root[data-theme='dark'] .thread-item,
+:root[data-theme='dark'] .compose-form,
+:root[data-theme='dark'] .actions,
+:root[data-theme='dark'] .array-section {
+  border-color: var(--border-color);
+}
+
+:root[data-theme='dark'] input,
+:root[data-theme='dark'] select,
+:root[data-theme='dark'] textarea,
+:root[data-theme='dark'] .form-control {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border-color: var(--input-border);
+}
+
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+:root[data-theme='dark'] input:focus,
+:root[data-theme='dark'] select:focus,
+:root[data-theme='dark'] textarea:focus,
+:root[data-theme='dark'] .form-control:focus {
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+:root[data-theme='dark'] input:disabled,
+:root[data-theme='dark'] select:disabled,
+:root[data-theme='dark'] textarea:disabled,
+:root[data-theme='dark'] .form-control:disabled,
+:root[data-theme='dark'] input[readonly],
+:root[data-theme='dark'] textarea[readonly] {
+  background: var(--disabled-bg);
+  color: var(--disabled-text);
+  border-color: var(--border-color);
 }
 
 html, body {

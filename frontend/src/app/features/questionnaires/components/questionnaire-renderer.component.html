@@ -1,0 +1,100 @@
+<app-bubble-card [title]="'questionnaires.preview.title' | translate">
+  <div class="preview-layout" #previewScrollContainer>
+    @if (questionnaire) {
+      <header class="preview-header">
+        <h3>{{ questionnaire.title || ('questionnaires.detail.new' | translate) }}</h3>
+        @if (questionnaire.description) {
+          <p>{{ questionnaire.description }}</p>
+        }
+      </header>
+
+      @if (visibleRootItems.length === 0) {
+        <div class="state">{{ 'questionnaires.preview.empty' | translate }}</div>
+      }
+
+      <ng-template #renderItems let-items let-depth="depth">
+        <div class="preview-items">
+          @for (item of getVisibleItems(items); track item.uid) {
+            @if (item.type === 'group') {
+              <section class="preview-group" [style.marginLeft.px]="depth * 14">
+                @if (item.text) {
+                  <h4>{{ item.text }}</h4>
+                }
+                <ng-container *ngTemplateOutlet="renderItems; context: { $implicit: item.items, depth: depth + 1 }"></ng-container>
+              </section>
+            } @else {
+              <div class="preview-question" [style.marginLeft.px]="depth * 14">
+                <label [attr.for]="item.linkId">
+                  <span>{{ item.text || item.linkId }}</span>
+                  @if (item.required) {
+                    <strong class="required">*</strong>
+                  }
+                </label>
+
+                @switch (item.type) {
+                  @case ('text') {
+                    <textarea [id]="item.linkId" rows="4" [ngModel]="answers[item.linkId] || ''" (ngModelChange)="updateAnswer(item.linkId, $event)"></textarea>
+                  }
+                  @case ('boolean') {
+                    <label class="boolean-control" [attr.aria-label]="item.text || item.linkId">
+                      <input
+                        class="boolean-input"
+                        type="checkbox"
+                        [ngModel]="answers[item.linkId] || false"
+                        (ngModelChange)="updateAnswer(item.linkId, $event)"
+                      />
+                      <span class="boolean-box" aria-hidden="true"></span>
+                    </label>
+                  }
+                  @case ('integer') {
+                    <input [id]="item.linkId" type="number" step="1" [ngModel]="answers[item.linkId] || ''" (ngModelChange)="updateAnswer(item.linkId, $event)" />
+                  }
+                  @case ('quantity') {
+                    <div class="quantity-input-group">
+                      <input [id]="item.linkId" type="number" step="0.1" [ngModel]="answers[item.linkId] || ''" (ngModelChange)="updateAnswer(item.linkId, $event)" />
+                      @if (item.unit) {
+                        <div class="quantity-unit-label">
+                          <span class="unit-label">{{ 'questionnaires.form.items.unit' | translate }}:</span>
+                          <span class="unit-value">{{ item.unit }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                  @case ('date') {
+                    <input [id]="item.linkId" type="date" [ngModel]="answers[item.linkId] || ''" (ngModelChange)="updateAnswer(item.linkId, $event)" />
+                  }
+                  @case ('choice') {
+                    @if (item.repeats) {
+                      <div class="choice-list">
+                        @for (option of item.answerOptions; track option) {
+                          <label class="inline-check">
+                            <input type="checkbox" [checked]="hasChoiceSelected(item, option)" (change)="toggleChoice(item, option, $any($event.target).checked)" />
+                            <span>{{ option }}</span>
+                          </label>
+                        }
+                      </div>
+                    } @else {
+                      <select [id]="item.linkId" [ngModel]="answers[item.linkId] || ''" (ngModelChange)="updateAnswer(item.linkId, $event)">
+                        <option value="">{{ 'questionnaires.preview.selectOption' | translate }}</option>
+                        @for (option of item.answerOptions; track option) {
+                          <option [value]="option">{{ option }}</option>
+                        }
+                      </select>
+                    }
+                  }
+                  @default {
+                    <input [id]="item.linkId" type="text" [ngModel]="answers[item.linkId] || ''" (ngModelChange)="updateAnswer(item.linkId, $event)" />
+                  }
+                }
+              </div>
+            }
+          }
+        </div>
+      </ng-template>
+
+      <ng-container *ngTemplateOutlet="renderItems; context: { $implicit: visibleRootItems, depth: 0 }"></ng-container>
+    } @else {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+  </div>
+</app-bubble-card>

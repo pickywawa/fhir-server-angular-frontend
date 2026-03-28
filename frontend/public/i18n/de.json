@@ -1,0 +1,424 @@
+{
+  "menu": {
+    "myPatients": "Meine Patienten",
+    "agenda": "Kalender",
+    "discussions": "Diskussionen",
+    "search": "Suche",
+    "professionals": "Fachkraefte",
+    "codeSystems": "Code systems",
+    "questionnaires": "Frageboegen",
+    "patients": "Patienten",
+    "support": "Support",
+    "settings": "Einstellungen",
+    "administration": "Administration",
+    "expand": "Menue erweitern",
+    "collapse": "Menue einklappen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "preferences": "Praeferenzen",
+    "hero": {
+      "title": "Passen Sie Ihren Arbeitsbereich an",
+      "subtitle": "Waehlen Sie Ihr visuelles Thema und die Sprache der Oberflaeche.",
+      "badge": "Einstellungsmodul"
+    },
+    "theme": {
+      "title": "Thema",
+      "light": "Hell",
+      "lightDesc": "Helle Oberflaeche mit weichen Kontrasten",
+      "dark": "Dunkel",
+      "darkDesc": "Visueller Komfort bei wenig Licht"
+    },
+    "language": {
+      "title": "Sprache",
+      "fr": "Franzoesisch",
+      "en": "Englisch",
+      "it": "Italienisch",
+      "de": "Deutsch",
+      "hint": "Ihre Auswahl wird automatisch fuer die naechste Sitzung gespeichert."
+    }
+  },
+  "support": {
+    "title": "Support",
+    "center": "Support-Center",
+    "needHelp": "Brauchen Sie Hilfe?",
+    "intro": "Dieses Center bietet schnelle Hilfe, haeufige Antworten und ein Anfrageformular.",
+    "team": "Support-Team",
+    "faq": "Hauefige Fragen",
+    "ticket": "Ticket erstellen"
+  },
+  "search": {
+    "title": "Suche",
+    "fhir": "FHIR-Suche",
+    "results": "Ergebnisse",
+    "placeholder": "Patient, Fachkraft, Termin, Dokument suchen...",
+    "button": "Suchen",
+    "loading": "Suche laeuft...",
+    "emptyPrompt": "Geben Sie einen Suchbegriff ein.",
+    "empty": "Keine Ergebnisse.",
+    "error": "Suchfehler"
+  },
+  "agenda": {
+    "title": "Kalender",
+    "list": "Liste",
+    "planning": "Planung",
+    "add": "Termin hinzufuegen",
+    "loading": "Termine werden geladen..."
+  },
+  "practitioners": {
+    "search": {
+      "title": "Fachkraefte suchen",
+      "family": "Nachname",
+      "given": "Vorname",
+      "identifier": "Haupt-ID",
+      "familyPlaceholder": "Muster",
+      "givenPlaceholder": "Maria",
+      "identifierPlaceholder": "PRO-001"
+    },
+    "worklist": {
+      "title": "Fachkraefte-Worklist",
+      "add": "Fachkraft hinzufuegen",
+      "prompt": "Starten Sie eine Suche, um Fachkraefte anzuzeigen.",
+      "empty": "Keine Fachkraft gefunden."
+    },
+    "detail": {
+      "practitioner": "Fachkraft",
+      "newPractitioner": "Neue Fachkraft",
+      "noProfession": "Beruf nicht angegeben",
+      "noIdentifier": "ID nicht angegeben",
+      "createdSuccess": "Fachkraft erfolgreich erstellt!",
+      "updatedSuccess": "Fachkraft erfolgreich aktualisiert!"
+    },
+    "form": {
+      "title": "Informationen zur Fachkraft",
+      "mainIdentifier": "Haupt-ID",
+      "prefix": "Praefix",
+      "profession": "Beruf",
+      "specialty": "Fachgebiet",
+      "specialization": "Spezialisierung",
+      "emailContacts": "E-Mail-Kontakte",
+      "phones": "Telefone",
+      "addresses": "Adressen",
+      "otherContacts": "Weitere Kontakte",
+      "emailPlaceholder": "email@beispiel.de",
+      "phonePlaceholder": "+49 170 1234567",
+      "addressPlaceholder": "Vollstaendige Adresse",
+      "contactPlaceholder": "system: wert",
+      "addEmail": "E-Mail hinzufuegen",
+      "addPhone": "Telefon hinzufuegen",
+      "addAddress": "Adresse hinzufuegen",
+      "addContact": "Kontakt hinzufuegen"
+    }
+  },
+  "questionnaires": {
+    "search": {
+      "title": "Fragebogen-Suche",
+      "titleField": "Titel",
+      "titlePlaceholder": "Beispiel: Aufnahmefragebogen",
+      "statusField": "Status"
+    },
+    "worklist": {
+      "title": "Fragebogen-Worklist",
+      "add": "Fragebogen hinzufuegen",
+      "empty": "Kein Fragebogen gefunden.",
+      "noCommon": "Kein Fragebogen verfuegbar.",
+      "noDescription": "Keine Beschreibung",
+      "items": "Element(e)"
+    },
+    "detail": {
+      "titleSingle": "Fragebogen",
+      "new": "Neuer Fragebogen",
+      "createdSuccess": "Fragebogen erfolgreich erstellt!",
+      "updatedSuccess": "Fragebogen erfolgreich aktualisiert!"
+    },
+    "status": {
+      "all": "Alle",
+      "draft": "Entwurf",
+      "active": "Aktiv",
+      "retired": "Ausgemustert",
+      "unknown": "Unbekannt"
+    },
+    "itemType": {
+      "group": "Gruppe",
+      "string": "Kurzer Text",
+      "text": "Langer Text",
+      "boolean": "Boolean",
+      "integer": "Ganzzahl",
+      "quantity": "Menge",
+      "date": "Datum",
+      "choice": "Auswahl"
+    },
+    "form": {
+      "title": "Fragebogen-Editor",
+      "fields": {
+        "title": "Titel",
+        "description": "Beschreibung",
+        "status": "Status"
+      },
+      "items": {
+        "title": "Elemente",
+        "addQuestion": "Frage hinzufuegen",
+        "addGroup": "Gruppe hinzufuegen",
+        "empty": "Fuegen Sie eine Frage oder Gruppe hinzu.",
+        "group": "Gruppe",
+        "question": "Frage",
+        "text": "Text",
+        "type": "Typ",
+        "required": "Pflicht",
+        "repeats": "Wiederholbar",
+        "answerOptions": "Antwortoptionen",
+        "addOption": "Option hinzufuegen",
+        "enableWhen": "Aktivierungsbedingungen",
+        "addCondition": "Bedingung hinzufuegen",
+        "selectQuestion": "Quellfrage",
+        "answerValue": "Erwarteter Wert",
+        "groupChildren": "Gruppeninhalt",
+        "emptyGroup": "Diese Gruppe ist leer"
+      }
+    },
+    "preview": {
+      "title": "Formularvorschau",
+      "empty": "Dieser Fragebogen enthaelt noch keine darstellbaren Elemente.",
+      "untitledGroup": "Unbenannte Gruppe",
+      "booleanLabel": "Ja / nein",
+      "selectOption": "Option auswaehlen",
+      "resize": "Vorschaubereich groesser oder kleiner ziehen"
+    }
+  },
+  "codeSystems": {
+    "list": {
+      "title": "Nomenklaturen (CodeSystem)",
+      "add": "CodeSystem hinzufuegen",
+      "values": "Wert(e)",
+      "empty": "Kein CodeSystem gefunden."
+    },
+    "form": {
+      "title": "CodeSystem hinzufuegen",
+      "editTitle": "CodeSystem bearbeiten",
+      "url": "URL",
+      "urlPlaceholder": "https://.../CodeSystem/.../fr_FR",
+      "valuesTitle": "Werte",
+      "addValue": "Wert hinzufuegen",
+      "code": "Code",
+      "display": "Anzeige",
+      "saving": "Wird erstellt...",
+      "createdSuccess": "CodeSystem erfolgreich erstellt.",
+      "updatedSuccess": "CodeSystem erfolgreich aktualisiert.",
+      "errors": {
+        "noValues": "Fuegen Sie mindestens einen gueltigen Wert hinzu."
+      }
+    }
+  },
+  "patients": {
+    "detailPage": {
+      "patient": "Patient",
+      "newPatient": "Neuer Patient",
+      "unknownGender": "Geschlecht nicht angegeben",
+      "createdSuccess": "Patient erfolgreich erstellt!",
+      "updatedSuccess": "Patient erfolgreich aktualisiert!"
+    },
+    "form": {
+      "title": "Patienteninformationen",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "birthDate": "Geburtsdatum",
+      "genderLabel": "Geschlecht",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "address": "Strasse",
+      "city": "Stadt",
+      "postalCode": "Postleitzahl",
+      "country": "Land",
+      "requiredFirstName": "Vorname ist erforderlich.",
+      "requiredLastName": "Nachname ist erforderlich.",
+      "add": "Hinzufuegen",
+      "gender": {
+        "unknown": "Unbekannt",
+        "male": "Maennlich",
+        "female": "Weiblich",
+        "other": "Andere"
+      }
+    },
+    "search": {
+      "title": "Patientensuche",
+      "titleSingle": "Patientensuche",
+      "family": "Nachname",
+      "given": "Vorname",
+      "birthDate": "Geburtsdatum",
+      "familyPlaceholder": "Muster",
+      "givenPlaceholder": "Max",
+      "reset": "Zuruecksetzen"
+    },
+    "worklist": {
+      "title": "Patienten-Worklist",
+      "add": "Patient hinzufuegen",
+      "empty": "Kein Patient gefunden",
+      "prompt": "Starten Sie eine Suche, um Patienten anzuzeigen.",
+      "error": "Fehler"
+    }
+  },
+  "myPatients": {
+    "form": {
+      "newTitle": "Neuer Patient",
+      "editTitle": "Patient bearbeiten",
+      "personalInfo": "Persoenliche Informationen",
+      "requiredBirthDate": "Geburtsdatum ist erforderlich",
+      "requiredGender": "Geschlecht ist erforderlich",
+      "invalidEmail": "E-Mail muss gueltig sein",
+      "select": "Auswaehlen...",
+      "saving": "Speichern...",
+      "create": "Patient erstellen"
+    },
+    "detail": {
+      "tabs": {
+        "overview": "Uebersicht",
+        "careTeam": "Behandlungsteam",
+        "questionnaires": "Frageboegen",
+        "discussions": "Diskussionen",
+        "identity": "Identitaetsdaten",
+        "documents": "Dokumente"
+      },
+      "idPrefix": "ID",
+      "errorPrefix": "Fehler"
+    },
+    "identity": {
+      "title": "Identitaetskarte",
+      "edit": "Bearbeiten",
+      "fields": {
+        "lastName": "Nachname",
+        "firstName": "Vorname",
+        "birthDate": "Geburtsdatum",
+        "gender": "Geschlecht",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "address": "Adresse",
+        "city": "Stadt",
+        "region": "Region",
+        "zipCode": "Postleitzahl",
+        "country": "Land"
+      }
+    },
+    "careTeam": {
+      "title": "Behandlungsteam",
+      "add": "Teammitglied hinzufuegen",
+      "remove": "Entfernen",
+      "deleteSuccess": "{{name}} wurde aus dem Behandlungsteam entfernt.",
+      "loading": "Behandlungsteam wird geladen...",
+      "empty": "Kein Teammitglied fuer diesen Patienten gefunden.",
+      "loadError": "Fehler beim Laden des Behandlungsteams",
+      "confirm": {
+        "title": "Entfernung bestaetigen",
+        "message": "Moechten Sie {{name}} wirklich aus dem Behandlungsteam dieses Patienten entfernen?",
+        "confirm": "Entfernen",
+        "deleting": "Wird entfernt..."
+      }
+    },
+    "documents": {
+      "title": "Dokumente",
+      "add": "Dokument hinzufuegen",
+      "loading": "Dokumente werden geladen...",
+      "empty": "Keine Dokumente mit diesem Patienten verknuepft.",
+      "author": "Autor",
+      "bytes": "Bytes",
+      "addModal": {
+        "title": "Dokument hinzufuegen",
+        "saving": "Speichern...",
+        "fields": {
+          "title": "Titel",
+          "class": "XDS-Klasse",
+          "type": "XDS-Typ",
+          "file": "Lokale Datei"
+        }
+      },
+      "viewer": {
+        "title": "Dokumentenansicht",
+        "tabs": {
+          "aria": "Dokument-Reiter",
+          "preview": "Vorschau",
+          "details": "Details"
+        },
+        "fullscreen": "Vollbild",
+        "exitFullscreen": "Vollbild beenden",
+        "loading": "Dokument wird geladen...",
+        "pdfTitle": "PDF-Ansicht",
+        "imageAlt": "Dokumentbild",
+        "previewUnavailable": "Vorschau fuer diesen Dokumenttyp nicht verfuegbar.",
+        "downloadDocument": "Dokument herunterladen"
+      },
+      "details": {
+        "title": "Titel",
+        "author": "Autor",
+        "patient": "Patient",
+        "class": "XDS-Klasse",
+        "type": "XDS-Typ",
+        "format": "Format",
+        "size": "Groesse",
+        "date": "Datum",
+        "documentId": "Dokument-ID",
+        "download": "Herunterladen",
+        "notProvided": "Nicht angegeben"
+      },
+      "errors": {
+        "patientNotFound": "Patient fuer Dokument-Upload nicht gefunden.",
+        "invalidClassType": "Ungueltige Dokumentklasse/-typ.",
+        "authorNotFound": "Autor fuer diesen Upload nicht gefunden.",
+        "save": "Fehler beim Speichern des Dokuments",
+        "load": "Fehler beim Laden der Dokumente",
+        "noBinary": "Dokument ohne binaeren Inhalt.",
+        "loadViewer": "Dokument konnte nicht geladen werden",
+        "textDecode": "Textinhalt kann nicht angezeigt werden."
+      }
+    },
+    "questionnaires": {
+      "title": "Patientenfrageboegen",
+      "add": "Fragebogen hinzufuegen",
+      "empty": "Keine Fragebogenantwort fuer diesen Patienten gefunden.",
+      "modelPickerTitle": "Fragebogenvorlage auswaehlen",
+      "noModel": "Keine Fragebogenvorlage verfuegbar.",
+      "createResponse": "Antwort erstellen",
+      "saved": "Antwort erfolgreich gespeichert.",
+      "saving": "Speichern...",
+      "errors": {
+        "missingQuestionnaireId": "Fragebogen zum Speichern konnte nicht identifiziert werden."
+      }
+    },
+    "discussions": {
+      "title": "Diskussionen",
+      "loading": "Diskussionen werden geladen...",
+      "newDiscussion": "Neue Diskussion",
+      "threadPrefix": "Diskussion",
+      "messageCount": "Nachricht(en)",
+      "empty": "Keine Diskussion fuer diesen Patienten.",
+      "prompt": "Erstellen oder waehlen Sie eine Diskussion.",
+      "noMessages": "Keine Nachrichten in dieser Diskussion.",
+      "sender": "Absender",
+      "recipient": "Empfaenger",
+      "undetermined": "Unbestimmt",
+      "messageLabel": "Nachricht",
+      "messagePlaceholder": "Nachricht eingeben...",
+      "sending": "Wird gesendet...",
+      "send": "Senden",
+      "unknownSender": "Unbekannt",
+      "errors": {
+        "patientNotFound": "Patient nicht gefunden.",
+        "selectDiscussion": "Waehlen oder erstellen Sie eine Diskussion.",
+        "senderNotFound": "Verbundener Behandler kann nicht ermittelt werden (Keycloak-Scope).",
+        "recipientNotFound": "Empfaenger-CareTeam kann nicht ermittelt werden.",
+        "send": "Fehler beim Senden der Nachricht",
+        "load": "Fehler beim Laden der Diskussionen"
+      }
+    }
+  },
+  "common": {
+    "breadcrumb": "Brotkrumenpfad",
+    "tabNavigation": "Registerkarten-Navigation",
+    "modal": "Modal",
+    "close": "Schliessen",
+    "delete": "Loeschen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "create": "Erstellen",
+    "loading": "Laedt...",
+    "unknownError": "Unbekannter Fehler"
+  }
+}

@@ -1,0 +1,89 @@
+<app-bubble-card [title]="'myPatients.discussions.title' | translate">
+  @if (loading) {
+    <div class="state">{{ 'myPatients.discussions.loading' | translate }}</div>
+  }
+  @if (!loading && error) {
+    <div class="state error">{{ error }}</div>
+  }
+
+  @if (!loading && !error) {
+    <div class="discussions-layout">
+      <aside class="threads-pane">
+        <div class="threads-header">
+          <app-button-primary (click)="createDiscussion()">{{ 'myPatients.discussions.newDiscussion' | translate }}</app-button-primary>
+        </div>
+        <div class="threads-list">
+          @for (thread of threads; track thread) {
+            <button
+              type="button"
+              class="thread-item"
+              [class.active]="thread.id === selectedDiscussionId"
+              (click)="selectDiscussion(thread.id)">
+              <div class="thread-avatar">{{ getThreadInitial(thread) }}</div>
+              <div class="thread-content">
+                <strong>{{ 'myPatients.discussions.threadPrefix' | translate }} {{ thread.id | slice:0:8 }}</strong>
+                <small>{{ thread.lastMessage }}</small>
+              </div>
+              <div class="thread-meta">
+                <small>{{ formatThreadTime(thread.lastSent) }}</small>
+                <span class="thread-count">{{ thread.messageCount }}</span>
+              </div>
+            </button>
+          }
+          @if (threads.length === 0) {
+            <div class="state">{{ 'myPatients.discussions.empty' | translate }}</div>
+          }
+        </div>
+      </aside>
+      <section class="messages-pane">
+        @if (selectedDiscussionId) {
+          <header class="messages-header">
+            <div class="messages-title">
+              <h4>{{ 'myPatients.discussions.threadPrefix' | translate }} {{ selectedDiscussionId | slice:0:8 }}</h4>
+              <small>{{ selectedMessages.length }} {{ 'myPatients.discussions.messageCount' | translate }}</small>
+            </div>
+          </header>
+        }
+        @if (!selectedDiscussionId) {
+          <div class="state">{{ 'myPatients.discussions.prompt' | translate }}</div>
+        }
+        @if (selectedDiscussionId) {
+          <div class="messages-list">
+            @for (message of selectedMessages; track message) {
+              <div class="message-row" [class.mine]="isConnectedSender(message)">
+                <div class="message-bubble" [class.bubble-mine]="isConnectedSender(message)" [class.bubble-other]="!isConnectedSender(message)">
+                  @if (!isConnectedSender(message)) {
+                    <div class="message-meta">
+                      <strong>{{ getSenderDisplay(message) }}</strong>
+                    </div>
+                  }
+                  <p>{{ message.content }}</p>
+                  <div class="message-time">
+                    <small>{{ message.sent | date:'dd/MM/yyyy HH:mm' }}</small>
+                  </div>
+                </div>
+              </div>
+            }
+            @if (selectedMessages.length === 0) {
+              <div class="state">{{ 'myPatients.discussions.noMessages' | translate }}</div>
+            }
+          </div>
+        }
+        @if (selectedDiscussionId) {
+          <form class="compose-form" [formGroup]="messageForm" (ngSubmit)="sendMessage()">
+            <div class="fixed-routing compact">
+              <span><strong>{{ 'myPatients.discussions.sender' | translate }}:</strong> {{ senderReference || ('myPatients.discussions.undetermined' | translate) }}</span>
+              <span><strong>{{ 'myPatients.discussions.recipient' | translate }}:</strong> {{ recipientReference || ('myPatients.discussions.undetermined' | translate) }}</span>
+            </div>
+            <div class="compose-inline">
+              <textarea id="content" formControlName="content" rows="1" [placeholder]="'myPatients.discussions.messagePlaceholder' | translate"></textarea>
+              <button type="submit" class="btn-send" [disabled]="sending || messageForm.invalid" [attr.aria-label]="'myPatients.discussions.send' | translate">
+                <span aria-hidden="true">➤</span>
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    </div>
+  }
+</app-bubble-card>

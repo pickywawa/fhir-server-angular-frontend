@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -15,9 +13,51 @@ services:
     networks:
       - healthapp-network
 
+  hapi-fhir:
+    image: hapiproject/hapi:latest
+    container_name: healthapp-hapi-fhir
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8080"
+    configs:
+      - source: hapi
+        target: /app/config/application.yaml
+    healthcheck:
+      test: ["CMD", "java", "-cp", "/app", "HealthCheck"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    networks:
+      - healthapp-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: healthapp-keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8180
+    ports:
+      - "8180:8180"
+    volumes:
+      - ./keycloak/fhir-realm.json:/opt/keycloak/data/import/fhir-realm.json
+    networks:
+      - healthapp-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8180/health/ready || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
 volumes:
   postgres-data:
 
 networks:
   healthapp-network:
     driver: bridge
+
+configs:
+  hapi:
+    file: ./hapi.application.yaml

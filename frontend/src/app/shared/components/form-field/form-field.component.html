@@ -1,0 +1,8 @@
+<div class="form-field" [class.is-disabled]="disabled">
+  @if (label) {
+    <label [attr.for]="forId || null">{{ label }}</label>
+  }
+  <div class="form-field-control">
+    <ng-content></ng-content>
+  </div>
+</div>

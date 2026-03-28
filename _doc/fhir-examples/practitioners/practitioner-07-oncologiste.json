@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-007",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT007"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Moreau",
+      "given": ["Christophe"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 89 01 23 45"
+    },
+    {
+      "system": "email",
+      "value": "christophe.moreau@hospital.fr"
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1964-12-05",
+  "address": [
+    {
+      "use": "work",
+      "line": ["147 Rue de l'Oncologie"],
+      "city": "Lille",
+      "postalCode": "59000",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "310172007"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "310172007",
+            "display": "Oncologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université de Lille"
+      },
+      "period": {
+        "start": "1989-06-01"
+      }
+    }
+  ]
+}

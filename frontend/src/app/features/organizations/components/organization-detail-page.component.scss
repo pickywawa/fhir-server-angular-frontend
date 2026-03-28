@@ -1,0 +1,8 @@
+.state {
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.state.error {
+  color: #b91c1c;
+}

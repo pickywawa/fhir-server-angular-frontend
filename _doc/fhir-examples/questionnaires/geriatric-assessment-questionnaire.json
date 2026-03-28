@@ -1,0 +1,165 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "active",
+  "title": "Comprehensive Geriatric Assessment Questionnaire",
+  "description": "Example FHIR Questionnaire for multidimensional geriatric assessment.",
+  "subjectType": ["Patient"],
+  "date": "2026-03-21T00:00:00Z",
+  "item": [
+    {
+      "linkId": "grp-social",
+      "text": "Social context",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "living-arrangement",
+          "text": "Current living arrangement",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            { "valueString": "Lives alone" },
+            { "valueString": "Lives with spouse or family" },
+            { "valueString": "Assisted living" },
+            { "valueString": "Nursing home" }
+          ]
+        },
+        {
+          "linkId": "caregiver-available",
+          "text": "Informal caregiver available?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "caregiver-hours",
+          "text": "Approximate caregiver support per week (hours)",
+          "type": "integer",
+          "enableWhen": [
+            {
+              "question": "caregiver-available",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-adl",
+      "text": "Functional status",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "adl-bathing",
+          "text": "Needs help with bathing",
+          "type": "boolean"
+        },
+        {
+          "linkId": "adl-dressing",
+          "text": "Needs help with dressing",
+          "type": "boolean"
+        },
+        {
+          "linkId": "adl-toileting",
+          "text": "Needs help with toileting",
+          "type": "boolean"
+        },
+        {
+          "linkId": "iadl-shopping",
+          "text": "Needs help with shopping",
+          "type": "boolean"
+        },
+        {
+          "linkId": "iadl-medications",
+          "text": "Needs help managing medications",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "linkId": "grp-falls",
+      "text": "Falls and mobility",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "falls-12m",
+          "text": "Number of falls in the last 12 months",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "linkId": "injury-fall",
+          "text": "Any fall with injury?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "walking-aid",
+          "text": "Walking aid used",
+          "type": "choice",
+          "answerOption": [
+            { "valueString": "None" },
+            { "valueString": "Cane" },
+            { "valueString": "Walker" },
+            { "valueString": "Wheelchair" }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-medication",
+      "text": "Medication review",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "med-count",
+          "text": "Number of current medications",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "linkId": "polypharmacy-risk",
+          "text": "Potential polypharmacy concern identified?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "polypharmacy-comment",
+          "text": "Medication review comment",
+          "type": "text",
+          "enableWhen": [
+            {
+              "question": "polypharmacy-risk",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-advance-care",
+      "text": "Preferences and planning",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "advance-directive",
+          "text": "Advance directive available?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "goal-of-care",
+          "text": "Main care goal",
+          "type": "choice",
+          "answerOption": [
+            { "valueString": "Maintain independence" },
+            { "valueString": "Symptom control" },
+            { "valueString": "Prevent hospitalization" },
+            { "valueString": "Caregiver support" }
+          ]
+        },
+        {
+          "linkId": "care-plan-notes",
+          "text": "Care plan notes",
+          "type": "text"
+        }
+      ]
+    }
+  ]
+}

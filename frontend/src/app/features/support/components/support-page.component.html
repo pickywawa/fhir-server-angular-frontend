@@ -1,0 +1,81 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <section class="support-page">
+    <app-bubble-card [title]="'support.center' | translate">
+      <div class="hero">
+        <div>
+          <h2>{{ 'support.needHelp' | translate }}</h2>
+          <p>{{ 'support.intro' | translate }}</p>
+        </div>
+        <span class="badge">{{ 'support.team' | translate }}</span>
+      </div>
+
+      <div class="actions-grid">
+        @for (action of quickActions; track action.id) {
+          <article class="action-card">
+            <h3>{{ action.title }}</h3>
+            <p>{{ action.description }}</p>
+            <small>{{ action.hint }}</small>
+          </article>
+        }
+      </div>
+    </app-bubble-card>
+
+    <div class="support-layout">
+      <app-bubble-card [title]="'support.faq' | translate">
+        <div class="faq-list">
+          @for (item of faq; track item.question) {
+            <details class="faq-item">
+              <summary>{{ item.question }}</summary>
+              <p>{{ item.answer }}</p>
+            </details>
+          }
+        </div>
+      </app-bubble-card>
+
+      <app-bubble-card [title]="'support.ticket' | translate">
+        <form class="ticket-form" [formGroup]="ticketForm" (ngSubmit)="submitTicket()">
+          <div class="field">
+            <label for="subject">Sujet</label>
+            <input id="subject" type="text" formControlName="subject" placeholder="Ex: erreur lors de la creation de RDV" />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="category">Categorie</label>
+              <select id="category" formControlName="category">
+                <option value="incident">Incident</option>
+                <option value="account">Compte / Acces</option>
+                <option value="workflow">Aide utilisation</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="priority">Priorite</label>
+              <select id="priority" formControlName="priority">
+                <option value="low">Basse</option>
+                <option value="medium">Normale</option>
+                <option value="high">Haute</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="message">Description</label>
+            <textarea
+              id="message"
+              rows="6"
+              formControlName="message"
+              placeholder="Decrivez le contexte, les etapes et le resultat attendu."
+            ></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn primary" [disabled]="submitting || ticketForm.invalid">
+              {{ submitting ? 'Envoi...' : 'Envoyer la demande' }}
+            </button>
+          </div>
+        </form>
+      </app-bubble-card>
+    </div>
+  </section>
+</app-module-shell>

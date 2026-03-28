@@ -1,0 +1,30 @@
+@if (clickable) {
+  <button
+    type="button"
+    class="result-item"
+    [class.active]="active"
+    [disabled]="disabled"
+    (click)="onClick($event)">
+    <div class="result-start-slot">
+      <ng-content select=".result-start"></ng-content>
+    </div>
+    <div class="result-center-slot">
+      <ng-content select=".result-center"></ng-content>
+    </div>
+    <div class="result-end-slot">
+      <ng-content select=".result-end"></ng-content>
+    </div>
+  </button>
+} @else {
+  <div class="result-item result-item-static" [class.active]="active">
+    <div class="result-start-slot">
+      <ng-content select=".result-start"></ng-content>
+    </div>
+    <div class="result-center-slot">
+      <ng-content select=".result-center"></ng-content>
+    </div>
+    <div class="result-end-slot">
+      <ng-content select=".result-end"></ng-content>
+    </div>
+  </div>
+}

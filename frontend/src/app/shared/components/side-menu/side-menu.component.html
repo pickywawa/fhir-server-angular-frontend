@@ -1,0 +1,142 @@
+<div class="menu-backdrop" [class.active]="isOpen" (click)="onBackdropClick()"></div>
+
+<aside class="side-menu" [ngClass]="{ collapsed: collapsed }" aria-label="Menu principal">
+  <div class="menu-top">
+    <div class="brand-row">
+      <div class="brand-icon" aria-hidden="true">HF</div>
+      @if (!collapsed) {
+        <div class="brand-text">
+          <strong>Health FHIR</strong>
+        </div>
+      }
+      <button type="button" class="collapse-btn" (click)="toggleCollapsed()" [attr.aria-label]="(collapsed ? 'menu.expand' : 'menu.collapse') | translate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"></path>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="menu-list">
+      @for (item of topMenuItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="menu-item"
+          (click)="onMobileMenuClick()"
+          >
+          <span class="icon" aria-hidden="true">
+            @switch (item.icon) {
+              @case ('patients') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
+              }
+              @case ('agenda') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+              }
+              @case ('discussions') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              }
+              @case ('search') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+              }
+              @case ('support') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12a10 10 0 1 1-10-10"></path><path d="M18 8a4 4 0 0 0-8 0v4"></path><rect x="4" y="12" width="4" height="7" rx="2"></rect><rect x="16" y="12" width="4" height="7" rx="2"></rect></svg>
+              }
+              @case ('settings') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.85l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 1-2 0 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.85.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 1 0-2 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.85l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 1 2 0 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.85-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.27.32.47.69.6 1a1.7 1.7 0 0 1 0 2c-.13.31-.33.68-.6 1z"></path></svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+              }
+            }
+          </span>
+          @if (!collapsed) {
+            <span class="label">{{ item.labelKey | translate }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <section class="menu-section">
+      <h3>{{ 'menu.administration' | translate }}</h3>
+      @for (item of administrationMenuItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="menu-item"
+          (click)="onMobileMenuClick()"
+          >
+          <span class="icon" aria-hidden="true">
+            @switch (item.icon) {
+              @case ('professionals') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"></circle><path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path><path d="M18 11h4"></path><path d="M20 9v4"></path></svg>
+              }
+              @case ('patients') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="M20 8v6"></path><path d="M23 11h-6"></path></svg>
+              }
+              @case ('questionnaires') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8"></path><path d="M8 12h8"></path><path d="M8 16h5"></path></svg>
+              }
+              @case ('code-systems') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path><circle cx="7" cy="6" r="1"></circle><circle cx="11" cy="12" r="1"></circle><circle cx="15" cy="18" r="1"></circle></svg>
+              }
+              @case ('organizations') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 11h6"></path><path d="M9 15h6"></path></svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+              }
+            }
+          </span>
+          @if (!collapsed) {
+            <span class="label">{{ item.labelKey | translate }}</span>
+          }
+        </a>
+      }
+    </section>
+  </div>
+
+  <div class="menu-bottom">
+    <nav class="menu-list bottom-list">
+      @for (item of bottomMenuItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="menu-item"
+          (click)="onMobileMenuClick()"
+          >
+          <span class="icon" aria-hidden="true">
+            @switch (item.icon) {
+              @case ('support') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12a10 10 0 1 1-10-10"></path><path d="M18 8a4 4 0 0 0-8 0v4"></path><rect x="4" y="12" width="4" height="7" rx="2"></rect><rect x="16" y="12" width="4" height="7" rx="2"></rect></svg>
+              }
+              @case ('settings') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.85l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 1-2 0 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.85.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 1 0-2 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.85l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 1 2 0 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.85-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.27.32.47.69.6 1a1.7 1.7 0 0 1 0 2c-.13.31-.33.68-.6 1z"></path></svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+              }
+            }
+          </span>
+          @if (!collapsed) {
+            <span class="label">{{ item.labelKey | translate }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <a class="user-card" routerLink="/profile" routerLinkActive="user-card-active" (click)="onMobileMenuClick()">
+      <div class="avatar">
+        {{ user.avatarInitials }}
+      </div>
+      @if (!collapsed) {
+        <div class="user-info">
+          <strong>{{ user.fullName }}</strong>
+          <small>{{ user.email }}</small>
+        </div>
+      }
+    </a>
+  </div>
+</aside>

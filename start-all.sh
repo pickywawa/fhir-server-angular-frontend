@@ -19,13 +19,15 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Démarrer PostgreSQL
-echo -e "${BLUE}🐘 Démarrage de PostgreSQL avec Docker Compose...${NC}"
+# Démarrer la stack Docker (PostgreSQL + HAPI + Keycloak)
+echo -e "${BLUE}🐳 Démarrage de la stack Docker (PostgreSQL + HAPI + Keycloak)...${NC}"
 docker-compose up -d
 
 echo ""
-echo -e "${GREEN}✅ PostgreSQL démarré!${NC}"
+echo -e "${GREEN}✅ Stack Docker démarrée!${NC}"
 echo "   - Database: localhost:5432 (healthapp_db)"
+echo "   - HAPI FHIR: http://localhost:8080/fhir"
+echo "   - Keycloak: http://localhost:8180"
 echo ""
 
 # Attendre que PostgreSQL soit prêt
@@ -35,16 +37,13 @@ sleep 10
 echo ""
 echo -e "${YELLOW}📋 Instructions pour démarrer les services:${NC}"
 echo ""
-echo "Ouvrez 2 terminaux différents et exécutez:"
+echo "Ouvrez 1 terminal et exécutez:"
 echo ""
-echo "Terminal 1 - Backend Service (HAPI FHIR):"
-echo "  ./run-backend.sh"
-echo ""
-echo "Terminal 2 - Frontend Angular:"
+echo "Terminal - Frontend Angular:"
 echo "  ./run-frontend.sh"
 echo ""
 echo -e "${GREEN}✨ Une fois tous les services démarrés:${NC}"
 echo "   Frontend: http://localhost:4200"
-echo "   Backend FHIR: http://localhost:8080/fhir"
+echo "   HAPI FHIR: http://localhost:8080/fhir"
 echo "   FHIR Metadata: http://localhost:8080/fhir/metadata"
 echo ""

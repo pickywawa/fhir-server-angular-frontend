@@ -1,0 +1,72 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  @if (patient$ | async; as patient) {
+    <div class="page">
+      <app-bubble-card>
+        <div class="summary">
+          <div class="avatar">{{ (patient.firstName.charAt(0) || '') + (patient.lastName.charAt(0) || '') }}</div>
+          <div>
+            <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
+            <p>{{ patient.dateOfBirth | date: 'dd/MM/yyyy' }} <span class="dot">•</span> {{ patient.gender || ('patients.detailPage.unknownGender' | translate) }}</p>
+          </div>
+        </div>
+      </app-bubble-card>
+      <app-tab-bar
+        [tabs]="tabs"
+        [activeTab]="activeTab"
+        (tabChange)="onTabChange($event)"
+      ></app-tab-bar>
+      <section class="tab-content">
+        @if (activeTab === 'related-person') {
+          <ng-container *ngComponentOutlet="relatedPersonComponent; inputs: { patientId: patient.id }"></ng-container>
+        }
+        @switch (activeTab) {
+          @case ('overview') {
+            <app-patient-overview
+              [patient]="patient"
+              [loading]="(loading$ | async) ?? false"
+              (saveIdentity)="saveIdentity($event)"
+            ></app-patient-overview>
+          }
+          @case ('care-team') {
+            <app-care-team [patientId]="patient.id"></app-care-team>
+          }
+          @case ('careplan') {
+            <app-patient-careplan [patientId]="patient.id"></app-patient-careplan>
+          }
+          @case ('related-person') {
+          }
+          @case ('questionnaires') {
+            <app-patient-questionnaires [patientId]="patient.id"></app-patient-questionnaires>
+          }
+          @case ('discussions') {
+            <app-patient-discussions [patientId]="patient.id"></app-patient-discussions>
+          }
+          @case ('patient-identity') {
+            <app-patient-identity-card
+              [patient]="patient"
+              [loading]="(loading$ | async) ?? false"
+              (save)="saveIdentity($event)"
+            ></app-patient-identity-card>
+          }
+          @case ('documents') {
+            <app-patient-documents [patientId]="patient.id"></app-patient-documents>
+          }
+          @default {
+            <app-patient-overview
+              [patient]="patient"
+              [loading]="(loading$ | async) ?? false"
+              (saveIdentity)="saveIdentity($event)"
+            ></app-patient-overview>
+          }
+        }
+      </section>
+    </div>
+  }
+
+  @if (loading$ | async) {
+    <div class="state-message">{{ 'common.loading' | translate }}</div>
+  }
+  @if (error$ | async; as error) {
+    <div class="state-message error">{{ 'myPatients.detail.errorPrefix' | translate }}: {{ formatError(error) }}</div>
+  }
+</app-module-shell>

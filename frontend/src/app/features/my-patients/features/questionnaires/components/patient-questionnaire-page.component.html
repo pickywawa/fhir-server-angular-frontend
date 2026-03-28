@@ -1,0 +1,63 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <section class="questionnaire-page">
+    <div class="top-actions">
+      <button type="button" class="btn secondary" (click)="goBack()">Retour au patient</button>
+    </div>
+
+    @if (createMode && !selectedQuestionnaire) {
+      <app-bubble-card [title]="'myPatients.questionnaires.modelPickerTitle' | translate">
+        @if (modelLoading) {
+          <div class="state">{{ 'common.loading' | translate }}</div>
+        }
+
+        @if (!modelLoading && modelError) {
+          <div class="state error">{{ modelError }}</div>
+        }
+
+        @if (!modelLoading && !modelError) {
+          <div class="model-picker">
+            @for (model of modelList; track model.id) {
+              <button type="button" class="model-row" (click)="chooseModel(model)">
+                <strong>{{ model.title }}</strong>
+                <span>{{ ('questionnaires.status.' + model.status) | translate }}</span>
+              </button>
+            }
+
+            @if (modelList.length === 0) {
+              <div class="state">{{ 'myPatients.questionnaires.noModel' | translate }}</div>
+            }
+          </div>
+        }
+      </app-bubble-card>
+    }
+
+    @if (selectedQuestionnaire) {
+      <app-bubble-card [title]="pageTitle">
+        @if (loading) {
+          <div class="state">{{ 'common.loading' | translate }}</div>
+        }
+
+        @if (!loading && error) {
+          <div class="state error">{{ error }}</div>
+        }
+
+        @if (!loading) {
+          <div class="editor-layout">
+            <app-questionnaire-renderer #responseRenderer [questionnaire]="selectedQuestionnaire" [initialAnswers]="answerSeed"></app-questionnaire-renderer>
+            <div class="footer-actions">
+              <button type="button" class="btn primary" (click)="save(responseRenderer)" [disabled]="saving">
+                {{ saving ? ('myPatients.questionnaires.saving' | translate) : (createMode ? ('myPatients.questionnaires.createResponse' | translate) : ('common.save' | translate)) }}
+              </button>
+            </div>
+          </div>
+        }
+      </app-bubble-card>
+    }
+
+    @if (!selectedQuestionnaire && !createMode && !loading && error) {
+      <app-bubble-card [title]="'myPatients.questionnaires.title' | translate">
+        <div class="state error">{{ error }}</div>
+      </app-bubble-card>
+    }
+  </section>
+</app-module-shell>

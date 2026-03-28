@@ -1,0 +1,325 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <section class="agenda-page">
+    <div class="agenda-layout">
+      <!-- Left sidebar: Month calendar picker -->
+      <aside class="calendar-selector" [class.mobile-collapsed]="isMobileLayout && isCalendarCollapsedMobile">
+        <div class="month-nav">
+          <button type="button" class="nav-btn" (click)="previousMonth()" aria-label="Mois précédent">←</button>
+          <h3>{{ monthYearLabel() }}</h3>
+          <button type="button" class="nav-btn" (click)="nextMonth()" aria-label="Mois suivant">→</button>
+          @if (isMobileLayout) {
+            <button
+              type="button"
+              class="calendar-toggle-btn"
+              (click)="toggleCalendarMobile()"
+              [attr.aria-expanded]="!isCalendarCollapsedMobile"
+              aria-label="Afficher ou masquer le calendrier"
+            >
+              {{ isCalendarCollapsedMobile ? '▾' : '▴' }}
+            </button>
+          }
+        </div>
+
+        @if (!isMobileLayout || !isCalendarCollapsedMobile) {
+          <div class="calendar-grid">
+            <div class="weekdays">
+              <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+            </div>
+            @for (day of calendarDays; track day) {
+              <button
+                type="button"
+                class="calendar-day"
+                [class.other-month]="!day.isCurrentMonth"
+                [class.today]="day.isToday"
+                [class.selected]="day.isSelected"
+                (click)="selectDay(day)"
+              >
+                {{ day.dayOfMonth }}
+              </button>
+            }
+          </div>
+        }
+
+        <button type="button" class="btn btn-primary btn-add" (click)="openCreateModal()">{{ 'agenda.add' | translate }}</button>
+      </aside>
+
+      <!-- Main content area: List or planning view -->
+      <article class="agenda-content">
+        <app-bubble-card [title]="'agenda.title' | translate">
+          <div class="action-bar">
+            <div class="view-switch" role="group" aria-label="Mode d affichage agenda">
+              <button type="button" [class.active]="viewMode === 'list'" (click)="setViewMode('list')">{{ 'agenda.list' | translate }}</button>
+              <button type="button" [class.active]="viewMode === 'week'" (click)="setViewMode('week')">{{ 'agenda.planning' | translate }}</button>
+            </div>
+          </div>
+
+          @if (loading && viewMode === 'list') {
+            <p class="state">{{ 'agenda.loading' | translate }}</p>
+          }
+          @if (!loading && error) {
+            <p class="state error">{{ error }}</p>
+          }
+
+          @if ((!loading || viewMode === 'week') && !error) {
+            @if (viewMode === 'list') {
+              <div class="list-view">
+                @for (appointment of getAppointmentsForDay(selectedDate); track appointment) {
+                  <button type="button" class="list-item" (click)="openAppointmentDetails(appointment)">
+                    <div class="item-head">
+                      <strong>{{ appointment.title }}</strong>
+                      <span class="status">{{ appointment.status }}</span>
+                    </div>
+                    <div class="item-grid">
+                      <div>
+                        <span class="label">Debut</span>
+                        <span>{{ formatDateTime(appointment.start) }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Fin</span>
+                        <span>{{ formatDateTime(appointment.end) }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Type</span>
+                        <span>{{ appointment.typeLabel || '-' }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Modele</span>
+                        <span>{{ appointment.modelLabel || '-' }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Patients</span>
+                        <span>{{ formatParticipants(appointment.patientParticipants) }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Professionnels</span>
+                        <span>{{ formatParticipants(appointment.practitionerParticipants) }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Recurrence</span>
+                        <span>{{ appointment.recurrence || 'none' }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Commentaire</span>
+                        <span>{{ appointment.comment || appointment.description || '-' }}</span>
+                      </div>
+                      <div>
+                        <span class="label">ID</span>
+                        <span>{{ appointment.id }}</span>
+                      </div>
+                    </div>
+                  </button>
+                }
+                @if (!getAppointmentsForDay(selectedDate).length) {
+                  <p class="state">Aucun rendez-vous pour {{ selectedDate | date:'dd/MM/yyyy' }}.</p>
+                }
+              </div>
+            }
+            @if (viewMode === 'week') {
+              <div class="week-view">
+                @if (loading && !appointments.length) {
+                  <p class="state week-loading">{{ 'agenda.loading' | translate }}</p>
+                }
+
+                <!-- Week Planning Grid -->
+                <div class="week-planning">
+                  <!-- Week header with day labels -->
+                  <div class="week-header">
+                    <div class="hours-placeholder"></div>
+                    @for (day of weekDays; track day) {
+                      <div class="day-header">
+                        <div class="day-label">{{ day.label }}</div>
+                        <div class="day-date">{{ day.date | date:'dd/MM' }}</div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Planning grid with hours and appointments -->
+                  <div class="planning-container" #planningContainer>
+                    <div class="hours-column">
+                      @for (hour of hours; track hour) {
+                        <div class="hour-label">{{ hour | number:'2.0-0' }}:00</div>
+                      }
+                    </div>
+
+                    <div class="planning-grid">
+                      @for (hour of hours; track hour) {
+                        @for (dayIndex of [0, 1, 2, 3, 4, 5, 6]; track dayIndex) {
+                          <div
+                            class="hour-cell"
+                            [class.has-appointment]="getAppointmentsForHour(hour, dayIndex).length > 0"
+                            [style.grid-column]="dayIndex + 1"
+                            [style.grid-row]="hour + 1"
+                          >
+                            @for (appointment of getAppointmentsForHour(hour, dayIndex); track appointment) {
+                              <button
+                                type="button"
+                                class="appointment-slot"
+                                [style]="getAppointmentStyle(appointment, hour)"
+                                (click)="openAppointmentDetails(appointment)"
+                                [title]="appointment.title"
+                              >
+                                <span class="time">{{ appointment.start | date:'HH:mm' }}</span>
+                                <span class="title">{{ appointment.title }}</span>
+                              </button>
+                            }
+                          </div>
+                        }
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </app-bubble-card>
+      </article>
+    </div>
+
+    @if (isMobileLayout) {
+      <button type="button" class="btn-add-mobile" (click)="openCreateModal()" aria-label="Ajouter un rendez-vous">+</button>
+    }
+  </section>
+</app-module-shell>
+
+@if (showCreateModal) {
+  <app-modal [title]="appointmentModalTitle()" (close)="closeCreateModal()">
+    <form class="appointment-form" [formGroup]="appointmentForm" (ngSubmit)="submitAppointment()">
+      @if (!isCreateMode()) {
+        <div class="modal-toolbar">
+          <div class="appointment-meta">
+            <span class="meta-label">ID</span>
+            <strong>{{ selectedAppointment?.id || '-' }}</strong>
+          </div>
+          @if (isViewMode()) {
+            <button type="button" class="btn btn-neutral" (click)="startEditAppointment()">Modifier</button>
+          }
+        </div>
+      }
+      <div class="grid">
+        <div class="field">
+          <label for="rdv-type">Type de rendez-vous</label>
+          <select id="rdv-type" formControlName="typeCode">
+            @for (option of typeOptions; track option) {
+              <option [value]="option.code">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="rdv-model">Modele de rendez-vous</label>
+          <select id="rdv-model" formControlName="modelCode">
+            @for (option of modelOptions; track option) {
+              <option [value]="option.code">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="field span-2">
+          <label for="rdv-title">Titre</label>
+          <input id="rdv-title" type="text" formControlName="title" [readonly]="isViewMode()" />
+        </div>
+        <div class="field">
+          <label for="rdv-status">Etat</label>
+          <select id="rdv-status" formControlName="status">
+            @for (option of statusOptions; track option) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="rdv-recurrence">Recurrence</label>
+          <select id="rdv-recurrence" formControlName="recurrence">
+            @for (option of recurrenceOptions; track option) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="rdv-start">Date / heure</label>
+          <input id="rdv-start" type="datetime-local" formControlName="start" [readonly]="isViewMode()" />
+        </div>
+        <div class="field">
+          <label for="rdv-duration">Duree (min)</label>
+          <input id="rdv-duration" type="number" min="5" max="720" formControlName="durationMinutes" [readonly]="isViewMode()" />
+        </div>
+        <div class="field span-2">
+          <label for="rdv-patient-search">Patients (optionnel)</label>
+          <input
+            id="rdv-patient-search"
+            type="text"
+            [value]="patientQuery"
+            placeholder="Rechercher un patient"
+            [disabled]="!canEditAppointment()"
+            (input)="onPatientQueryChanged(($any($event.target)).value)"
+            />
+          @if (canEditAppointment() && patientSearchResults.length) {
+            <div class="results">
+              @for (option of patientSearchResults; track option) {
+                <button type="button" (click)="addPatient(option)">{{ option.label }}</button>
+              }
+            </div>
+          }
+          @if (selectedPatients.length) {
+            <div class="chips">
+              @for (item of selectedPatients; track item) {
+                <button type="button" class="chip" [disabled]="!canEditAppointment()" (click)="removePatient(item)">
+                  {{ item.label }}{{ canEditAppointment() ? ' ×' : '' }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="field span-2">
+          <label for="rdv-pro-search">Professionnels (optionnel)</label>
+          <input
+            id="rdv-pro-search"
+            type="text"
+            [value]="practitionerQuery"
+            placeholder="Rechercher un professionnel"
+            [disabled]="!canEditAppointment()"
+            (input)="onPractitionerQueryChanged(($any($event.target)).value)"
+            />
+          @if (canEditAppointment() && practitionerSearchResults.length) {
+            <div class="results">
+              @for (option of practitionerSearchResults; track option) {
+                <button type="button" (click)="addPractitioner(option)">{{ option.label }}</button>
+              }
+            </div>
+          }
+          @if (selectedPractitioners.length) {
+            <div class="chips">
+              @for (item of selectedPractitioners; track item) {
+                <button
+                  type="button"
+                  class="chip"
+                  [class.locked]="item.isSelf"
+                  [disabled]="!canEditAppointment() || item.isSelf"
+                  (click)="removePractitioner(item)"
+                  >
+                  {{ item.label }}{{ item.isSelf ? ' (moi)' : '' }}{{ !item.isSelf && canEditAppointment() ? ' ×' : '' }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="field span-2">
+          <label for="rdv-comment">Commentaire</label>
+          <textarea id="rdv-comment" rows="3" formControlName="comment" [readonly]="isViewMode()"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button
+          type="button"
+          class="btn btn-neutral"
+          (click)="isCreateMode() ? closeCreateModal() : cancelAppointmentEdition()"
+          [disabled]="saving"
+        >
+          {{ isEditMode() ? 'Annuler' : 'Fermer' }}
+        </button>
+        @if (!isViewMode()) {
+          <button type="submit" class="btn btn-primary" [disabled]="saving || appointmentForm.invalid">
+            {{ saving ? (isEditMode() ? 'Enregistrement...' : 'Creation...') : (isEditMode() ? 'Enregistrer' : 'Creer le rendez-vous') }}
+          </button>
+        }
+      </div>
+    </form>
+  </app-modal>
+}

@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-006",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT006"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Fournier",
+      "given": ["Isabelle"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 78 90 12 34"
+    },
+    {
+      "system": "email",
+      "value": "isabelle.fournier@hospital.fr"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1969-08-25",
+  "address": [
+    {
+      "use": "work",
+      "line": ["987 Rue de la Pneumologie"],
+      "city": "Nice",
+      "postalCode": "06000",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "14698002"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "14698002",
+            "display": "Pneumologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université Côte d'Azur"
+      },
+      "period": {
+        "start": "1994-09-01"
+      }
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "realm": "fhir",
+  "enabled": true,
+  "displayName": "FHIR Health Application",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "accessTokenLifespan": 3600,
+  "clients": [
+    {
+      "clientId": "fhir-angular",
+      "name": "FHIR Angular Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200"
+      ],
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "practitioner_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "practitioner_id",
+            "claim.name": "practitioner_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "apicard",
+      "email": "apicard@healthapp.local",
+      "firstName": "Api",
+      "lastName": "Card",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "practitioner_id": [
+          "P00000012"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "apicard",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Standard FHIR application user"
+      },
+      {
+        "name": "admin",
+        "description": "FHIR application administrator"
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+<section class="bubble-card">
+  @if (title) {
+    <header class="bubble-header">
+      @if (title) {
+        <h2>{{ title }}</h2>
+      }
+      <div class="header-actions">
+        <ng-content select="[bubbleActions]"></ng-content>
+      </div>
+    </header>
+  }
+  <div class="bubble-body">
+    <ng-content></ng-content>
+  </div>
+</section>

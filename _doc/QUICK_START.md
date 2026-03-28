@@ -75,8 +75,7 @@ angular-test/
 │       └── shared/       # Composants partagés
 │
 ├── backend/              # Microservices Spring Boot
-│   ├── api-gateway/     # Port 8080
-│   ├── patient-service/ # Port 8081
+│   ├── patient-service/ # Port 8080
 │   ├── fhir-service/    # Port 8082
 │   └── common/          # Librairies partagées
 │
@@ -115,7 +114,7 @@ Consultez le fichier `README.md` pour la documentation complète.
 - [ ] Docker est installé et lancé
 - [ ] PostgreSQL tourne (ports 5432 et 5433)
 - [ ] API Gateway répond sur http://localhost:8080
-- [ ] Patient Service répond sur http://localhost:8081
+- [ ] Patient Service répond sur http://localhost:8080
 - [ ] FHIR Service répond sur http://localhost:8082
 - [ ] Frontend accessible sur http://localhost:4200
 

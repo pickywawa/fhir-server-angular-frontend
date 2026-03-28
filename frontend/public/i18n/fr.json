@@ -1,0 +1,521 @@
+{
+  "menu": {
+    "myPatients": "Mes patients",
+    "agenda": "Agenda",
+    "discussions": "Discussions",
+    "search": "Rechercher",
+    "professionals": "Professionnels",
+    "codeSystems": "Code systems",
+    "questionnaires": "Questionnaires",
+    "organizations": "Organisations",
+    "patients": "Patients",
+    "support": "Support",
+    "settings": "Parametres",
+    "administration": "Administration",
+    "expand": "Etendre le menu",
+    "collapse": "Replier le menu"
+  },
+  "settings": {
+    "title": "Parametres",
+    "preferences": "Preferences",
+    "hero": {
+      "title": "Personnalisez votre espace",
+      "subtitle": "Choisissez votre theme visuel et la langue de l'interface.",
+      "badge": "Module Parametres"
+    },
+    "theme": {
+      "title": "Theme",
+      "light": "Clair",
+      "lightDesc": "Interface lumineuse et contrastes doux",
+      "dark": "Sombre",
+      "darkDesc": "Confort visuel pour environnement faible lumiere"
+    },
+    "language": {
+      "title": "Langue",
+      "fr": "Francais",
+      "en": "Anglais",
+      "it": "Italien",
+      "de": "Allemand",
+      "hint": "Le choix est sauvegarde automatiquement pour votre prochaine session."
+    }
+  },
+  "support": {
+    "title": "Support",
+    "center": "Centre de support",
+    "needHelp": "Besoin d'aide ?",
+    "intro": "Ce centre regroupe assistance rapide, reponses courantes et formulaire de demande.",
+    "team": "Equipe Support",
+    "faq": "Questions frequentes",
+    "ticket": "Ouvrir un ticket"
+  },
+  "search": {
+    "title": "Recherche",
+    "fhir": "Recherche FHIR",
+    "results": "Resultats",
+    "placeholder": "Rechercher patient, professionnel, rendez-vous, document...",
+    "button": "Rechercher",
+    "loading": "Recherche en cours...",
+    "emptyPrompt": "Saisissez un terme pour lancer la recherche.",
+    "empty": "Aucun resultat.",
+    "error": "Erreur lors de la recherche"
+  },
+  "agenda": {
+    "title": "Agenda",
+    "list": "Liste",
+    "planning": "Planning",
+    "add": "Ajouter un RDV",
+    "loading": "Chargement des rendez-vous..."
+  },
+  "practitioners": {
+    "search": {
+      "title": "Recherche professionnels",
+      "family": "Nom",
+      "given": "Prenom",
+      "identifier": "ID principal",
+      "familyPlaceholder": "Dupont",
+      "givenPlaceholder": "Marie",
+      "identifierPlaceholder": "PRO-001"
+    },
+    "worklist": {
+      "title": "Worklist professionnels",
+      "add": "Ajouter un professionnel",
+      "prompt": "Lancez une recherche pour afficher des professionnels.",
+      "empty": "Aucun professionnel trouve."
+    },
+    "detail": {
+      "practitioner": "Professionnel",
+      "newPractitioner": "Nouveau professionnel",
+      "noProfession": "Profession non renseignee",
+      "noIdentifier": "ID non renseigne",
+      "createdSuccess": "Professionnel cree avec succes !",
+      "updatedSuccess": "Professionnel modifie avec succes !"
+    },
+    "form": {
+      "title": "Informations du professionnel",
+      "mainIdentifier": "ID principal",
+      "prefix": "Prefixe",
+      "profession": "Profession",
+      "specialty": "Specialite",
+      "specialization": "Specialisation",
+      "emailContacts": "Contacts email",
+      "phones": "Telephones",
+      "addresses": "Adresses",
+      "otherContacts": "Autres contacts",
+      "emailPlaceholder": "email@exemple.com",
+      "phonePlaceholder": "06 12 34 56 78",
+      "addressPlaceholder": "Adresse complete",
+      "contactPlaceholder": "system: valeur",
+      "addEmail": "Ajouter email",
+      "addPhone": "Ajouter telephone",
+      "addAddress": "Ajouter adresse",
+      "addContact": "Ajouter contact"
+    }
+  },
+  "questionnaires": {
+    "search": {
+      "title": "Recherche questionnaires",
+      "titleField": "Titre",
+      "titlePlaceholder": "Ex: Questionnaire admission",
+      "statusField": "Statut"
+    },
+    "worklist": {
+      "title": "Worklist questionnaires",
+      "add": "Ajouter un questionnaire",
+      "empty": "Aucun questionnaire trouve.",
+      "noCommon": "Aucun questionnaire disponible.",
+      "noDescription": "Sans description",
+      "items": "item(s)"
+    },
+    "detail": {
+      "titleSingle": "Questionnaire",
+      "new": "Nouveau questionnaire",
+      "createdSuccess": "Questionnaire cree avec succes !",
+      "updatedSuccess": "Questionnaire modifie avec succes !"
+    },
+    "status": {
+      "all": "Tous",
+      "draft": "Brouillon",
+      "active": "Actif",
+      "retired": "Retire",
+      "unknown": "Inconnu"
+    },
+    "itemType": {
+      "group": "Groupe",
+      "string": "Texte court",
+      "text": "Texte long",
+      "boolean": "Booleen",
+      "integer": "Entier",
+      "quantity": "Quantite",
+      "date": "Date",
+      "choice": "Choix"
+    },
+    "form": {
+      "title": "Edition du questionnaire",
+      "fields": {
+        "title": "Titre",
+        "description": "Description",
+        "status": "Statut"
+      },
+      "items": {
+        "title": "Items",
+        "addQuestion": "Ajouter une question",
+        "addGroup": "Ajouter un groupe",
+        "empty": "Ajoutez une question ou un groupe pour commencer.",
+        "group": "Groupe",
+        "question": "Question",
+        "text": "Texte",
+        "type": "Type",
+        "unit": "Unité",
+        "required": "Obligatoire",
+        "repeats": "Repetable",
+        "answerOptions": "Options de reponse",
+        "addOption": "Ajouter option",
+        "enableWhen": "Conditions d'activation",
+        "addCondition": "Ajouter condition",
+        "selectQuestion": "Question source",
+        "answerValue": "Valeur attendue",
+        "groupChildren": "Contenu du groupe",
+        "emptyGroup": "Ce groupe est vide"
+      }
+    },
+    "preview": {
+      "title": "Apercu du formulaire",
+      "empty": "Le questionnaire ne contient encore aucun item affichable.",
+      "untitledGroup": "Groupe sans titre",
+      "booleanLabel": "Oui / non",
+      "selectOption": "Selectionner une option",
+      "resize": "Redimensionner le panneau d'apercu"
+    }
+  },
+  "codeSystems": {
+    "list": {
+      "title": "Nomenclatures (CodeSystem)",
+      "add": "Ajouter un CodeSystem",
+      "values": "valeur(s)",
+      "empty": "Aucun CodeSystem trouve."
+    },
+    "form": {
+      "title": "Ajouter un CodeSystem",
+      "editTitle": "Modifier un CodeSystem",
+      "url": "URL",
+      "urlPlaceholder": "https://.../CodeSystem/.../fr_FR",
+      "valuesTitle": "Valeurs",
+      "addValue": "Ajouter une valeur",
+      "code": "Code",
+      "display": "Libelle",
+      "saving": "Creation...",
+      "createdSuccess": "CodeSystem cree avec succes.",
+      "updatedSuccess": "CodeSystem mis a jour avec succes.",
+      "errors": {
+        "noValues": "Ajoutez au moins une valeur valide."
+      }
+    }
+  },
+  "organizations": {
+    "search": {
+      "title": "Recherche organisations",
+      "identifier": "Identifiant",
+      "identifierPlaceholder": "ORG-001",
+      "name": "Nom",
+      "namePlaceholder": "Ex: CHU Nantes",
+      "active": "Statut",
+      "type": "Type",
+      "allTypes": "Tous les types"
+    },
+    "worklist": {
+      "title": "Worklist organisations",
+      "add": "Ajouter une organisation",
+      "empty": "Aucune organisation trouvee.",
+      "noDefault": "Aucune organisation disponible.",
+      "noIdentifier": "Identifiant non renseigne",
+      "noDescription": "Sans description",
+      "noType": "Type non renseigne",
+      "contacts": "contact(s)"
+    },
+    "detail": {
+      "title": "Organisation",
+      "new": "Nouvelle organisation"
+    },
+    "status": {
+      "all": "Tous",
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "form": {
+      "active": "Organisation active",
+      "name": "Nom",
+      "identifier": "Identifiant principal",
+      "type": "Type",
+      "typeDisplay": "Libelle du type",
+      "parentSearch": "Organisation mere",
+      "parentSearchPlaceholder": "Rechercher une organisation",
+      "description": "Description",
+      "aliases": "Autres noms",
+      "addAlias": "Ajouter un alias",
+      "removeAlias": "Supprimer l'alias",
+      "phone": "Telephone",
+      "email": "Email",
+      "line1": "Adresse - ligne 1",
+      "line2": "Adresse - ligne 2",
+      "postalCode": "Code postal",
+      "city": "Ville",
+      "country": "Pays"
+    }
+  },
+  "patients": {
+    "detailPage": {
+      "patient": "Patient",
+      "newPatient": "Nouveau patient",
+      "unknownGender": "Genre non renseigne",
+      "createdSuccess": "Patient cree avec succes !",
+      "updatedSuccess": "Patient modifie avec succes !"
+    },
+    "form": {
+      "title": "Informations du patient",
+      "firstName": "Prenom",
+      "lastName": "Nom",
+      "birthDate": "Date de naissance",
+      "genderLabel": "Genre",
+      "email": "Email",
+      "phone": "Telephone",
+      "address": "Rue",
+      "city": "Ville",
+      "postalCode": "Code postal",
+      "country": "Pays",
+      "requiredFirstName": "Le prenom est obligatoire.",
+      "requiredLastName": "Le nom est obligatoire.",
+      "add": "Ajouter",
+      "gender": {
+        "unknown": "Inconnu",
+        "male": "Homme",
+        "female": "Femme",
+        "other": "Autre"
+      }
+    },
+    "search": {
+      "title": "Recherche patients",
+      "titleSingle": "Recherche patient",
+      "family": "Nom",
+      "given": "Prenom",
+      "birthDate": "Date de naissance",
+      "familyPlaceholder": "Dupont",
+      "givenPlaceholder": "Jean",
+      "reset": "Reinitialiser"
+    },
+    "worklist": {
+      "title": "Worklist patients",
+      "add": "Ajouter un patient",
+      "empty": "Aucun patient trouve",
+      "prompt": "Lancez une recherche pour afficher des patients.",
+      "error": "Erreur"
+    }
+  },
+  "myPatients": {
+    "form": {
+      "newTitle": "Nouveau Patient",
+      "editTitle": "Modifier le Patient",
+      "personalInfo": "Informations Personnelles",
+      "requiredBirthDate": "La date de naissance est requise",
+      "requiredGender": "Le genre est requis",
+      "invalidEmail": "L'email doit etre valide",
+      "select": "Selectionnez...",
+      "saving": "Enregistrement...",
+      "create": "Creer le patient"
+    },
+    "detail": {
+      "tabs": {
+        "overview": "Resume",
+        "careTeam": "Intervenants",
+        "careplan": "Plan de soin",
+        "relatedPerson": "Entourage",
+        "questionnaires": "Questionnaires",
+        "discussions": "Discussions",
+        "identity": "Fiche d'identite",
+        "documents": "Documents"
+      },
+      "idPrefix": "ID",
+      "errorPrefix": "Erreur"
+    },
+    "identity": {
+      "title": "Fiche d'identite",
+      "edit": "Modifier",
+      "fields": {
+        "lastName": "Nom",
+        "firstName": "Prenom",
+        "birthDate": "Date de naissance",
+        "gender": "Genre",
+        "email": "Email",
+        "phone": "Telephone",
+        "address": "Adresse",
+        "city": "Ville",
+        "region": "Region",
+        "zipCode": "Code postal",
+        "country": "Pays"
+      }
+    },
+    "careTeam": {
+      "title": "Intervenants",
+      "add": "Ajouter un intervenant",
+      "remove": "Supprimer",
+      "deleteSuccess": "{{name}} a ete supprime des intervenants.",
+      "loading": "Chargement des intervenants...",
+      "empty": "Aucun intervenant trouve pour ce patient.",
+      "loadError": "Erreur lors du chargement des intervenants",
+      "confirm": {
+        "title": "Confirmer la suppression",
+        "message": "Voulez-vous vraiment supprimer {{name}} des intervenants de ce patient ?",
+        "confirm": "Supprimer",
+        "deleting": "Suppression..."
+      }
+    },
+    "relatedPerson": {
+      "title": "Entourage",
+      "add": "Ajouter un proche",
+      "remove": "Supprimer",
+      "loading": "Chargement de l'entourage...",
+      "empty": "Aucun proche trouve pour ce patient.",
+      "language": "Langue",
+      "addModal": {
+        "title": "Ajouter une personne de l'entourage",
+        "saving": "Creation...",
+        "fields": {
+          "name": "Nom complet",
+          "role": "Role",
+          "phone": "Telephone",
+          "email": "Email",
+          "gender": "Sexe",
+          "birthDate": "Date de naissance",
+          "address": "Adresse",
+          "addressPlaceholder": "Rechercher une adresse via BAN",
+          "language": "Langue"
+        }
+      },
+      "editModal": {
+        "title": "Personne de l'entourage",
+        "edit": "Modifier",
+        "save": "Enregistrer les modifications"
+      },
+      "confirm": {
+        "title": "Confirmer la suppression",
+        "message": "Voulez-vous vraiment supprimer {{name}} de l'entourage ?",
+        "confirm": "Supprimer",
+        "deleting": "Suppression..."
+      },
+      "errors": {
+        "load": "Erreur lors du chargement de l'entourage",
+        "patientNotFound": "Patient introuvable.",
+        "roleInvalid": "Role invalide pour la personne de l'entourage.",
+        "memberNotFound": "Personne de l'entourage introuvable."
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "add": "Ajouter un document",
+      "loading": "Chargement des documents...",
+      "empty": "Aucun document lie a ce patient.",
+      "author": "Auteur",
+      "bytes": "octets",
+      "addModal": {
+        "title": "Ajouter un document",
+        "saving": "Enregistrement...",
+        "fields": {
+          "title": "Titre",
+          "class": "Classe XDS",
+          "type": "Type XDS",
+          "file": "Fichier local"
+        }
+      },
+      "viewer": {
+        "title": "Visualisation document",
+        "tabs": {
+          "aria": "Onglets document",
+          "preview": "Apercu",
+          "details": "Details"
+        },
+        "fullscreen": "Plein ecran",
+        "exitFullscreen": "Quitter plein ecran",
+        "loading": "Chargement du document...",
+        "pdfTitle": "Lecteur PDF",
+        "imageAlt": "Image du document",
+        "previewUnavailable": "Apercu non disponible pour ce type de document.",
+        "downloadDocument": "Telecharger le document"
+      },
+      "details": {
+        "title": "Titre",
+        "author": "Auteur",
+        "patient": "Patient",
+        "class": "Classe XDS",
+        "type": "Type XDS",
+        "format": "Format",
+        "size": "Taille",
+        "date": "Date",
+        "documentId": "Document ID",
+        "download": "Telecharger",
+        "notProvided": "Non renseigne"
+      },
+      "errors": {
+        "patientNotFound": "Patient introuvable pour enregistrer le document.",
+        "invalidClassType": "Classe/type de document invalide.",
+        "authorNotFound": "Auteur introuvable pour deposer ce document.",
+        "save": "Erreur lors de l'enregistrement du document",
+        "load": "Erreur lors du chargement des documents",
+        "noBinary": "Document sans contenu binaire.",
+        "loadViewer": "Impossible de charger le document",
+        "textDecode": "Impossible d'afficher le contenu texte."
+      }
+    },
+    "questionnaires": {
+      "title": "Questionnaires patient",
+      "add": "Ajouter un questionnaire",
+      "empty": "Aucune reponse de questionnaire pour ce patient.",
+      "modelPickerTitle": "Choisir un modele de questionnaire",
+      "noModel": "Aucun modele de questionnaire disponible.",
+      "createResponse": "Creer la reponse",
+      "saved": "Reponse enregistree avec succes.",
+      "saving": "Enregistrement...",
+      "errors": {
+        "missingQuestionnaireId": "Impossible d'identifier le questionnaire a enregistrer."
+      }
+    },
+    "discussions": {
+      "title": "Discussions",
+      "loading": "Chargement des discussions...",
+      "newDiscussion": "Nouvelle discussion",
+      "threadPrefix": "Discussion",
+      "messageCount": "message(s)",
+      "empty": "Aucune discussion pour ce patient.",
+      "prompt": "Creez ou selectionnez une discussion.",
+      "noMessages": "Aucun message dans cette discussion.",
+      "sender": "Expediteur",
+      "recipient": "Destinataire",
+      "undetermined": "Indetermine",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Saisissez votre message...",
+      "sending": "Envoi...",
+      "send": "Envoyer",
+      "unknownSender": "Inconnu",
+      "errors": {
+        "patientNotFound": "Patient introuvable.",
+        "selectDiscussion": "Selectionnez ou creez une discussion.",
+        "senderNotFound": "Impossible de determiner le professionnel connecte (scope Keycloak).",
+        "recipientNotFound": "Impossible de determiner le CareTeam destinataire.",
+        "send": "Erreur lors de l'envoi du message",
+        "load": "Erreur lors du chargement des discussions"
+      }
+    }
+  },
+  "common": {
+    "breadcrumb": "Fil d'ariane",
+    "tabNavigation": "Navigation onglets",
+    "modal": "Modal",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "edit": "Modifier",
+    "cancel": "Annuler",
+    "create": "Creer",
+    "loading": "Chargement...",
+    "unknownError": "Erreur inconnue"
+  }
+}

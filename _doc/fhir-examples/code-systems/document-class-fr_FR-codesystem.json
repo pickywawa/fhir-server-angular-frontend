@@ -1,0 +1,17 @@
+{
+  "resourceType": "CodeSystem",
+  "url": "https://healthapp.local/fhir/CodeSystem/document-class/fr_FR",
+  "version": "1.0.0",
+  "name": "DocumentClassFrFR",
+  "title": "Nomenclature classes de documents (fr_FR)",
+  "status": "active",
+  "content": "complete",
+  "language": "fr-FR",
+  "concept": [
+    { "code": "34133-9", "display": "Synthese clinique" },
+    { "code": "18842-5", "display": "Compte rendu de sortie" },
+    { "code": "18748-4", "display": "Imagerie diagnostique" },
+    { "code": "11506-3", "display": "Rapport de pathologie" },
+    { "code": "11488-3", "display": "Note de consultation" }
+  ]
+}

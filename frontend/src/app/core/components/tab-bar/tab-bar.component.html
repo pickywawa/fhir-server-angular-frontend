@@ -1,0 +1,12 @@
+<nav class="tab-bar" [attr.aria-label]="'common.tabNavigation' | translate">
+  @for (tab of tabs; track tab) {
+    <button
+      type="button"
+      class="tab-item"
+      [class.active]="tab.key === activeTab"
+      (click)="selectTab(tab.key)"
+      >
+      {{ tab.label | translate }}
+    </button>
+  }
+</nav>

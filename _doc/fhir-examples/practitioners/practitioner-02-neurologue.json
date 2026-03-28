@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-002",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT002"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Bernard",
+      "given": ["Marie"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 34 56 78 90"
+    },
+    {
+      "system": "email",
+      "value": "marie.bernard@hospital.fr"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1970-07-22",
+  "address": [
+    {
+      "use": "work",
+      "line": ["456 Rue de la Santé"],
+      "city": "Lyon",
+      "postalCode": "69000",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "36682004"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "36682004",
+            "display": "Neurologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université Claude Bernard"
+      },
+      "period": {
+        "start": "1995-09-01"
+      }
+    }
+  ]
+}

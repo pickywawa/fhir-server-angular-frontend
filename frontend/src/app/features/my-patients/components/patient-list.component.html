@@ -1,0 +1,205 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="patient-list-page">
+    <app-bubble-card [title]="'patients.search.titleSingle' | translate">
+      <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="search-form">
+        <div class="search-grid">
+          <div class="search-field">
+            <label for="family">{{ 'patients.search.family' | translate }}</label>
+            <input id="family" type="text" formControlName="family" [placeholder]="'patients.search.familyPlaceholder' | translate" />
+          </div>
+
+          <div class="search-field">
+            <label for="given">{{ 'patients.search.given' | translate }}</label>
+            <input id="given" type="text" formControlName="given" [placeholder]="'patients.search.givenPlaceholder' | translate" />
+          </div>
+
+          <div class="search-field">
+            <label for="birthDate">{{ 'patients.search.birthDate' | translate }}</label>
+            <input id="birthDate" type="date" formControlName="birthDate" />
+          </div>
+
+          <div class="search-field">
+            <label for="status">Etat</label>
+            <select id="status" formControlName="status">
+              <option value="">Tous</option>
+              @for (option of statusFilterOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="search-field">
+            <label for="category">Catégorie</label>
+            <select id="category" formControlName="category">
+              <option value="">Toutes</option>
+              @for (option of categoryFilterOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <button type="submit" class="btn btn-primary">{{ 'search.button' | translate }}</button>
+          <button type="button" class="btn btn-neutral" (click)="onResetSearch()">{{ 'patients.search.reset' | translate }}</button>
+        </div>
+      </form>
+    </app-bubble-card>
+
+    <app-bubble-card [title]="'patients.worklist.title' | translate">
+      <button bubbleActions type="button" class="btn btn-primary btn-add-careplan" (click)="openCreateCarePlanModal()">
+        Ajouter
+      </button>
+
+      @if (loading) {
+        <div class="state-message">{{ 'common.loading' | translate }}</div>
+      }
+
+      @if (error; as error) {
+        <div class="state-message error">
+          {{ 'patients.worklist.error' | translate }}: {{ error.message || error }}
+        </div>
+      }
+
+      @if (!loading) {
+        <div class="worklist">
+          <div class="worklist-columns" aria-hidden="true">
+            <div class="col-head">
+              <span>Patient</span>
+              <button type="button" class="sort-btn" (click)="toggleSort('patient')">{{ sortIndicator('patient') }}</button>
+            </div>
+            <div class="col-head">
+              <span>Catégorie</span>
+              <button type="button" class="sort-btn" (click)="toggleSort('category')">{{ sortIndicator('category') }}</button>
+            </div>
+            <div class="col-head">
+              <span>Etat</span>
+              <button type="button" class="sort-btn" (click)="toggleSort('status')">{{ sortIndicator('status') }}</button>
+            </div>
+            <div class="col-head">
+              <span>CarePlan</span>
+              <button type="button" class="sort-btn" (click)="toggleSort('title')">{{ sortIndicator('title') }}</button>
+            </div>
+          </div>
+
+          @for (item of filteredWorklist; track item.carePlanId) {
+            <button
+              class="worklist-row"
+              type="button"
+              (click)="openPatient(item)"
+              >
+              <div class="identity">
+                <strong>{{ item.patientLastName }} {{ item.patientFirstName }}</strong>
+                <span>{{ item.patientBirthDate | date:'dd/MM/yyyy' }} • {{ item.patientGender }}</span>
+              </div>
+
+              <div class="meta category">{{ item.categoryLabel }}</div>
+
+              <div class="meta tags">
+                <span class="tag" [class]="'tag ' + statusClass(item.status)">
+                  {{ statusLabel(item.status) }}
+                </span>
+              </div>
+
+              <div class="meta details">
+                <strong>{{ item.title || 'CarePlan' }}</strong>
+                <span>{{ item.description || item.note || '-' }}</span>
+              </div>
+            </button>
+          }
+          @if (filteredWorklist.length === 0) {
+            <div class="state-message">
+              {{ 'patients.worklist.empty' | translate }}
+            </div>
+          }
+        </div>
+      }
+    </app-bubble-card>
+  </div>
+</app-module-shell>
+
+@if (showCreateCarePlanModal) {
+  <app-modal title="Ajouter un CarePlan" (close)="closeCreateCarePlanModal()">
+    <form class="careplan-create-form" [formGroup]="createCarePlanForm" (ngSubmit)="submitCreateCarePlan()">
+      <div class="field span-2">
+        <label for="cp-patient-search">Patient</label>
+        <input
+          id="cp-patient-search"
+          type="text"
+          [value]="patientQuery"
+          placeholder="Rechercher un patient"
+          (input)="onCreatePatientQueryChanged(($any($event.target)).value)"
+        />
+        @if (patientSearchResults.length) {
+          <div class="results">
+            @for (option of patientSearchResults; track option.reference) {
+              <button type="button" (click)="selectCreatePatient(option)">{{ option.label }}</button>
+            }
+          </div>
+        }
+        @if (selectedPatient) {
+          <div class="chips">
+            <button type="button" class="chip" (click)="clearSelectedCreatePatient()">
+              {{ selectedPatient.label }} ×
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="field">
+        <label for="cp-category">Catégorie</label>
+        <select id="cp-category" formControlName="categoryCode">
+          @for (option of createCategoryOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="cp-status">Etat</label>
+        <select id="cp-status" formControlName="status">
+          @for (option of createStatusOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="cp-intent">Intent</label>
+        <select id="cp-intent" formControlName="intent">
+          @for (option of createIntentOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field span-2">
+        <label for="cp-title">Titre</label>
+        <input id="cp-title" type="text" formControlName="title" />
+      </div>
+
+      <div class="field span-2">
+        <label for="cp-description">Description</label>
+        <textarea id="cp-description" rows="3" formControlName="description"></textarea>
+      </div>
+
+      <div class="field span-2">
+        <label for="cp-note">Commentaire</label>
+        <textarea id="cp-note" rows="3" formControlName="note"></textarea>
+      </div>
+
+      @if (createCarePlanError) {
+        <p class="state-message error">{{ createCarePlanError }}</p>
+      }
+
+      <div class="create-actions">
+        <button type="button" class="btn btn-neutral" (click)="closeCreateCarePlanModal()" [disabled]="creatingCarePlan">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="creatingCarePlan">
+          {{ creatingCarePlan ? 'Ajout...' : 'Ajouter' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

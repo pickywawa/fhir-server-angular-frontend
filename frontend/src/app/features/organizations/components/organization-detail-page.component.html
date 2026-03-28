@@ -1,0 +1,33 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <app-bubble-card [title]="isCreate ? ('organizations.detail.new' | translate) : ('organizations.detail.title' | translate)">
+    @if (!isCreate) {
+      <div bubbleActions>
+        @if (!editMode) {
+          <button type="button" class="btn btn-primary" (click)="enableEdit()">{{ 'common.edit' | translate }}</button>
+        }
+      </div>
+    }
+
+    @if (loading) {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading && error) {
+      <div class="state error">{{ error }}</div>
+    }
+
+    @if (!loading && profile) {
+      @if (saving) {
+        <div class="state">{{ 'common.saving' | translate }}</div>
+      }
+      <app-organization-form
+        [profile]="profile"
+        [typeOptions]="typeOptions"
+        [editable]="editMode"
+        [isCreate]="isCreate"
+        (save)="save($event)"
+        (cancel)="cancelEdit()"
+      />
+    }
+  </app-bubble-card>
+</app-module-shell>

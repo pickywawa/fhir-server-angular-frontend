@@ -1,0 +1,177 @@
+<app-bubble-card [title]="'questionnaires.form.title' | translate">
+  <div bubbleActions>
+    @if (!editMode) {
+      <button type="button" class="btn btn-primary" (click)="toggleEdit()">{{ 'myPatients.identity.edit' | translate }}</button>
+    }
+    @if (editMode) {
+      <button type="button" class="btn btn-neutral" (click)="cancelEdit()" [disabled]="loading">{{ 'common.cancel' | translate }}</button>
+      <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="loading || !model.title.trim()">{{ createMode ? ('patients.form.add' | translate) : ('common.save' | translate) }}</button>
+    }
+  </div>
+
+  <div class="form-layout">
+    <div class="main-fields">
+      <div class="field">
+        <app-form-control-field
+          [label]="('questionnaires.form.fields.title' | translate) + ' *'"
+          forId="title"
+          [(ngModel)]="model.title"
+          (ngModelChange)="emitModelChange()"
+          [uiDisabled]="!editMode"></app-form-control-field>
+      </div>
+
+      <div class="field">
+        <app-form-control-field
+          [label]="'questionnaires.form.fields.status' | translate"
+          forId="status"
+          kind="select"
+          [options]="statusSelectOptions"
+          [(ngModel)]="model.status"
+          (ngModelChange)="emitModelChange()"
+          [uiDisabled]="!editMode"></app-form-control-field>
+      </div>
+
+      <div class="field full">
+        <app-form-control-field
+          [label]="'questionnaires.form.fields.description' | translate"
+          forId="description"
+          kind="textarea"
+          [rows]="3"
+          [(ngModel)]="model.description"
+          (ngModelChange)="emitModelChange()"
+          [uiDisabled]="!editMode"></app-form-control-field>
+      </div>
+    </div>
+
+    <div class="items-block">
+      <div class="items-header">
+        <h3>{{ 'questionnaires.form.items.title' | translate }}</h3>
+        <div class="item-actions">
+          <button type="button" class="btn btn-neutral" (click)="addRootQuestion('string')" [disabled]="!editMode">{{ 'questionnaires.form.items.addQuestion' | translate }}</button>
+          <button type="button" class="btn btn-neutral" (click)="addRootGroup()" [disabled]="!editMode">{{ 'questionnaires.form.items.addGroup' | translate }}</button>
+        </div>
+      </div>
+
+      @if (model.items.length === 0) {
+        <div class="state">{{ 'questionnaires.form.items.empty' | translate }}</div>
+      }
+
+      <ng-template #itemEditor let-list let-depth="depth">
+        <div class="item-list">
+          @for (item of list; track item.uid; let i = $index) {
+            <article class="item-card" [style.marginLeft.px]="depth * 16">
+              <div class="item-toolbar">
+                <span class="badge">{{ item.type === 'group' ? ('questionnaires.form.items.group' | translate) : ('questionnaires.form.items.question' | translate) }}</span>
+                <span class="link">{{ item.linkId }}</span>
+                <div class="toolbar-actions">
+                  <button type="button" class="btn icon" (click)="moveItem(list, i, -1)" [disabled]="!editMode || i === 0">↑</button>
+                  <button type="button" class="btn icon" (click)="moveItem(list, i, 1)" [disabled]="!editMode || i === list.length - 1">↓</button>
+                  <button type="button" class="btn icon" (click)="regenerateLinkId(item)" [disabled]="!editMode">⟳</button>
+                  <button type="button" class="btn icon danger" (click)="removeItem(list, i)" [disabled]="!editMode">🗑</button>
+                </div>
+              </div>
+
+              <div class="item-meta-row">
+                <div class="field check-row compact">
+                  <label>
+                    <input type="checkbox" [(ngModel)]="item.required" (ngModelChange)="emitModelChange()" [disabled]="!editMode" />
+                    {{ 'questionnaires.form.items.required' | translate }}
+                  </label>
+                  <label>
+                    <input type="checkbox" [(ngModel)]="item.repeats" (ngModelChange)="emitModelChange()" [disabled]="!editMode" />
+                    {{ 'questionnaires.form.items.repeats' | translate }}
+                  </label>
+                </div>
+              </div>
+
+              <div class="item-grid compact-header">
+                <div class="field title-field">
+                  <label>{{ 'questionnaires.form.items.text' | translate }}</label>
+                  <input type="text" [(ngModel)]="item.text" (ngModelChange)="emitModelChange()" [disabled]="!editMode" />
+                </div>
+                <div class="field type-field">
+                  <label>{{ 'questionnaires.form.items.type' | translate }}</label>
+                  <select [(ngModel)]="item.type" (ngModelChange)="onItemTypeChange(item)" [disabled]="!editMode">
+                    @for (type of itemTypes; track type) {
+                      <option [value]="type">{{ ('questionnaires.itemType.' + type) | translate }}</option>
+                    }
+                  </select>
+                </div>
+                @if (item.type === 'quantity') {
+                  <div class="field unit-field">
+                    <app-form-control-field
+                      [label]="'questionnaires.form.items.unit' | translate"
+                      [(ngModel)]="item.unit"
+                      (ngModelChange)="emitModelChange()"
+                      [uiDisabled]="!editMode"
+                      placeholder="e.g. mg, ml, kg"></app-form-control-field>
+                  </div>
+                }
+              </div>
+
+              @if (item.type === 'choice') {
+                <div class="subsection">
+                  <div class="subheader">
+                    <h4>{{ 'questionnaires.form.items.answerOptions' | translate }}</h4>
+                      <button type="button" class="btn btn-neutral" (click)="addAnswerOption(item)" [disabled]="!editMode">{{ 'questionnaires.form.items.addOption' | translate }}</button>
+                  </div>
+                  @for (option of item.answerOptions; track $index; let optionIndex = $index) {
+                    <div class="inline-row">
+                      <input type="text" [(ngModel)]="item.answerOptions[optionIndex]" (ngModelChange)="emitModelChange()" [disabled]="!editMode" />
+                      <button type="button" class="btn icon danger" (click)="removeAnswerOption(item, optionIndex)" [disabled]="!editMode">🗑</button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="subsection">
+                <div class="subheader">
+                  <h4>{{ 'questionnaires.form.items.enableWhen' | translate }}</h4>
+                  <button type="button" class="btn btn-neutral" (click)="addEnableWhen(item)" [disabled]="!editMode">{{ 'questionnaires.form.items.addCondition' | translate }}</button>
+                </div>
+
+                @for (condition of item.enableWhen; track condition.uid; let c = $index) {
+                  <div class="condition-row">
+                    <select [(ngModel)]="condition.questionLinkId" (ngModelChange)="emitModelChange()" [disabled]="!editMode">
+                      <option value="">{{ 'questionnaires.form.items.selectQuestion' | translate }}</option>
+                      @for (questionRef of getQuestionReferences(item); track questionRef) {
+                        <option [value]="questionRef">{{ questionRef }}</option>
+                      }
+                    </select>
+                    <select [(ngModel)]="condition.operator" (ngModelChange)="emitModelChange()" [disabled]="!editMode">
+                      @for (operator of enableWhenOperators; track operator) {
+                        <option [value]="operator">{{ operator }}</option>
+                      }
+                    </select>
+                    <input type="text" [(ngModel)]="condition.answer" (ngModelChange)="emitModelChange()" [disabled]="!editMode" [placeholder]="'questionnaires.form.items.answerValue' | translate" />
+                    <button type="button" class="btn icon danger" (click)="removeEnableWhen(item, c)" [disabled]="!editMode">🗑</button>
+                  </div>
+                }
+              </div>
+
+              @if (item.type === 'group') {
+                <div class="subsection">
+                  <div class="subheader">
+                    <h4>{{ 'questionnaires.form.items.groupChildren' | translate }}</h4>
+                    <div class="item-actions">
+                      <button type="button" class="btn btn-neutral" (click)="addChildQuestion(item, 'string')" [disabled]="!editMode">{{ 'questionnaires.form.items.addQuestion' | translate }}</button>
+                      <button type="button" class="btn btn-neutral" (click)="addChildGroup(item)" [disabled]="!editMode">{{ 'questionnaires.form.items.addGroup' | translate }}</button>
+                    </div>
+                  </div>
+
+                  @if (item.items.length === 0) {
+                    <div class="state">{{ 'questionnaires.form.items.emptyGroup' | translate }}</div>
+                  }
+
+                  <ng-container *ngTemplateOutlet="itemEditor; context: { $implicit: item.items, depth: depth + 1 }"></ng-container>
+                </div>
+              }
+            </article>
+          }
+        </div>
+      </ng-template>
+
+      <ng-container *ngTemplateOutlet="itemEditor; context: { $implicit: model.items, depth: 0 }"></ng-container>
+    </div>
+  </div>
+</app-bubble-card>

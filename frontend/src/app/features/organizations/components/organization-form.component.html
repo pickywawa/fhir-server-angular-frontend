@@ -1,0 +1,139 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="form-layout">
+  <div class="top-row">
+    <label class="toggle">
+      <input type="checkbox" formControlName="active" />
+      <span>{{ 'organizations.form.active' | translate }}</span>
+    </label>
+  </div>
+
+  <div class="grid two">
+    <app-form-control-field
+      [label]="('organizations.form.name' | translate) + ' *'"
+      forId="organization-name"
+      formControlName="name"></app-form-control-field>
+
+    <app-form-control-field
+      [label]="'organizations.form.identifier' | translate"
+      forId="organization-identifier"
+      formControlName="identifier"></app-form-control-field>
+
+    <div class="native-field">
+      <label for="organization-type-code">{{ 'organizations.form.type' | translate }}</label>
+      <select id="organization-type-code" formControlName="typeCode">
+        <option value="">{{ 'organizations.search.allTypes' | translate }}</option>
+        @for (option of typeOptions; track option.code) {
+          <option [value]="option.code">{{ option.display }}</option>
+        }
+      </select>
+    </div>
+
+    <app-form-control-field
+      [label]="'organizations.form.typeDisplay' | translate"
+      forId="organization-type-display"
+      formControlName="typeDisplay"></app-form-control-field>
+  </div>
+
+  <app-form-control-field
+    [label]="'organizations.form.description' | translate"
+    forId="organization-description"
+    kind="textarea"
+    [rows]="3"
+    formControlName="description"></app-form-control-field>
+
+  <div class="parent-block">
+    <label>
+      <span>{{ 'organizations.form.parentSearch' | translate }}</span>
+      <input
+        type="text"
+        [value]="parentQuery"
+        [disabled]="!(editable || isCreate)"
+        [placeholder]="'organizations.form.parentSearchPlaceholder' | translate"
+        (input)="onParentQueryChanged(($any($event.target)).value)"
+      />
+    </label>
+
+    @if ((editable || isCreate) && parentSearchResults.length > 0) {
+      <div class="results">
+        @for (option of parentSearchResults; track option.reference) {
+          <button type="button" (click)="selectParent(option)">{{ option.label }}</button>
+        }
+      </div>
+    }
+
+    @if (selectedParent) {
+      <div class="chips">
+        <button
+          type="button"
+          class="chip"
+          [disabled]="!(editable || isCreate)"
+          (click)="clearParent()"
+        >
+          {{ selectedParent.label }}{{ (editable || isCreate) ? ' ×' : '' }}
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="aliases">
+    <div class="aliases-head">
+      <strong>{{ 'organizations.form.aliases' | translate }}</strong>
+      @if (editable || isCreate) {
+        <button type="button" class="btn btn-neutral" (click)="addAlias()">{{ 'organizations.form.addAlias' | translate }}</button>
+      }
+    </div>
+
+    <div formArrayName="aliases" class="aliases-list">
+      @for (aliasCtrl of aliasesArray.controls; track $index; let i = $index) {
+        <div class="alias-row">
+          <app-form-control-field [forId]="'organization-alias-' + i" [formControlName]="i"></app-form-control-field>
+          @if (editable || isCreate) {
+            <button type="button" class="btn icon danger" (click)="removeAlias(i)" [attr.aria-label]="'organizations.form.removeAlias' | translate">✕</button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="grid two">
+    <app-form-control-field
+      [label]="'organizations.form.phone' | translate"
+      forId="organization-phone"
+      formControlName="phone"></app-form-control-field>
+    <app-form-control-field
+      [label]="'organizations.form.email' | translate"
+      forId="organization-email"
+      type="email"
+      formControlName="email"></app-form-control-field>
+  </div>
+
+  <div class="grid two">
+    <app-form-control-field
+      [label]="'organizations.form.line1' | translate"
+      forId="organization-line1"
+      formControlName="line1"></app-form-control-field>
+    <app-form-control-field
+      [label]="'organizations.form.line2' | translate"
+      forId="organization-line2"
+      formControlName="line2"></app-form-control-field>
+    <app-form-control-field
+      [label]="'organizations.form.postalCode' | translate"
+      forId="organization-postal-code"
+      formControlName="postalCode"></app-form-control-field>
+    <app-form-control-field
+      [label]="'organizations.form.city' | translate"
+      forId="organization-city"
+      formControlName="city"></app-form-control-field>
+  </div>
+
+  <app-form-control-field
+    [label]="'organizations.form.country' | translate"
+    forId="organization-country"
+    formControlName="country"></app-form-control-field>
+
+  @if (editable || isCreate) {
+    <div class="actions">
+      <button type="button" class="btn btn-neutral" (click)="cancel.emit()">{{ 'common.cancel' | translate }}</button>
+      <button type="submit" class="btn btn-primary">{{ 'common.save' | translate }}</button>
+    </div>
+  }
+</form>

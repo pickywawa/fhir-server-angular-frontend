@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-004",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT004"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Müller",
+      "given": ["Sophie"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 56 78 90 12"
+    },
+    {
+      "system": "email",
+      "value": "sophie.muller@hospital.fr"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1972-05-18",
+  "address": [
+    {
+      "use": "work",
+      "line": ["321 Avenue de l'Endocrinologie"],
+      "city": "Toulouse",
+      "postalCode": "31000",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "83189004"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "83189004",
+            "display": "Endocrinologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université Toulouse III"
+      },
+      "period": {
+        "start": "1997-09-01"
+      }
+    }
+  ]
+}

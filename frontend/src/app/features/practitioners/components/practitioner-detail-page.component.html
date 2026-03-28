@@ -1,0 +1,28 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  @if (practitioner) {
+    <div class="page">
+      <app-bubble-card>
+        <div class="summary">
+          <div class="avatar">{{ (practitioner.firstName.charAt(0) || '') + (practitioner.lastName.charAt(0) || '') }}</div>
+          <div>
+            <h1>{{ practitioner.firstName }} {{ practitioner.lastName }}</h1>
+            <p>{{ practitioner.profession || ('practitioners.detail.noProfession' | translate) }} <span class="dot">•</span> {{ practitioner.mainIdentifier || ('practitioners.detail.noIdentifier' | translate) }}</p>
+          </div>
+        </div>
+      </app-bubble-card>
+      <app-practitioner-details-form
+        [practitioner]="practitioner"
+        [loading]="loading"
+        [createMode]="createMode"
+        (save)="onSave($event)"
+      ></app-practitioner-details-form>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="state">{{ 'common.loading' | translate }}</div>
+  }
+  @if (error) {
+    <div class="state error">{{ error }}</div>
+  }
+</app-module-shell>

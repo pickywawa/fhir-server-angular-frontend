@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-field label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--input-border, #cbd5e1);
+  border-radius: 10px;
+  padding: 0.5rem 0.7rem;
+  font-family: inherit;
+  background: var(--input-bg, #ffffff);
+  color: var(--input-text, #0f172a);
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--focus-ring, #3b82f6);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 22%, transparent);
+}
+
+.form-field input:disabled,
+.form-field select:disabled,
+.form-field textarea:disabled,
+.form-field.is-disabled input,
+.form-field.is-disabled select,
+.form-field.is-disabled textarea {
+  background: var(--disabled-bg, color-mix(in oklab, var(--card-bg-soft, #f1f5f9) 85%, white));
+  color: var(--disabled-text, #64748b);
+  border-color: var(--border-color);
+  border-style: dashed;
+  opacity: 1;
+  cursor: not-allowed;
+}

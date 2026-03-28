@@ -1,0 +1,53 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  @if (questionnaire) {
+    <div class="page">
+      <app-bubble-card>
+        <div class="summary">
+          <h1>{{ questionnaire.title || ('questionnaires.detail.new' | translate) }}</h1>
+          <p>
+            <span>{{ ('questionnaires.status.' + questionnaire.status) | translate }}</span>
+            @if (questionnaire.id) {
+              <span class="dot">•</span>
+              <span>ID {{ questionnaire.id }}</span>
+            }
+          </p>
+        </div>
+      </app-bubble-card>
+
+      <div #editorLayout class="editor-layout" [style.gridTemplateColumns]="editorLayoutColumns">
+        <div class="panel editor-panel">
+          <app-questionnaire-form
+            [questionnaire]="questionnaire"
+            [createMode]="createMode"
+            [loading]="loading"
+            (save)="onSave($event)"
+            (questionnaireChange)="onQuestionnaireChange($event)"
+          ></app-questionnaire-form>
+        </div>
+
+        <div
+          class="resize-bar"
+          [class.dragging]="resizing"
+          (pointerdown)="startResize($event)"
+          (dblclick)="resetPanelSize()"
+          [attr.aria-label]="'questionnaires.preview.resize' | translate"
+          role="separator"
+        >
+          <span></span>
+        </div>
+
+        <div class="panel preview-panel">
+          <app-questionnaire-renderer [questionnaire]="previewQuestionnaire"></app-questionnaire-renderer>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (loading && !questionnaire) {
+    <div class="state-message">{{ 'common.loading' | translate }}</div>
+  }
+
+  @if (error) {
+    <div class="state-message error">{{ error }}</div>
+  }
+</app-module-shell>

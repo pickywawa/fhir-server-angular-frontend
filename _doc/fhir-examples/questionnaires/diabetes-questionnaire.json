@@ -1,0 +1,201 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "active",
+  "title": "Diabetes Follow-up Questionnaire",
+  "description": "Example FHIR Questionnaire for diabetes follow-up, self-management, complications and treatment review.",
+  "subjectType": ["Patient"],
+  "date": "2026-03-21T00:00:00Z",
+  "item": [
+    {
+      "linkId": "grp-general",
+      "text": "General diabetes history",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "diabetes-type",
+          "text": "Diabetes type",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            { "valueString": "Type 1" },
+            { "valueString": "Type 2" },
+            { "valueString": "Gestational history" },
+            { "valueString": "Other" }
+          ]
+        },
+        {
+          "linkId": "diagnosis-year",
+          "text": "Year of diagnosis",
+          "type": "integer"
+        },
+        {
+          "linkId": "latest-hba1c",
+          "text": "Latest HbA1c percentage",
+          "type": "quantity"
+        }
+      ]
+    },
+    {
+      "linkId": "grp-treatment",
+      "text": "Treatment",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "insulin-therapy",
+          "text": "Currently on insulin therapy?",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "insulin-regimen",
+          "text": "Insulin regimen",
+          "type": "choice",
+          "enableWhen": [
+            {
+              "question": "insulin-therapy",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ],
+          "answerOption": [
+            { "valueString": "Basal only" },
+            { "valueString": "Basal-bolus" },
+            { "valueString": "Premixed" },
+            { "valueString": "Pump" }
+          ]
+        },
+        {
+          "linkId": "oral-treatment",
+          "text": "Current oral or injectable non-insulin treatments",
+          "type": "choice",
+          "repeats": true,
+          "answerOption": [
+            { "valueString": "Metformin" },
+            { "valueString": "Sulfonylurea" },
+            { "valueString": "DPP-4 inhibitor" },
+            { "valueString": "GLP-1 receptor agonist" },
+            { "valueString": "SGLT2 inhibitor" }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-self-monitoring",
+      "text": "Self-monitoring and lifestyle",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "glucose-monitoring",
+          "text": "How is glucose monitored?",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            { "valueString": "Fingerstick" },
+            { "valueString": "Continuous glucose monitor" },
+            { "valueString": "Both" },
+            { "valueString": "Not monitoring" }
+          ]
+        },
+        {
+          "linkId": "hypoglycemia",
+          "text": "Any symptomatic hypoglycemia in the last month?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "hypoglycemia-frequency",
+          "text": "How many hypoglycemic episodes?",
+          "type": "integer",
+          "enableWhen": [
+            {
+              "question": "hypoglycemia",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "physical-activity",
+          "text": "Days per week with at least 30 minutes physical activity",
+          "type": "integer"
+        },
+        {
+          "linkId": "diet-adherence",
+          "text": "Self-rated adherence to nutrition plan",
+          "type": "choice",
+          "answerOption": [
+            { "valueString": "Poor" },
+            { "valueString": "Fair" },
+            { "valueString": "Good" },
+            { "valueString": "Excellent" }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-complications",
+      "text": "Complications screening",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "retinopathy-screen",
+          "text": "Eye screening up to date?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "foot-ulcer-history",
+          "text": "History of foot ulcer?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "neuropathy-symptoms",
+          "text": "Neuropathy symptoms present?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "renal-concern",
+          "text": "Known renal impairment?",
+          "type": "boolean"
+        },
+        {
+          "linkId": "renal-comment",
+          "text": "Renal follow-up comment",
+          "type": "text",
+          "enableWhen": [
+            {
+              "question": "renal-concern",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "grp-prevention",
+      "text": "Cardiovascular prevention",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "smoking-status",
+          "text": "Current smoking status",
+          "type": "choice",
+          "answerOption": [
+            { "valueString": "Never" },
+            { "valueString": "Former smoker" },
+            { "valueString": "Current smoker" }
+          ]
+        },
+        {
+          "linkId": "bp-systolic",
+          "text": "Latest systolic blood pressure",
+          "type": "integer"
+        },
+        {
+          "linkId": "statin-therapy",
+          "text": "Currently on statin therapy?",
+          "type": "boolean"
+        }
+      ]
+    }
+  ]
+}

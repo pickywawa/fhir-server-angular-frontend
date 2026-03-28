@@ -1,0 +1,74 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="patient-list-page">
+    <app-bubble-card [title]="'patients.search.title' | translate">
+      <form [formGroup]="searchForm" (ngSubmit)="search()" class="search-form">
+        <div class="search-grid">
+          <div class="search-field">
+            <label for="family">{{ 'patients.search.family' | translate }}</label>
+            <input id="family" type="text" formControlName="family" [placeholder]="'patients.search.familyPlaceholder' | translate" />
+          </div>
+
+          <div class="search-field">
+            <label for="given">{{ 'patients.search.given' | translate }}</label>
+            <input id="given" type="text" formControlName="given" [placeholder]="'patients.search.givenPlaceholder' | translate" />
+          </div>
+
+          <div class="search-field">
+            <label for="birthDate">{{ 'patients.search.birthDate' | translate }}</label>
+            <input id="birthDate" type="date" formControlName="birthDate" />
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <button type="submit" class="btn btn-primary">{{ 'search.button' | translate }}</button>
+          <button type="button" class="btn btn-neutral" (click)="resetSearch()">{{ 'patients.search.reset' | translate }}</button>
+        </div>
+      </form>
+    </app-bubble-card>
+
+    <app-bubble-card [title]="'patients.worklist.title' | translate">
+      <div bubbleActions>
+        <button type="button" class="btn btn-primary" (click)="addPatient()">{{ 'patients.worklist.add' | translate }}</button>
+      </div>
+
+      @if (loading) {
+        <div class="state-message">{{ 'common.loading' | translate }}</div>
+      }
+
+      @if (error) {
+        <div class="state-message error">
+          {{ 'patients.worklist.error' | translate }}: {{ error }}
+        </div>
+      }
+
+      @if (!loading && !error) {
+        <div class="worklist">
+          @for (patient of results; track patient) {
+            <app-result-list-item (rowClick)="openPatient(patient)">
+              <div class="identity result-start">
+                <strong>{{ patient.lastName }} {{ patient.firstName }}</strong>
+                <span>{{ patient.birthDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="meta result-center">
+                <span>{{ patient.gender }}</span>
+                <span>{{ patient.phoneNumber || '-' }}</span>
+              </div>
+              <div class="meta result-end">{{ patient.email || '-' }}</div>
+            </app-result-list-item>
+          }
+          @if (hasSearched && results.length === 0) {
+            <div class="state-message">
+              {{ 'patients.worklist.empty' | translate }}
+            </div>
+          }
+        </div>
+      }
+
+      @if (!loading && !error && !hasSearched) {
+        <div class="state-message">
+          {{ 'patients.worklist.prompt' | translate }}
+        </div>
+      }
+    </app-bubble-card>
+  </div>
+</app-module-shell>

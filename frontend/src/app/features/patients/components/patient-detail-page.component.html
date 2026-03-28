@@ -1,0 +1,28 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  @if (patient) {
+    <div class="page">
+      <app-bubble-card>
+        <div class="summary">
+          <div class="avatar">{{ (patient.firstName.charAt(0) || '') + (patient.lastName.charAt(0) || '') }}</div>
+          <div>
+            <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
+            <p>{{ patient.birthDate | date: 'dd/MM/yyyy' }} <span class="dot">•</span> {{ patient.gender || ('patients.detailPage.unknownGender' | translate) }}</p>
+          </div>
+        </div>
+      </app-bubble-card>
+      <app-patient-details-form
+        [patient]="patient"
+        [loading]="loading"
+        [createMode]="createMode"
+        (save)="onSave($event)"
+      ></app-patient-details-form>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="state">{{ 'common.loading' | translate }}</div>
+  }
+  @if (error) {
+    <div class="state error">{{ error }}</div>
+  }
+</app-module-shell>

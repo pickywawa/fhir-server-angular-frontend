@@ -1,0 +1,23 @@
+{
+  "resourceType": "CodeSystem",
+  "url": "https://healthapp.local/fhir/CodeSystem/care-plan-category/fr_FR",
+  "version": "1.0.0",
+  "name": "CarePlanCategoryFrFR",
+  "title": "Catégories de plan de soins (fr_FR)",
+  "status": "active",
+  "content": "complete",
+  "language": "fr-FR",
+  "description": "Catégories pour la classification des plans de soins (CarePlan). Basé sur http://hl7.org/fhir/ValueSet/care-plan-category.",
+  "concept": [
+    { "code": "assess-plan",    "display": "Évaluation et plan de traitement" },
+    { "code": "nursing",        "display": "Plan de soins infirmiers" },
+    { "code": "medication",     "display": "Plan de gestion médicamenteuse" },
+    { "code": "rehabilitation", "display": "Plan de rééducation / réadaptation" },
+    { "code": "patient-education", "display": "Éducation thérapeutique du patient" },
+    { "code": "preventive",     "display": "Plan de soins préventifs" },
+    { "code": "palliative",     "display": "Plan de soins palliatifs" },
+    { "code": "surgical",       "display": "Plan de soins chirurgicaux" },
+    { "code": "mental-health",  "display": "Plan de santé mentale" },
+    { "code": "chronic-disease","display": "Plan de gestion des maladies chroniques" }
+  ]
+}

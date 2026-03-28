@@ -1,0 +1,117 @@
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  background: var(--card-bg);
+}
+
+.member-main {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.member-remove {
+  margin-left: auto;
+  border: 1px solid #fecaca;
+  background: rgba(190, 18, 60, 0.08);
+  color: #be123c;
+  border-radius: 10px;
+  padding: 0.4rem 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--card-bg-soft);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 0.94rem;
+  }
+
+  span {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+  }
+}
+
+.state-message {
+  color: var(--text-secondary);
+}
+
+.state-message.error {
+  color: #b91c1c;
+}
+
+.confirm-delete {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.45rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn.secondary {
+  background: var(--card-bg-soft, #f8fafc);
+  border-color: var(--border-color, #dbe3ea);
+  color: var(--text-primary, #334155);
+}
+
+.btn.danger {
+  background: #be123c;
+  color: #ffffff;
+}
+
+.btn:disabled,
+.member-remove:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

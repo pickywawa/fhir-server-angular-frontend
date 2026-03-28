@@ -1,0 +1,29 @@
+<section class="module-shell">
+  <header class="module-header">
+    <button type="button" class="module-menu-btn" (click)="toggleMenu()" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M4 7h16"></path>
+        <path d="M4 12h16"></path>
+        <path d="M4 17h16"></path>
+      </svg>
+    </button>
+    @if (breadcrumbs.length > 0) {
+      <nav [attr.aria-label]="'common.breadcrumb' | translate" class="breadcrumb-nav">
+        @for (crumb of breadcrumbs; track crumb; let last = $last) {
+          @if (crumb.route) {
+            <a [routerLink]="crumb.route">{{ crumb.label | translate }}</a>
+          } @else {
+            <span>{{ crumb.label | translate }}</span>
+          }
+          @if (!last) {
+            <span class="sep">/</span>
+          }
+        }
+      </nav>
+    }
+  </header>
+
+  <div class="module-body">
+    <ng-content></ng-content>
+  </div>
+</section>

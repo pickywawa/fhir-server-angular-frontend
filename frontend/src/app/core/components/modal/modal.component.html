@@ -1,0 +1,14 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal-container" role="dialog" aria-modal="true" [attr.aria-label]="title || ('common.modal' | translate)">
+    <header class="modal-header">
+      <h2>{{ title }}</h2>
+      <button type="button" class="close-btn" (click)="close.emit()" [attr.aria-label]="'common.close' | translate">
+        ×
+      </button>
+    </header>
+
+    <section class="modal-body">
+      <ng-content></ng-content>
+    </section>
+  </div>
+</div>

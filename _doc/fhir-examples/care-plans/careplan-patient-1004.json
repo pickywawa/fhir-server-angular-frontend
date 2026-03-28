@@ -1,0 +1,15 @@
+{
+  "resourceType": "CarePlan",
+  "identifier": [{ "system": "urn:ietf:rfc:3986", "value": "urn:uuid:PATIENT_1004_UUID" }],
+  "status": "active",
+  "intent": "option",
+  "title": "Plan de soins pre et post-operatoire",
+  "description": "Preparation chirurgicale, suivi post-operatoire et reeducation apres intervention.",
+  "subject": { "reference": "Patient/1004", "display": "Alexis PICARD" },
+  "created": "2025-08-03",
+  "category": [{
+    "coding": [{ "system": "https://healthapp.local/fhir/CodeSystem/care-plan-category/fr_FR", "code": "surgical", "display": "Plan de soins chirurgicaux" }],
+    "text": "Plan de soins chirurgicaux"
+  }],
+  "note": [{ "text": "Bilan pre-operatoire complet. Consultation anesthesie programmee. Sortie prevue J+3." }]
+}

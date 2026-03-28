@@ -1,29 +1,36 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ToastService, Toast } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="toast-container">
-      <div
-        *ngFor="let toast of toasts"
-        class="toast"
-        [class.success]="toast.type === 'success'"
-        [class.error]="toast.type === 'error'"
-        [class.info]="toast.type === 'info'"
-      >
-        <span class="icon">
-          <ng-container *ngIf="toast.type === 'success'">✓</ng-container>
-          <ng-container *ngIf="toast.type === 'error'">✕</ng-container>
-          <ng-container *ngIf="toast.type === 'info'">ℹ</ng-container>
-        </span>
-        <span class="message">{{ toast.message }}</span>
-      </div>
+      @for (toast of toasts; track toast) {
+        <div
+          class="toast"
+          [class.success]="toast.type === 'success'"
+          [class.error]="toast.type === 'error'"
+          [class.info]="toast.type === 'info'"
+          >
+          <span class="icon">
+            @if (toast.type === 'success') {
+              ✓
+            }
+            @if (toast.type === 'error') {
+              ✕
+            }
+            @if (toast.type === 'info') {
+              ℹ
+            }
+          </span>
+          <span class="message">{{ toast.message }}</span>
+        </div>
+      }
     </div>
-  `,
+    `,
   styles: [`
     .toast-container {
       position: fixed;

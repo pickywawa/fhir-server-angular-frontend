@@ -1,0 +1,15 @@
+{
+  "resourceType": "CarePlan",
+  "identifier": [{ "system": "urn:ietf:rfc:3986", "value": "urn:uuid:PATIENT_1000_UUID" }],
+  "status": "draft",
+  "intent": "plan",
+  "title": "Plan de gestion de maladie chronique",
+  "description": "Suivi longitudinal d une pathologie chronique avec objectifs therapeutiques, surveillance biologique et adaptation du traitement.",
+  "subject": { "reference": "Patient/1000", "display": "Jeannot Dupont" },
+  "created": "2025-08-11",
+  "category": [{
+    "coding": [{ "system": "https://healthapp.local/fhir/CodeSystem/care-plan-category/fr_FR", "code": "chronic-disease", "display": "Plan de gestion des maladies chroniques" }],
+    "text": "Plan de gestion des maladies chroniques"
+  }],
+  "note": [{ "text": "HbA1c a controler dans 3 mois. Consultation diabetologue annuelle. Bilan ophtalmologique prevu." }]
+}

@@ -1,0 +1,66 @@
+<app-bubble-card [title]="titleKey | translate">
+  <div bubbleActions>
+    @if (!editMode) {
+      <button type="button" class="btn btn-primary" (click)="toggleEdit()">{{ 'myPatients.identity.edit' | translate }}</button>
+    }
+    @if (editMode) {
+      <button type="button" class="btn btn-neutral" (click)="cancelEdit()" [disabled]="loading">{{ 'common.cancel' | translate }}</button>
+      <button type="submit" class="btn btn-primary" form="patient-details-form" [disabled]="loading || form.invalid">{{ createMode ? ('patients.form.add' | translate) : ('common.save' | translate) }}</button>
+    }
+  </div>
+  <form id="patient-details-form" [formGroup]="form" class="details-form" (ngSubmit)="submit()">
+    <div class="grid">
+      <div class="field">
+        <app-form-control-field [label]="('patients.form.firstName' | translate) + ' *'" forId="firstName" formControlName="firstName"></app-form-control-field>
+        @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
+          <small class="error">
+            {{ 'patients.form.requiredFirstName' | translate }}
+          </small>
+        }
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="('patients.form.lastName' | translate) + ' *'" forId="lastName" formControlName="lastName"></app-form-control-field>
+        @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+          <small class="error">
+            {{ 'patients.form.requiredLastName' | translate }}
+          </small>
+        }
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'patients.form.birthDate' | translate" forId="birthDate" type="date" formControlName="birthDate"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field
+          [label]="'patients.form.genderLabel' | translate"
+          forId="gender"
+          kind="select"
+          [options]="[
+            { value: 'unknown', label: ('patients.form.gender.unknown' | translate) },
+            { value: 'male', label: ('patients.form.gender.male' | translate) },
+            { value: 'female', label: ('patients.form.gender.female' | translate) },
+            { value: 'other', label: ('patients.form.gender.other' | translate) }
+          ]"
+          formControlName="gender"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'patients.form.email' | translate" forId="email" type="email" formControlName="email"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'patients.form.phone' | translate" forId="phoneNumber" type="tel" formControlName="phoneNumber"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'patients.form.address' | translate" forId="address" formControlName="address"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'patients.form.city' | translate" forId="city" formControlName="city"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'patients.form.postalCode' | translate" forId="postalCode" formControlName="postalCode"></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field [label]="'patients.form.country' | translate" forId="country" formControlName="country"></app-form-control-field>
+      </div>
+    </div>
+
+  </form>
+</app-bubble-card>

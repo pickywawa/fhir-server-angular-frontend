@@ -1,0 +1,15 @@
+{
+  "resourceType": "CarePlan",
+  "identifier": [{ "system": "urn:ietf:rfc:3986", "value": "urn:uuid:PATIENT_1003_UUID" }],
+  "status": "completed",
+  "intent": "plan",
+  "title": "Plan de gestion medicamenteuse",
+  "description": "Suivi et adaptation du traitement medicamenteux selon l evolution clinique et les resultats biologiques.",
+  "subject": { "reference": "Patient/1003", "display": "Sophie Dubois" },
+  "created": "2025-05-19",
+  "category": [{
+    "coding": [{ "system": "https://healthapp.local/fhir/CodeSystem/care-plan-category/fr_FR", "code": "medication", "display": "Plan de gestion medicamenteuse" }],
+    "text": "Plan de gestion medicamenteuse"
+  }],
+  "note": [{ "text": "Renouvellement ordonnances a prevoir. Allergie penicilline a surveiller." }]
+}

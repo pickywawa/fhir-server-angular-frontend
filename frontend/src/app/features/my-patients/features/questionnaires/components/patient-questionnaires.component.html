@@ -1,0 +1,34 @@
+<div class="questionnaires-layout">
+  <app-bubble-card [title]="'myPatients.questionnaires.title' | translate">
+    <div bubbleActions>
+      <button type="button" class="btn primary" (click)="openModelPicker()">{{ 'myPatients.questionnaires.add' | translate }}</button>
+    </div>
+
+    @if (loading) {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading && error) {
+      <div class="state error">{{ error }}</div>
+    }
+
+    @if (!loading && !error) {
+      <div class="response-list">
+        @for (response of responses; track response.id) {
+          <button type="button" class="response-row" (click)="openResponse(response)">
+            <div class="identity">
+              <strong>{{ getResponseLabel(response) }}</strong>
+              <span>{{ response.authored ? (response.authored | date:'dd/MM/yyyy HH:mm') : '-' }}</span>
+            </div>
+            <span class="status">{{ response.status }}</span>
+          </button>
+        }
+
+        @if (responses.length === 0) {
+          <div class="state">{{ 'myPatients.questionnaires.empty' | translate }}</div>
+        }
+      </div>
+    }
+  </app-bubble-card>
+
+</div>

@@ -1,0 +1,100 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="page">
+    <app-bubble-card [title]="'organizations.search.title' | translate">
+      <form [formGroup]="searchForm" (ngSubmit)="search()" class="search-form">
+        <div class="search-grid">
+          <div class="search-field">
+            <label for="identifier">{{ 'organizations.search.identifier' | translate }}</label>
+            <input id="identifier" type="text" formControlName="identifier" [placeholder]="'organizations.search.identifierPlaceholder' | translate" />
+          </div>
+          <div class="search-field">
+            <label for="name">{{ 'organizations.search.name' | translate }}</label>
+            <input id="name" type="text" formControlName="name" [placeholder]="'organizations.search.namePlaceholder' | translate" />
+          </div>
+          <div class="search-field">
+            <label for="active">{{ 'organizations.search.active' | translate }}</label>
+            <select id="active" formControlName="active">
+              <option value="">{{ 'organizations.status.all' | translate }}</option>
+              <option value="true">{{ 'organizations.status.active' | translate }}</option>
+              <option value="false">{{ 'organizations.status.inactive' | translate }}</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label for="typeCode">{{ 'organizations.search.type' | translate }}</label>
+            <select id="typeCode" formControlName="typeCode">
+              <option value="">{{ 'organizations.search.allTypes' | translate }}</option>
+              @for (option of typeOptions; track option.code) {
+                <option [value]="option.code">{{ option.display }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="search-actions">
+          <button type="submit" class="btn btn-primary">{{ 'search.button' | translate }}</button>
+          <button type="button" class="btn btn-neutral" (click)="resetSearch()">{{ 'patients.search.reset' | translate }}</button>
+        </div>
+      </form>
+    </app-bubble-card>
+
+    <app-bubble-card [title]="'organizations.worklist.title' | translate">
+      <div bubbleActions>
+        <button type="button" class="btn btn-primary" (click)="addOrganization()">{{ 'organizations.worklist.add' | translate }}</button>
+      </div>
+
+      @if (loading) {
+        <div class="state">{{ 'common.loading' | translate }}</div>
+      }
+
+      @if (!loading && error) {
+        <div class="state error">{{ error }}</div>
+      }
+
+      @if (!loading && !error) {
+        <div class="worklist">
+          <ng-template #renderNodes let-nodes let-depth="depth">
+            @for (node of nodes; track node.item.id) {
+              <div class="tree-card" [class.depth-child]="depth > 0">
+                <button type="button" class="tree-card-header" (click)="openOrganization(node.item)">
+                  <div class="identity">
+                    <strong>{{ node.item.name }}</strong>
+                    <span>{{ node.item.identifier || ('organizations.worklist.noIdentifier' | translate) }}</span>
+                    @if (node.item.typeDisplay) {
+                      <span class="type-label">{{ node.item.typeDisplay }}</span>
+                    }
+                    <span class="description">{{ node.item.description || ('organizations.worklist.noDescription' | translate) }}</span>
+                  </div>
+                  <div class="details-center">
+                    @if (node.item.addressPostalCode || node.item.addressCity) {
+                      <span>{{ node.item.addressPostalCode }} {{ node.item.addressCity }}</span>
+                    }
+                    @for (contact of node.item.contacts; track contact.value) {
+                      <span>{{ contact.system }}: {{ contact.value }}</span>
+                    }
+                  </div>
+                  <div class="meta">
+                    <span class="status" [class.inactive]="!node.item.active">{{ node.item.active ? ('organizations.status.active' | translate) : ('organizations.status.inactive' | translate) }}</span>
+                  </div>
+                </button>
+                @if (node.children.length > 0) {
+                  <div class="tree-children">
+                    <ng-container *ngTemplateOutlet="renderNodes; context: { $implicit: node.children, depth: depth + 1 }"></ng-container>
+                  </div>
+                }
+              </div>
+            }
+          </ng-template>
+
+          <ng-container *ngTemplateOutlet="renderNodes; context: { $implicit: treeItems, depth: 0 }"></ng-container>
+
+          @if (hasSearched && results.length === 0) {
+            <div class="state">{{ 'organizations.worklist.empty' | translate }}</div>
+          }
+
+          @if (!hasSearched && defaultItems.length === 0) {
+            <div class="state">{{ 'organizations.worklist.noDefault' | translate }}</div>
+          }
+        </div>
+      }
+    </app-bubble-card>
+  </div>
+</app-module-shell>

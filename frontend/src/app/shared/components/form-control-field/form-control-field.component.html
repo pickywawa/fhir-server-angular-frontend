@@ -1,0 +1,40 @@
+<div class="form-field" [class.is-disabled]="isDisabled">
+  @if (label) {
+    <label [attr.for]="forId || null">{{ label }}</label>
+  }
+
+  @switch (kind) {
+    @case ('select') {
+      <select
+        [id]="forId || null"
+        [disabled]="isDisabled"
+        [value]="value"
+        (change)="onValueChange($any($event.target).value)"
+        (blur)="markTouched()">
+        @for (option of options; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    }
+    @case ('textarea') {
+      <textarea
+        [id]="forId || null"
+        [rows]="rows"
+        [disabled]="isDisabled"
+        [placeholder]="placeholder"
+        [value]="value"
+        (input)="onValueChange($any($event.target).value)"
+        (blur)="markTouched()"></textarea>
+    }
+    @default {
+      <input
+        [id]="forId || null"
+        [type]="type"
+        [disabled]="isDisabled"
+        [placeholder]="placeholder"
+        [value]="value"
+        (input)="onValueChange($any($event.target).value)"
+        (blur)="markTouched()" />
+    }
+  }
+</div>

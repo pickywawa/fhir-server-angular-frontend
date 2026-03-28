@@ -1,0 +1,15 @@
+{
+  "resourceType": "CarePlan",
+  "identifier": [{ "system": "urn:ietf:rfc:3986", "value": "urn:uuid:PATIENT_1001_UUID" }],
+  "status": "revoked",
+  "intent": "order",
+  "title": "Plan de soins palliatifs et confort",
+  "description": "Prise en charge palliative centree sur le confort, la gestion de la douleur et l accompagnement de l entourage.",
+  "subject": { "reference": "Patient/1001", "display": "Marie Martin" },
+  "created": "2025-04-20",
+  "category": [{
+    "coding": [{ "system": "https://healthapp.local/fhir/CodeSystem/care-plan-category/fr_FR", "code": "palliative", "display": "Plan de soins palliatifs" }],
+    "text": "Plan de soins palliatifs"
+  }],
+  "note": [{ "text": "Equipe mobile de soins palliatifs impliquee. Directives anticipees signees le mois dernier." }]
+}

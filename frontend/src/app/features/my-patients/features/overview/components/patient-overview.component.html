@@ -1,0 +1,15 @@
+<div class="overview-content">
+  <div class="overview-priority-grid">
+    <app-patient-careplan [patientId]="patient.id"></app-patient-careplan>
+    <div class="overview-secondary-stack">
+      <app-care-team [patientId]="patient.id"></app-care-team>
+      <app-related-persons [patientId]="patient.id"></app-related-persons>
+    </div>
+  </div>
+
+  <app-patient-identity-card
+    [patient]="patient"
+    [loading]="loading"
+    (save)="onSaveIdentity($event)"
+  ></app-patient-identity-card>
+</div>

@@ -1,0 +1,185 @@
+:host {
+  display: block;
+}
+
+.profile-page {
+  display: grid;
+  gap: 1.2rem;
+}
+
+/* ── Hero card ───────────────────────────────────────────── */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+
+  .avatar-big {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a73e8, #0f4dc4);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .profile-identity {
+    flex: 1;
+
+    h2 {
+      margin: 0 0 0.2rem;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+    }
+
+    .login-badge {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-family: monospace;
+      background: var(--chip-bg);
+      color: var(--chip-text);
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+    }
+  }
+
+  .btn-edit {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg-soft);
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--input-bg);
+      border-color: #1a73e8;
+      color: #1a73e8;
+    }
+  }
+}
+
+/* ── Form ────────────────────────────────────────────────── */
+.loading-hint {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  margin-bottom: 0.75rem;
+}
+
+.profile-form {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input {
+    padding: 0.55rem 0.85rem;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    background: var(--disabled-bg);
+    color: var(--disabled-text);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+
+    &.editable,
+    &:not(:disabled) {
+      background: var(--input-bg);
+      color: var(--input-text);
+      border-color: var(--input-border);
+
+      &:focus {
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 3px var(--focus-ring);
+      }
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  .field-hint {
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+  }
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+
+  .btn {
+    padding: 0.55rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-cancel {
+    background: var(--card-bg-soft);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+
+    &:hover:not(:disabled) {
+      background: var(--input-bg);
+    }
+  }
+
+  .btn-save {
+    background: linear-gradient(135deg, #1a73e8, #0f4dc4);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  }
+}

@@ -1,0 +1,49 @@
+<app-bubble-card title="CarePlan">
+  @if (loading) {
+    <div class="state-message">Chargement du CarePlan...</div>
+  }
+
+  @if (!loading && error) {
+    <div class="state-message error">{{ error }}</div>
+  }
+
+  @if (!loading && !error && carePlanOptions.length === 0) {
+    <div class="state-message">Aucun CarePlan trouvé pour ce patient.</div>
+  }
+
+  @if (!loading && !error && carePlanOptions.length > 0) {
+    <form [formGroup]="form" class="careplan-form" (ngSubmit)="save()">
+      <app-form-control-field
+        label="Plan"
+        forId="carePlanId"
+        kind="select"
+        [options]="carePlanSelectOptions"
+        formControlName="carePlanId"></app-form-control-field>
+
+      <div class="grid two">
+        <app-form-control-field label="Status" forId="status" kind="select" [options]="statusOptions" formControlName="status"></app-form-control-field>
+
+        <app-form-control-field label="Intent" forId="intent" kind="select" [options]="intentOptions" formControlName="intent"></app-form-control-field>
+      </div>
+
+      <app-form-control-field
+        label="Catégorie"
+        forId="categoryCode"
+        kind="select"
+        [options]="categorySelectOptions"
+        formControlName="categoryCode"></app-form-control-field>
+
+      <app-form-control-field label="Titre" forId="title" formControlName="title"></app-form-control-field>
+
+      <app-form-control-field label="Description" forId="description" kind="textarea" [rows]="3" formControlName="description"></app-form-control-field>
+
+      <app-form-control-field label="Commentaire" forId="note" kind="textarea" [rows]="3" formControlName="note"></app-form-control-field>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary" [disabled]="saving">
+          {{ saving ? 'Enregistrement...' : 'Enregistrer le CarePlan' }}
+        </button>
+      </div>
+    </form>
+  }
+</app-bubble-card>

@@ -1,0 +1,63 @@
+<app-bubble-card [title]="'myPatients.careTeam.title' | translate">
+  <div class="card-header">
+    <app-button-primary (click)="openAddDialog()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>{{ 'myPatients.careTeam.add' | translate }}</span>
+    </app-button-primary>
+  </div>
+
+  @if (loading) {
+    <div class="state-message">{{ 'myPatients.careTeam.loading' | translate }}</div>
+  }
+
+  @if (!loading && error) {
+    <div class="state-message error">{{ error }}</div>
+  }
+
+  @if (!loading && !error && members.length > 0) {
+    <div class="member-list">
+      @for (member of members; track member) {
+        <div class="member-row">
+          <div class="member-main">
+            <div class="avatar">{{ member.name.charAt(0) | uppercase }}</div>
+            <div class="content">
+              <strong>{{ member.name }}</strong>
+              <span>{{ member.role }}</span>
+            </div>
+          </div>
+          <button type="button" class="member-remove" (click)="confirmRemoveMember(member)">
+            {{ 'myPatients.careTeam.remove' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!loading && !error && members.length === 0) {
+    <div class="state-message">
+      {{ 'myPatients.careTeam.empty' | translate }}
+    </div>
+  }
+</app-bubble-card>
+
+@if (showAddDialog) {
+  <app-add-care-team-member-dialog
+    (save)="onAddMember($event)"
+    (cancel)="closeAddDialog()"
+  ></app-add-care-team-member-dialog>
+}
+
+@if (showDeleteDialog && selectedMember) {
+  <app-modal [title]="'myPatients.careTeam.confirm.title' | translate" (close)="closeDeleteDialog()">
+    <div class="confirm-delete">
+      <p>{{ 'myPatients.careTeam.confirm.message' | translate:{ name: selectedMember.name } }}</p>
+      <div class="confirm-actions">
+        <button type="button" class="btn secondary" (click)="closeDeleteDialog()" [disabled]="deleting">{{ 'common.cancel' | translate }}</button>
+        <button type="button" class="btn danger" (click)="removeMember()" [disabled]="deleting">{{ deleting ? ('myPatients.careTeam.confirm.deleting' | translate) : ('myPatients.careTeam.confirm.confirm' | translate) }}</button>
+      </div>
+    </div>
+  </app-modal>
+}

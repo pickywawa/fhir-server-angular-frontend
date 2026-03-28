@@ -1,0 +1,168 @@
+.page {
+  display: grid;
+  gap: 1rem;
+}
+
+.search-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  input,
+  select {
+    height: 40px;
+    border: 1px solid var(--input-border, #cbd5e1);
+    border-radius: 10px;
+    padding: 0 0.7rem;
+    background: var(--input-bg, #ffffff);
+    color: var(--input-text, #0f172a);
+  }
+}
+
+.search-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.worklist {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.tree-card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+  overflow: hidden;
+
+  &.depth-child {
+    border-color: color-mix(in oklab, var(--border-color) 60%, transparent);
+  }
+}
+
+.tree-card-header {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.72rem 0.75rem;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.9fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--card-bg-soft);
+  }
+}
+
+.tree-children {
+  border-top: 1px solid var(--border-color);
+  padding: 0.6rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.details-center {
+  display: grid;
+  gap: 0.22rem;
+  align-content: start;
+
+  span {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+  }
+}
+
+.identity {
+  display: grid;
+  gap: 0.22rem;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 0.96rem;
+  }
+
+  span {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+  }
+
+  .type-label {
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .description {
+    margin-top: 0.1rem;
+    font-style: italic;
+  }
+}
+
+.meta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.status {
+  background: color-mix(in oklab, #16a34a 20%, var(--card-bg));
+  color: #166534;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.status.inactive {
+  background: color-mix(in oklab, #ef4444 18%, var(--card-bg));
+  color: #991b1b;
+}
+
+.state {
+  color: var(--text-secondary);
+}
+
+.state.error {
+  color: #b91c1c;
+}
+
+@media (max-width: 900px) {
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tree-card-header {
+    grid-template-columns: 1fr;
+  }
+
+  .meta {
+    justify-items: start;
+  }
+}

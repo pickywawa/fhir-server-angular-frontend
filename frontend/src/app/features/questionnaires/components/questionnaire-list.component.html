@@ -1,0 +1,67 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="page">
+    <app-bubble-card [title]="'questionnaires.search.title' | translate">
+      <form [formGroup]="searchForm" (ngSubmit)="search()" class="search-form">
+        <div class="search-grid">
+          <div class="search-field">
+            <label for="title">{{ 'questionnaires.search.titleField' | translate }}</label>
+            <input id="title" type="text" formControlName="title" [placeholder]="'questionnaires.search.titlePlaceholder' | translate" />
+          </div>
+          <div class="search-field">
+            <label for="status">{{ 'questionnaires.search.statusField' | translate }}</label>
+            <select id="status" formControlName="status">
+              <option value="">{{ 'questionnaires.status.all' | translate }}</option>
+              <option value="draft">{{ 'questionnaires.status.draft' | translate }}</option>
+              <option value="active">{{ 'questionnaires.status.active' | translate }}</option>
+              <option value="retired">{{ 'questionnaires.status.retired' | translate }}</option>
+              <option value="unknown">{{ 'questionnaires.status.unknown' | translate }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="search-actions">
+          <button type="submit" class="btn btn-primary">{{ 'search.button' | translate }}</button>
+          <button type="button" class="btn btn-neutral" (click)="resetSearch()">{{ 'patients.search.reset' | translate }}</button>
+        </div>
+      </form>
+    </app-bubble-card>
+
+    <app-bubble-card [title]="'questionnaires.worklist.title' | translate">
+      <div bubbleActions>
+        <button type="button" class="btn btn-primary" (click)="addQuestionnaire()">{{ 'questionnaires.worklist.add' | translate }}</button>
+      </div>
+
+      @if (loading) {
+        <div class="state">{{ 'common.loading' | translate }}</div>
+      }
+
+      @if (!loading && error) {
+        <div class="state error">{{ error }}</div>
+      }
+
+      @if (!loading && !error) {
+        <div class="worklist">
+          @for (item of (hasSearched ? results : commonQuestionnaires); track item.id) {
+            <app-result-list-item (rowClick)="openQuestionnaire(item)">
+              <div class="identity result-start">
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.description || ('questionnaires.worklist.noDescription' | translate) }}</span>
+              </div>
+              <div class="meta result-end">
+                <span class="status">{{ ('questionnaires.status.' + item.status) | translate }}</span>
+                <span>{{ item.itemCount }} {{ 'questionnaires.worklist.items' | translate }}</span>
+              </div>
+            </app-result-list-item>
+          }
+
+          @if (hasSearched && results.length === 0) {
+            <div class="state">{{ 'questionnaires.worklist.empty' | translate }}</div>
+          }
+
+          @if (!hasSearched && commonQuestionnaires.length === 0) {
+            <div class="state">{{ 'questionnaires.worklist.noCommon' | translate }}</div>
+          }
+        </div>
+      }
+    </app-bubble-card>
+  </div>
+</app-module-shell>

@@ -1,0 +1,69 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <section class="settings-page">
+    <app-bubble-card [title]="'settings.preferences' | translate">
+      <div class="hero">
+        <div>
+          <h2>{{ 'settings.hero.title' | translate }}</h2>
+          <p>{{ 'settings.hero.subtitle' | translate }}</p>
+        </div>
+        <span class="tag">{{ 'settings.hero.badge' | translate }}</span>
+      </div>
+    </app-bubble-card>
+
+    <div class="settings-grid">
+      <app-bubble-card [title]="'settings.theme.title' | translate">
+        <div class="theme-picker">
+          <button
+            type="button"
+            class="theme-card light"
+            [class.active]="theme === 'light'"
+            (click)="setTheme('light')"
+          >
+            <span class="dot"></span>
+            <strong>{{ 'settings.theme.light' | translate }}</strong>
+            <small>{{ 'settings.theme.lightDesc' | translate }}</small>
+          </button>
+
+          <button
+            type="button"
+            class="theme-card dark"
+            [class.active]="theme === 'dark'"
+            (click)="setTheme('dark')"
+          >
+            <span class="dot"></span>
+            <strong>{{ 'settings.theme.dark' | translate }}</strong>
+            <small>{{ 'settings.theme.darkDesc' | translate }}</small>
+          </button>
+        </div>
+      </app-bubble-card>
+
+      <app-bubble-card [title]="'settings.language.title' | translate">
+        <div class="language-picker">
+          <button type="button" class="lang" [class.active]="language === 'fr'" (click)="setLanguage('fr')">
+            <span>FR</span>
+            <small>{{ 'settings.language.fr' | translate }}</small>
+          </button>
+
+          <button type="button" class="lang" [class.active]="language === 'en'" (click)="setLanguage('en')">
+            <span>EN</span>
+            <small>{{ 'settings.language.en' | translate }}</small>
+          </button>
+
+          <button type="button" class="lang" [class.active]="language === 'it'" (click)="setLanguage('it')">
+            <span>IT</span>
+            <small>{{ 'settings.language.it' | translate }}</small>
+          </button>
+
+          <button type="button" class="lang" [class.active]="language === 'de'" (click)="setLanguage('de')">
+            <span>DE</span>
+            <small>{{ 'settings.language.de' | translate }}</small>
+          </button>
+        </div>
+
+        <p class="hint">
+          {{ 'settings.language.hint' | translate }}
+        </p>
+      </app-bubble-card>
+    </div>
+  </section>
+</app-module-shell>

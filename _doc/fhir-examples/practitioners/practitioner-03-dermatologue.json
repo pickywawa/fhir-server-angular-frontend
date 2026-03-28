@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-003",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT003"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Laurent",
+      "given": ["Jean"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 45 67 89 01"
+    },
+    {
+      "system": "email",
+      "value": "jean.laurent@hospital.fr"
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1968-11-30",
+  "address": [
+    {
+      "use": "work",
+      "line": ["789 Rue de la Dermatologie"],
+      "city": "Marseille",
+      "postalCode": "13000",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "83685006"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "83685006",
+            "display": "Dermatologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université d'Aix-Marseille"
+      },
+      "period": {
+        "start": "1993-06-01"
+      }
+    }
+  ]
+}

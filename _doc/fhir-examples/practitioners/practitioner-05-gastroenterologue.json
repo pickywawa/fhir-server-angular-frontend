@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-005",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT005"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Lefevre",
+      "given": ["Thomas"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 67 89 01 23"
+    },
+    {
+      "system": "email",
+      "value": "thomas.lefevre@hospital.fr"
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1967-02-10",
+  "address": [
+    {
+      "use": "work",
+      "line": ["654 Rue de la Gastroentérologie"],
+      "city": "Bordeaux",
+      "postalCode": "33000",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "16290681000119103"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "16290681000119103",
+            "display": "Gastroenterologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université de Bordeaux"
+      },
+      "period": {
+        "start": "1991-06-01"
+      }
+    }
+  ]
+}

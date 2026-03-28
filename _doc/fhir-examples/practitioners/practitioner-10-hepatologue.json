@@ -1,0 +1,63 @@
+{
+  "resourceType": "Practitioner",
+  "id": "pract-010",
+  "identifier": [
+    {
+      "system": "http://example.com/practitioner",
+      "value": "PRACT010"
+    }
+  ],
+  "name": [
+    {
+      "use": "official",
+      "family": "Leclerc",
+      "given": ["Véronique"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+33 1 12 34 56 78"
+    },
+    {
+      "system": "email",
+      "value": "veronique.leclerc@hospital.fr"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1973-01-08",
+  "address": [
+    {
+      "use": "work",
+      "line": ["741 Rue de l'Hépatologie"],
+      "city": "Nantes",
+      "postalCode": "44000",
+      "country": "France"
+    }
+  ],
+  "qualification": [
+    {
+      "identifier": [
+        {
+          "system": "http://snomed.info/sct",
+          "value": "394618009"
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "394618009",
+            "display": "Hepatologist"
+          }
+        ]
+      },
+      "issuer": {
+        "display": "Université de Nantes"
+      },
+      "period": {
+        "start": "1998-09-01"
+      }
+    }
+  ]
+}

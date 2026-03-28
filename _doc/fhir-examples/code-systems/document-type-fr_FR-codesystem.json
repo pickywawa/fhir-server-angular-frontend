@@ -1,0 +1,17 @@
+{
+  "resourceType": "CodeSystem",
+  "url": "https://healthapp.local/fhir/CodeSystem/document-type/fr_FR",
+  "version": "1.0.0",
+  "name": "DocumentTypeFrFR",
+  "title": "Nomenclature types de documents (fr_FR)",
+  "status": "active",
+  "content": "complete",
+  "language": "fr-FR",
+  "concept": [
+    { "code": "34108-1", "display": "Note ambulatoire" },
+    { "code": "18841-7", "display": "Resume de sortie" },
+    { "code": "28570-0", "display": "Note de procedure" },
+    { "code": "47039-3", "display": "Note de consultation" },
+    { "code": "55107-7", "display": "Document de synthese patient" }
+  ]
+}

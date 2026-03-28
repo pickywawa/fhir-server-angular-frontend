@@ -1,0 +1,44 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="page">
+    <app-bubble-card [title]="(createMode ? 'codeSystems.form.title' : 'codeSystems.form.editTitle') | translate">
+      @if (loading) {
+        <div class="state">{{ 'common.loading' | translate }}</div>
+      }
+
+      @if (!loading) {
+        <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="field">
+            <label for="url">{{ 'codeSystems.form.url' | translate }}</label>
+            <input id="url" type="text" formControlName="url" [placeholder]="'codeSystems.form.urlPlaceholder' | translate" />
+          </div>
+
+          <div class="values-header">
+            <h3>{{ 'codeSystems.form.valuesTitle' | translate }}</h3>
+            <button type="button" class="btn btn-neutral" (click)="addValue()">{{ 'codeSystems.form.addValue' | translate }}</button>
+          </div>
+
+          <div formArrayName="values" class="values-list">
+            @for (group of values.controls; track group; let i = $index) {
+              <div [formGroupName]="i" class="value-row">
+                <input type="text" formControlName="code" [placeholder]="'codeSystems.form.code' | translate" />
+                <input type="text" formControlName="display" [placeholder]="'codeSystems.form.display' | translate" />
+                <button type="button" class="btn icon danger" (click)="removeValue(i)" [disabled]="values.length <= 1">×</button>
+              </div>
+            }
+          </div>
+
+          @if (error) {
+            <div class="state error">{{ error }}</div>
+          }
+
+          <div class="actions">
+            <button type="button" class="btn btn-neutral" (click)="onCancel()">{{ 'common.cancel' | translate }}</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || loading">
+              {{ saving ? ('codeSystems.form.saving' | translate) : (submitLabelKey | translate) }}
+            </button>
+          </div>
+        </form>
+      }
+    </app-bubble-card>
+  </div>
+</app-module-shell>

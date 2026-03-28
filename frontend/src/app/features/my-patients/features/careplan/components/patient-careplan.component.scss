@@ -1,0 +1,89 @@
+.careplan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.grid.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  input,
+  select,
+  textarea {
+    border: 1px solid var(--input-border, #cbd5e1);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.92rem;
+    font-family: inherit;
+    background: var(--input-bg, #ffffff);
+    color: var(--input-text, #0f172a);
+
+    &:focus {
+      outline: none;
+      border-color: var(--focus-ring, #3b82f6);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 22%, transparent);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+input[readonly],
+textarea[readonly] {
+  background: var(--disabled-bg, #f1f5f9);
+  color: var(--disabled-text, #64748b);
+  border-color: var(--border-color);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  border: 0;
+  border-radius: 10px;
+  background: var(--btn-primary-bg, #0f172a);
+  color: var(--btn-primary-text, #ffffff);
+  font-weight: 600;
+  padding: 0.55rem 0.95rem;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.state-message {
+  color: var(--text-secondary);
+}
+
+.state-message.error {
+  color: #b91c1c;
+}
+
+@media (max-width: 980px) {
+  .grid.two {
+    grid-template-columns: 1fr;
+  }
+}
