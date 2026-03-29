@@ -34,15 +34,18 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.1
     container_name: healthapp-keycloak
-    command: start-dev --import-realm
+    command: start-dev --import-realm --import-strategy=OVERWRITE_EXISTING
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HTTP_PORT: 8180
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
     ports:
       - "8180:8180"
     volumes:
       - ./keycloak/fhir-realm.json:/opt/keycloak/data/import/fhir-realm.json
+      - ./keycloak/master-realm.json:/opt/keycloak/data/import/master-realm.json
     networks:
       - healthapp-network
     healthcheck:
@@ -51,12 +54,113 @@ services:
       timeout: 10s
       retries: 10
 
+  jitsi-web:
+    image: jitsi/web:stable
+    container_name: healthapp-jitsi-web
+    restart: unless-stopped
+    ports:
+      - "8443:443"
+      - "8080:80"
+    environment:
+      - PUBLIC_URL=https://localhost:8443
+      - ENABLE_AUTH=0
+      - ENABLE_GUESTS=1
+      - ENABLE_LOBBY=0
+      - ENABLE_XMPP_WEBSOCKET=1
+      - XMPP_DOMAIN=meet.jitsi
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_BOSH_URL_BASE=http://xmpp.meet.jitsi:5280
+      - XMPP_MUC_DOMAIN=muc.meet.jitsi
+      - JVB_TCP_HARVESTER_DISABLED=true
+      - JICOFO_AUTH_USER=focus
+    depends_on:
+      - jitsi-prosody
+    networks:
+      - healthapp-network
+      - meet.jitsi
+
+  jitsi-prosody:
+    image: jitsi/prosody:stable
+    container_name: healthapp-jitsi-prosody
+    restart: unless-stopped
+    expose:
+      - "5222"
+      - "5347"
+      - "5280"
+    environment:
+      - AUTH_TYPE=internal
+      - ENABLE_AUTH=0
+      - ENABLE_GUESTS=1
+      - ENABLE_LOBBY=0
+      - GLOBAL_MODULES=
+      - GLOBAL_CONFIG=
+      - XMPP_DOMAIN=meet.jitsi
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_GUEST_DOMAIN=guest.meet.jitsi
+      - XMPP_MUC_DOMAIN=muc.meet.jitsi
+      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.meet.jitsi
+      - JICOFO_COMPONENT_SECRET=healthapp_jicofo_secret_2024
+      - JICOFO_AUTH_USER=focus
+      - JICOFO_AUTH_PASSWORD=healthapp_jicofo_pwd_2024
+      - JVB_AUTH_USER=jvb
+      - JVB_AUTH_PASSWORD=healthapp_jvb_pwd_2024
+      - JIBRI_XMPP_USER=jibri
+      - JIBRI_RECORDER_USER=recorder
+      - TZ=Europe/Paris
+    networks:
+      meet.jitsi:
+        aliases:
+          - xmpp.meet.jitsi
+
+  jitsi-jicofo:
+    image: jitsi/jicofo:stable
+    container_name: healthapp-jitsi-jicofo
+    restart: unless-stopped
+    environment:
+      - AUTH_TYPE=internal
+      - ENABLE_AUTH=0
+      - XMPP_DOMAIN=meet.jitsi
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.meet.jitsi
+      - XMPP_SERVER=xmpp.meet.jitsi
+      - JICOFO_COMPONENT_SECRET=healthapp_jicofo_secret_2024
+      - JICOFO_AUTH_USER=focus
+      - JICOFO_AUTH_PASSWORD=healthapp_jicofo_pwd_2024
+      - JVB_BREWERY_MUC=jvbbrewery
+      - TZ=Europe/Paris
+    depends_on:
+      - jitsi-prosody
+    networks:
+      - meet.jitsi
+
+  jitsi-jvb:
+    image: jitsi/jvb:stable
+    container_name: healthapp-jitsi-jvb
+    restart: unless-stopped
+    ports:
+      - "10000:10000/udp"
+    environment:
+      - DOCKER_HOST_ADDRESS=127.0.0.1
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.meet.jitsi
+      - XMPP_SERVER=xmpp.meet.jitsi
+      - JVB_AUTH_USER=jvb
+      - JVB_AUTH_PASSWORD=healthapp_jvb_pwd_2024
+      - JVB_BREWERY_MUC=jvbbrewery
+      - JVB_PORT=10000
+      - TZ=Europe/Paris
+    depends_on:
+      - jitsi-prosody
+    networks:
+      - meet.jitsi
+
 volumes:
   postgres-data:
 
 networks:
   healthapp-network:
     driver: bridge
+  meet.jitsi:
 
 configs:
   hapi:

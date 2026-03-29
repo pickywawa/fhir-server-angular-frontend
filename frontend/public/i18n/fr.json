@@ -327,6 +327,7 @@
         "overview": "Resume",
         "careTeam": "Intervenants",
         "careplan": "Plan de soin",
+        "visio": "Visioconference",
         "relatedPerson": "Entourage",
         "questionnaires": "Questionnaires",
         "discussions": "Discussions",
@@ -516,6 +517,45 @@
     "cancel": "Annuler",
     "create": "Creer",
     "loading": "Chargement...",
-    "unknownError": "Erreur inconnue"
+    "unknownError": "Erreur inconnue",
+    "more": "Plus"
+  },
+  "pwa": {
+    "install": {
+      "title": "Installer l'application",
+      "description": "Installez notre app pour un acces rapide et hors ligne.",
+      "button": "Installer"
+    }
+  },
+  "visio": {
+    "lobby": {
+      "title": "Demarrer une visioconference",
+      "floatingActive": "La visioconference est ouverte en mode flottant.",
+      "reopenFloating": "Afficher la fenetre flottante",
+      "room": "Salle",
+      "join": "Rejoindre",
+      "connecting": "Connexion..."
+    },
+    "controls": {
+      "mute": "Couper le micro",
+      "unmute": "Activer le micro",
+      "floating": "Mode flottant",
+      "muteAll": "Couper tous les micros",
+      "popout": "Ouvrir dans une nouvelle fenetre",
+      "reduce": "Reduire",
+      "leave": "Quitter"
+    },
+    "participant": {
+      "unknown": "Inconnu"
+    },
+    "error": {
+      "sdkLoad": "Impossible de charger Jitsi Meet. Verifiez que le serveur est demarré et que le certificat est accepté.",
+      "certHint": "Ouvrir Jitsi pour accepter le certificat →",
+      "container": "Erreur d'initialisation du composant video.",
+      "start": "Impossible de demarrer la conference."
+    },
+    "window": {
+      "loading": "Ouverture de la visioconference..."
+    }
   }
 }

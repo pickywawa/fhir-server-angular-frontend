@@ -2,12 +2,13 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastComponent } from './shared/components/toast.component';
 import { SideMenuComponent } from './shared/components/side-menu/side-menu.component';
+import { FloatingVisioComponent } from './shared/components/floating-visio/floating-visio.component';
 import { AppPreferencesService } from './core/services/app-preferences.service';
 import { MenuStateService } from './core/services/menu-state.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, SideMenuComponent, ToastComponent],
+  imports: [RouterOutlet, SideMenuComponent, ToastComponent, FloatingVisioComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

@@ -1,0 +1,148 @@
+.floating-visio {
+  position: fixed;
+  z-index: 1300;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0f1117;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+
+.floating-visio:has(.loading-pill) {
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+}
+
+.floating-header {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.45rem 0 0.65rem;
+  background: rgba(15, 17, 23, 0.92);
+  color: #fff;
+  cursor: grab;
+}
+
+.floating-header:active {
+  cursor: grabbing;
+}
+
+.title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+
+  strong {
+    font-size: 0.75rem;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+  }
+}
+
+.count {
+  font-size: 0.67rem;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.12rem 0.35rem;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.icon-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+    margin: 0 auto;
+  }
+}
+
+.icon-btn.close {
+  background: rgba(239, 68, 68, 0.85);
+}
+
+.floating-body {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 34px);
+}
+
+.jitsi-container {
+  width: 100%;
+  height: 100%;
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+}
+
+.loading-pill,
+.error-pill {
+  position: absolute;
+  z-index: 2;
+  left: 8px;
+  top: 8px;
+  font-size: 0.72rem;
+  border-radius: 8px;
+  padding: 0.2rem 0.45rem;
+}
+
+.loading-pill {
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+}
+
+.error-pill {
+  background: rgba(127, 29, 29, 0.85);
+  color: #fff;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.65) 50%);
+  cursor: nwse-resize;
+}
+
+.resize-handle.top-left {
+  left: 0;
+  top: 0;
+  right: auto;
+  bottom: auto;
+  background: linear-gradient(315deg, transparent 50%, rgba(255, 255, 255, 0.65) 50%);
+  cursor: nwse-resize;
+}
+
+@media (max-width: 640px) {
+  .floating-visio {
+    border-radius: 10px;
+  }
+
+  .title-wrap strong {
+    max-width: 120px;
+  }
+}

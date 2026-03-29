@@ -3,6 +3,7 @@ import { NgClass } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
+import { PwaInstallService } from '../../../core/services/pwa-install.service';
 
 type MenuIcon =
   | 'patients'
@@ -39,6 +40,7 @@ interface UserInfo {
 })
 export class SideMenuComponent {
   private readonly authService = inject(AuthService);
+  readonly pwaInstall = inject(PwaInstallService);
 
   @Input() isOpen = false;
   @Output() closeMenu = new EventEmitter<void>();
@@ -90,5 +92,13 @@ export class SideMenuComponent {
 
   t(key: string): string {
     return key;
+  }
+
+  installPwa(): void {
+    this.pwaInstall.install();
+  }
+
+  dismissPwaPrompt(): void {
+    this.pwaInstall.dismiss();
   }
 }

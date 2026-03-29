@@ -9,4 +9,4 @@ if [ ! -x "$NODE22_BIN/node" ]; then
 fi
 
 cd frontend
-PATH="$NODE22_BIN:$PATH" npm start
+PATH="$NODE22_BIN:$PATH" npm run ng -- serve --host 0.0.0.0 --port 4200

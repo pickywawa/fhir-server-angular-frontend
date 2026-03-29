@@ -1,0 +1,11 @@
+<section class="external-page">
+  @if (loading) {
+    <div class="status loading">{{ 'visio.window.loading' | translate }}</div>
+  }
+
+  @if (error) {
+    <div class="status error">{{ error | translate }}</div>
+  }
+
+  <div class="jitsi-host" #jitsiContainer></div>
+</section>

@@ -1,0 +1,214 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  @if (patient$ | async; as patient) {
+    <div class="page">
+      <div class="summary-bar">
+        <div class="patient-info">
+          <div class="avatar">{{ (patient.firstName.charAt(0) || '') + (patient.lastName.charAt(0) || '') }}</div>
+          <div class="info-text">
+            <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
+            <p>{{ patient.dateOfBirth | date: 'dd/MM/yyyy' }} <span class="dot">•</span> {{ patient.gender || ('patients.detailPage.unknownGender' | translate) }}</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-action"
+            (click)="joinVisioCall(patient.id)"
+            [title]="'visio.lobby.join' | translate"
+          >
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+            </svg>
+            <span class="btn-label">{{ 'visio.lobby.join' | translate }}</span>
+            @if (hasFloatingSession | async) {
+              <span class="status-indicator">●</span>
+            }
+          </button>
+        </div>
+      </div>
+      <app-tab-bar
+        class="desktop-tab-bar"
+        [tabs]="tabs"
+        [activeTab]="activeTab"
+        (tabChange)="onTabChange($event)"
+      ></app-tab-bar>
+      <section class="tab-content">
+        @if (activeTab === 'related-person') {
+          <ng-container *ngComponentOutlet="relatedPersonComponent; inputs: { patientId: patient.id }"></ng-container>
+        }
+        @switch (activeTab) {
+          @case ('overview') {
+            <app-patient-overview
+              [patient]="patient"
+              [loading]="(loading$ | async) ?? false"
+              (saveIdentity)="saveIdentity($event)"
+            ></app-patient-overview>
+          }
+          @case ('care-team') {
+            <app-care-team [patientId]="patient.id"></app-care-team>
+          }
+          @case ('careplan') {
+            <app-patient-careplan [patientId]="patient.id"></app-patient-careplan>
+          }
+          @case ('related-person') {
+          }
+          @case ('questionnaires') {
+            <app-patient-questionnaires [patientId]="patient.id"></app-patient-questionnaires>
+          }
+          @case ('discussions') {
+            <app-patient-discussions [patientId]="patient.id"></app-patient-discussions>
+          }
+          @case ('patient-identity') {
+            <app-patient-identity-card
+              [patient]="patient"
+              [loading]="(loading$ | async) ?? false"
+              (save)="saveIdentity($event)"
+            ></app-patient-identity-card>
+          }
+          @case ('documents') {
+            <app-patient-documents [patientId]="patient.id"></app-patient-documents>
+          }
+          @case ('visio') {
+            <app-patient-visio [patientId]="patient.id"></app-patient-visio>
+          }
+          @default {
+            <app-patient-overview
+              [patient]="patient"
+              [loading]="(loading$ | async) ?? false"
+              (saveIdentity)="saveIdentity($event)"
+            ></app-patient-overview>
+          }
+        }
+      </section>
+
+      <nav class="mobile-tab-nav" aria-label="Navigation patient">
+        @for (tab of mobilePrimaryTabs; track tab.key) {
+          <button
+            type="button"
+            class="mobile-tab-item"
+            [class.active]="activeTab === tab.key"
+            (click)="onTabChange(tab.key)"
+          >
+            <span class="mobile-tab-icon" aria-hidden="true">
+              @switch (tab.key) {
+                @case ('overview') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                    <path d="M3 10.5L12 3l9 7.5"/>
+                    <path d="M5 9.5V21h14V9.5"/>
+                  </svg>
+                }
+                @case ('care-team') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                    <circle cx="9" cy="8" r="3"/>
+                    <path d="M3.5 18c0-2.8 2.5-5 5.5-5s5.5 2.2 5.5 5"/>
+                    <circle cx="17" cy="9" r="2"/>
+                    <path d="M14.5 18c.4-1.7 1.8-3 3.5-3 1.8 0 3.2 1.3 3.5 3"/>
+                  </svg>
+                }
+                @case ('careplan') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                    <rect x="5" y="4" width="14" height="16" rx="2"/>
+                    <path d="M9 2v4M15 2v4M8 10h8M8 14h5"/>
+                  </svg>
+                }
+                @case ('discussions') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                    <path d="M4 5h16v10H8l-4 4V5z"/>
+                    <path d="M8 9h8M8 12h5"/>
+                  </svg>
+                }
+                @default {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                    <circle cx="12" cy="12" r="8"/>
+                  </svg>
+                }
+              }
+            </span>
+            <span class="mobile-tab-label">{{ tab.label | translate }}</span>
+          </button>
+        }
+
+        <button
+          type="button"
+          class="mobile-tab-item"
+          [class.active]="mobileMoreOpen || isOverflowTabActive()"
+          (click)="toggleMobileMoreMenu()"
+        >
+          <span class="mobile-tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="5" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+              <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+              <circle cx="19" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          <span class="mobile-tab-label">{{ 'common.more' | translate }}</span>
+        </button>
+      </nav>
+
+      @if (mobileMoreOpen) {
+        <div class="mobile-more-sheet">
+          <div class="mobile-more-header">{{ 'common.more' | translate }}</div>
+          <div class="mobile-more-list">
+            @for (tab of mobileOverflowTabs; track tab.key) {
+              <button
+                type="button"
+                class="mobile-more-item"
+                [class.active]="activeTab === tab.key"
+                (click)="onTabChange(tab.key)"
+              >
+                <span class="mobile-more-icon" aria-hidden="true">
+                  @switch (tab.key) {
+                    @case ('related-person') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                        <circle cx="9" cy="8" r="3"/>
+                        <path d="M3.5 18c0-2.8 2.5-5 5.5-5s5.5 2.2 5.5 5"/>
+                        <path d="M16 8h5M18.5 5.5v5"/>
+                      </svg>
+                    }
+                    @case ('questionnaires') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                        <rect x="4" y="4" width="16" height="16" rx="2"/>
+                        <path d="M8 8h8M8 12h8M8 16h5"/>
+                      </svg>
+                    }
+                    @case ('patient-identity') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                        <circle cx="12" cy="8" r="3"/>
+                        <path d="M5 20c0-3.2 3.1-5.5 7-5.5s7 2.3 7 5.5"/>
+                      </svg>
+                    }
+                    @case ('documents') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                        <path d="M7 3h8l4 4v14H7z"/>
+                        <path d="M15 3v5h4M9 13h6M9 17h6"/>
+                      </svg>
+                    }
+                    @case ('visio') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14"/>
+                        <rect x="3" y="6" width="12" height="12" rx="2"/>
+                      </svg>
+                    }
+                    @default {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                        <circle cx="12" cy="12" r="8"/>
+                      </svg>
+                    }
+                  }
+                </span>
+                <span>{{ tab.label | translate }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (loading$ | async) {
+    <div class="state-message">{{ 'common.loading' | translate }}</div>
+  }
+  @if (error$ | async; as error) {
+    <div class="state-message error">{{ 'myPatients.detail.errorPrefix' | translate }}: {{ formatError(error) }}</div>
+  }
+</app-module-shell>

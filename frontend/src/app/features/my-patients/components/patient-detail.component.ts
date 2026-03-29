@@ -1,22 +1,23 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { takeUntil, map } from 'rxjs/operators';
+import { VisioFloatingService } from '../../../core/services/visio-floating.service';
 import { Patient } from '../../../core/models/patient.model';
-import * as PatientActions from '../../my-patients/state/patient.actions';
-import * as PatientSelectors from '../../my-patients/state/patient.selectors';
+import * as PatientActions from '../state/patient.actions';
+import * as PatientSelectors from '../state/patient.selectors';
 import { ModuleShellComponent, ModuleBreadcrumb } from '../../../shared/components/module-shell/module-shell.component';
-import { BubbleCardComponent } from '../../../shared/components/bubble-card/bubble-card.component';
-import { PatientIdentityCardComponent } from '../../my-patients/features/patient-identity/components/patient-identity-card.component';
-import { CareTeamComponent } from '../../my-patients/features/care-team/components/care-team.component';
-import { PatientDocumentsComponent } from '../../my-patients/features/documents/components/patient-documents.component';
-import { PatientDiscussionsComponent } from '../../my-patients/features/discussions/components/patient-discussions.component';
-import { PatientOverviewComponent } from '../../my-patients/features/overview/components/patient-overview.component';
-import { PatientQuestionnairesComponent } from '../../my-patients/features/questionnaires/components/patient-questionnaires.component';
-import { RelatedPersonComponent } from '../../my-patients/features/related-person/components/related-person.component';
-import { PatientCarePlanComponent } from '../../my-patients/features/careplan/components/patient-careplan.component';
+import { PatientIdentityCardComponent } from '../features/patient-identity/components/patient-identity-card.component';
+import { CareTeamComponent } from '../features/care-team/components/care-team.component';
+import { PatientDocumentsComponent } from '../features/documents/components/patient-documents.component';
+import { PatientDiscussionsComponent } from '../features/discussions/components/patient-discussions.component';
+import { PatientOverviewComponent } from '../features/overview/components/patient-overview.component';
+import { PatientQuestionnairesComponent } from '../features/questionnaires/components/patient-questionnaires.component';
+import { RelatedPersonComponent } from '../features/related-person/components/related-person.component';
+import { PatientCarePlanComponent } from '../features/careplan/components/patient-careplan.component';
+import { PatientVisioComponent } from '../features/visio/components/patient-visio.component';
 import { TabBarComponent, TabItem } from '../../../core/components/tab-bar/tab-bar.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -26,11 +27,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   imports: [
     CommonModule,
     ModuleShellComponent,
-    BubbleCardComponent,
     PatientOverviewComponent,
     PatientIdentityCardComponent,
     CareTeamComponent,
     PatientCarePlanComponent,
+    PatientVisioComponent,
     PatientDocumentsComponent,
     PatientDiscussionsComponent,
     PatientQuestionnairesComponent,
@@ -51,10 +52,12 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     { key: 'questionnaires', label: 'myPatients.detail.tabs.questionnaires' },
     { key: 'discussions', label: 'myPatients.detail.tabs.discussions' },
     { key: 'patient-identity', label: 'myPatients.detail.tabs.identity' },
-    { key: 'documents', label: 'myPatients.detail.tabs.documents' }
+    { key: 'documents', label: 'myPatients.detail.tabs.documents' },
+    { key: 'visio', label: 'myPatients.detail.tabs.visio' }
   ];
 
   activeTab = 'overview';
+  mobileMoreOpen = false;
 
   breadcrumbs: ModuleBreadcrumb[] = [
     { label: 'menu.myPatients', route: '/my-patients' },
@@ -64,6 +67,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
   readonly patient$: Observable<Patient | null>;
   readonly loading$: Observable<boolean>;
   readonly error$: Observable<unknown>;
+  readonly floatingVisio = inject(VisioFloatingService);
 
   private readonly destroy$ = new Subject<void>();
 
@@ -98,18 +102,6 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
           this.activeTab = 'overview';
         }
       });
-
-    this.patient$
-      .pipe(
-        filter((patient): patient is Patient => !!patient),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((patient) => {
-        this.breadcrumbs = [
-          { label: 'menu.myPatients', route: '/my-patients' },
-          { label: `${patient.firstName} ${patient.lastName}`.trim() || 'patients.detailPage.patient' }
-        ];
-      });
   }
 
   ngOnDestroy(): void {
@@ -117,36 +109,77 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  saveIdentity(updatedPatient: Patient): void {
-    if (!updatedPatient.id) {
-      return;
-    }
-
-    this.store.dispatch(PatientActions.updatePatient({
-      id: updatedPatient.id,
-      patient: updatedPatient
-    }));
-  }
-
-  onTabChange(tabKey: string): void {
-    this.activeTab = tabKey;
+  onTabChange(key: string): void {
+    this.activeTab = key;
+    this.mobileMoreOpen = false;
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab: tabKey === 'overview' ? null : tabKey },
+      queryParams: { tab: key },
       queryParamsHandling: 'merge'
     });
   }
 
+  get mobilePrimaryTabs(): TabItem[] {
+    const preferredOrder = ['overview', 'care-team', 'careplan', 'discussions'];
+    return preferredOrder
+      .map((key) => this.tabs.find((tab) => tab.key === key))
+      .filter((tab): tab is TabItem => !!tab);
+  }
+
+  get mobileOverflowTabs(): TabItem[] {
+    const primaryKeys = new Set(this.mobilePrimaryTabs.map((tab) => tab.key));
+    return this.tabs.filter((tab) => !primaryKeys.has(tab.key));
+  }
+
+  toggleMobileMoreMenu(): void {
+    this.mobileMoreOpen = !this.mobileMoreOpen;
+  }
+
+  isOverflowTabActive(): boolean {
+    return this.mobileOverflowTabs.some((tab) => tab.key === this.activeTab);
+  }
+
+  saveIdentity(updates: Partial<Patient>): void {
+    this.patient$.pipe(takeUntil(this.destroy$)).subscribe((patient) => {
+      if (!patient || !patient.id) {
+        return;
+      }
+      const updated: Patient = { ...patient, ...updates } as Patient;
+      this.store.dispatch(PatientActions.updatePatient({ id: patient.id, patient: updated }));
+    });
+  }
+
   formatError(error: unknown): string {
-    if (error instanceof Error) {
-      return error.message;
-    }
     if (typeof error === 'string') {
       return error;
     }
     if (error && typeof error === 'object' && 'message' in error) {
-      return String((error as { message: unknown }).message);
+      return (error as { message: string }).message;
     }
     return this.translateService.instant('common.unknownError');
+  }
+
+  getVisioRoomName(patientId?: string): string {
+    const sanitized = String(patientId || 'unknown').replace(/[^a-zA-Z0-9]/g, '');
+    return `patient-${sanitized}`;
+  }
+
+  joinVisioCall(patientId?: string): void {
+    if (!patientId) {
+      return;
+    }
+    const roomName = this.getVisioRoomName(patientId);
+    this.floatingVisio.open(roomName);
+  }
+
+  get hasFloatingSession(): Observable<boolean> {
+    return this.patient$.pipe(
+      map((patient) => {
+        if (!patient) return false;
+        const roomName = this.getVisioRoomName(patient.id);
+        return this.floatingVisio.isOpen() && this.floatingVisio.roomName() === roomName;
+      }),
+      takeUntil(this.destroy$)
+    );
   }
 }

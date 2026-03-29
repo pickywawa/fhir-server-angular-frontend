@@ -1,6 +1,30 @@
 <div class="menu-backdrop" [class.active]="isOpen" (click)="onBackdropClick()"></div>
 
 <aside class="side-menu" [ngClass]="{ collapsed: collapsed }" aria-label="Menu principal">
+  @if (pwaInstall.canShow) {
+    <div class="pwa-install-banner">
+      <div class="pwa-banner-content">
+        <div class="pwa-info">
+          <svg class="pwa-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+            <path d="M12 2v5M8 12h8"/>
+          </svg>
+          <div class="pwa-text">
+            <strong>{{ 'pwa.install.title' | translate }}</strong>
+            <p>{{ 'pwa.install.description' | translate }}</p>
+          </div>
+        </div>
+        <div class="pwa-actions">
+          <button type="button" class="btn btn-primary" (click)="installPwa()">
+            {{ 'pwa.install.button' | translate }}
+          </button>
+          <button type="button" class="btn-dismiss" (click)="dismissPwaPrompt()" aria-label="Fermer" title="Fermer">
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  }
   <div class="menu-top">
     <div class="brand-row">
       <div class="brand-icon" aria-hidden="true">HF</div>

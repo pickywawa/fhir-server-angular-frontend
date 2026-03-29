@@ -1,0 +1,332 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.visio-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 520px;
+}
+
+/* ─── Lobby ─────────────────────────────────────────────────── */
+.lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  flex: 1;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.lobby-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--btn-primary-bg, #3b82f6) 12%, var(--card-bg));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 36px;
+    height: 36px;
+    stroke: var(--btn-primary-bg, #3b82f6);
+  }
+}
+
+.lobby h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.room-name {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+
+  strong {
+    color: var(--text-primary);
+    font-family: monospace;
+  }
+}
+
+.btn-join {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.8rem;
+  font-size: 1rem;
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.error-banner {
+  background: color-mix(in oklab, #ef4444 15%, var(--card-bg));
+  color: #b91c1c;
+  border: 1px solid color-mix(in oklab, #ef4444 30%, transparent);
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  max-width: 420px;
+  width: 100%;
+
+.cert-link {
+  color: #b91c1c;
+  font-weight: 600;
+  text-underline-offset: 2px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+}
+
+/* ─── Spinner ──────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Conference layout ─────────────────────────────────────── */
+.conference-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0;
+  min-height: 0;
+}
+
+.conference-layout.connecting {
+  justify-content: center;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.conference-layout.connecting .jitsi-wrapper {
+  width: min(100%, 980px);
+  min-height: 420px;
+}
+
+.connecting-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ─── Controls bar ──────────────────────────────────────────── */
+.controls-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  margin-bottom: 0.6rem;
+}
+
+.controls-left {
+  display: flex;
+  align-items: center;
+}
+
+.participant-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.controls-center {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.control-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg-soft, #f1f5f9);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.55rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 0.15s;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: var(--card-bg-soft);
+    border-color: var(--input-border);
+  }
+
+  &.active {
+    background: color-mix(in oklab, #ef4444 15%, var(--card-bg));
+    border-color: color-mix(in oklab, #ef4444 40%, transparent);
+    color: #b91c1c;
+  }
+}
+
+.control-btn.leave {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  background: #ef4444;
+  border-color: #ef4444;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  &:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ─── Participants strip ─────────────────────────────────────── */
+.participants-strip {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 0.4rem 0.2rem;
+  margin-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.participant-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  width: 60px;
+}
+
+.thumb-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--btn-primary-bg, #3b82f6) 18%, var(--card-bg));
+  color: var(--btn-primary-bg, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+}
+
+.thumb-name {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+/* ─── Jitsi iframe container ─────────────────────────────────── */
+.jitsi-wrapper {
+  flex: 1;
+  min-height: 380px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+}
+
+/* ─── Mobile ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .visio-shell {
+    min-height: 0;
+  }
+
+  .conference-layout {
+    min-height: calc(100dvh - 220px);
+  }
+
+  /* En mode connexion, pas de centrage vertical : l'iframe doit remplir l'espace */
+  .conference-layout.connecting {
+    justify-content: flex-start;
+    align-items: stretch;
+  }
+
+  .conference-layout.connecting .jitsi-wrapper {
+    width: 100%;
+    min-height: calc(100dvh - 280px);
+  }
+
+  .controls-bar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .controls-left {
+    order: 2;
+  }
+
+  .controls-center {
+    order: 1;
+  }
+
+  .controls-right {
+    display: none;
+  }
+
+  .jitsi-wrapper {
+    min-height: calc(100dvh - 280px);
+  }
+
+  .control-btn.leave {
+    font-size: 0.82rem;
+    padding: 0.5rem 0.75rem;
+  }
+}

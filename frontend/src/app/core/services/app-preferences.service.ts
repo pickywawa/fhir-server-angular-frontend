@@ -59,6 +59,24 @@ export class AppPreferencesService {
 
   private applyTheme(theme: AppTheme): void {
     document.documentElement.setAttribute('data-theme', theme);
+    this.syncSystemThemeColor(theme);
+  }
+
+  private syncSystemThemeColor(theme: AppTheme): void {
+    const root = document.documentElement;
+    const computed = getComputedStyle(root);
+    const fallback = theme === 'dark' ? '#0b1220' : '#ffffff';
+    const color = (computed.getPropertyValue('--app-bg') || '').trim() || fallback;
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', color);
+    }
+
+    const statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (statusBarMeta) {
+      statusBarMeta.setAttribute('content', theme === 'dark' ? 'black-translucent' : 'default');
+    }
   }
 
   private applyLanguage(language: AppLanguage): void {

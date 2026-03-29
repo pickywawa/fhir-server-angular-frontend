@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { PatientListComponent } from './features/my-patients/components/patient-list.component';
-import { PatientDetailComponent } from './features/patients/components/patient-detail.component';
+import { PatientDetailComponent } from './features/my-patients/components/patient-detail.component';
 import { PatientAdminListComponent } from './features/patients/components/patient-admin-list.component';
 import { PatientDetailPageComponent } from './features/patients/components/patient-detail-page.component';
 import { PractitionerListComponent } from './features/practitioners/components/practitioner-list.component';
@@ -19,9 +19,11 @@ import { PatientQuestionnairePageComponent } from './features/my-patients/featur
 import { ProfilePageComponent } from './features/profile/components/profile-page.component';
 import { authGuard } from './core/guards/auth.guard';
 import { ModulePlaceholderComponent } from './shared/components/module-placeholder/module-placeholder.component';
+import { VisioExternalWindowComponent } from './features/my-patients/features/visio/components/visio-external-window.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/my-patients', pathMatch: 'full' },
+  { path: 'visio/window/:roomName', component: VisioExternalWindowComponent },
   { path: 'my-patients', component: PatientListComponent, canActivate: [authGuard] },
   { path: 'my-patients/:id/questionnaires/new', component: PatientQuestionnairePageComponent, canActivate: [authGuard] },
   { path: 'my-patients/:id/questionnaires/response/:responseId', component: PatientQuestionnairePageComponent, canActivate: [authGuard] },

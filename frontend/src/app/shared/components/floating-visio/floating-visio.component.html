@@ -1,0 +1,49 @@
+@if (floating.isOpen()) {
+  <section
+    class="floating-visio"
+    [style.left.px]="left"
+    [style.top.px]="top"
+    [style.width.px]="width"
+    [style.height.px]="height"
+  >
+    <header class="floating-header" (mousedown)="startDrag($event)">
+      <div class="title-wrap">
+        <strong>{{ floating.roomName() }}</strong>
+        @if (floating.inCall()) {
+          <span class="count">{{ floating.participantCount() }}</span>
+        }
+      </div>
+      <div class="actions">
+        <button
+          type="button"
+          class="icon-btn"
+          (click)="openInNewWindow()"
+          [attr.title]="'visio.controls.popout' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 4h6v6"></path>
+            <path d="M10 14L20 4"></path>
+            <path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"></path>
+          </svg>
+        </button>
+        <button type="button" class="icon-btn" (click)="toggleMute()" [attr.title]="(floating.isMuted() ? 'visio.controls.unmute' : 'visio.controls.mute') | translate">
+          {{ floating.isMuted() ? '🔇' : '🎤' }}
+        </button>
+        <button type="button" class="icon-btn close" (click)="closeFloating()" [attr.title]="'visio.controls.leave' | translate">✕</button>
+      </div>
+    </header>
+
+    <div class="floating-body">
+      @if (floating.loading()) {
+        <div class="loading-pill">{{ 'visio.lobby.connecting' | translate }}</div>
+      }
+      @if (floating.error()) {
+        <div class="error-pill">{{ floating.error() | translate }}</div>
+      }
+      <div class="jitsi-container" #jitsiContainer></div>
+    </div>
+
+    <button type="button" class="resize-handle top-left" (mousedown)="startResize($event, 'top-left')" aria-label="Resize top left"></button>
+    <button type="button" class="resize-handle" (mousedown)="startResize($event)" aria-label="Resize"></button>
+  </section>
+}

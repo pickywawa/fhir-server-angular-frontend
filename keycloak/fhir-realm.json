@@ -2,7 +2,7 @@
   "realm": "fhir",
   "enabled": true,
   "displayName": "FHIR Health Application",
-  "sslRequired": "external",
+  "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,

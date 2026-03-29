@@ -1,0 +1,39 @@
+<div class="visio-shell">
+  <div class="lobby">
+    <div class="lobby-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+      </svg>
+    </div>
+    <h2>{{ 'visio.lobby.title' | translate }}</h2>
+    <p class="room-name">{{ 'visio.lobby.room' | translate }} : <strong>{{ roomName }}</strong></p>
+
+    @if (hasFloatingSession) {
+      <div class="floating-hint">{{ 'visio.lobby.floatingActive' | translate }}</div>
+    }
+
+    @if (error) {
+      <div class="error-banner">
+        {{ error | translate }}
+        @if (error === 'visio.error.sdkLoad') {
+          <br>
+          <a [href]="jitsiBaseUrl" target="_blank" rel="noopener" class="cert-link">
+            {{ 'visio.error.certHint' | translate }}
+          </a>
+        }
+      </div>
+    }
+
+    <button
+      type="button"
+      class="btn btn-primary btn-join"
+      (click)="joinCall()"
+    >
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+      </svg>
+      {{ hasFloatingSession ? ('visio.lobby.reopenFloating' | translate) : ('visio.lobby.join' | translate) }}
+    </button>
+  </div>
+
+</div>
