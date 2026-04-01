@@ -46,6 +46,7 @@ services:
     volumes:
       - ./keycloak/fhir-realm.json:/opt/keycloak/data/import/fhir-realm.json
       - ./keycloak/master-realm.json:/opt/keycloak/data/import/master-realm.json
+      - ./keycloak/themes:/opt/keycloak/themes
     networks:
       - healthapp-network
     healthcheck:

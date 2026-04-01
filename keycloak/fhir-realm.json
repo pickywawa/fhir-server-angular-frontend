@@ -2,6 +2,7 @@
   "realm": "fhir",
   "enabled": true,
   "displayName": "FHIR Health Application",
+  "loginTheme": "healthapp",
   "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
