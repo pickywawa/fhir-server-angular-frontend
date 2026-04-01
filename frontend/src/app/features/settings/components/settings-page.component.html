@@ -34,6 +34,17 @@
             <strong>{{ 'settings.theme.dark' | translate }}</strong>
             <small>{{ 'settings.theme.darkDesc' | translate }}</small>
           </button>
+
+          <button
+            type="button"
+            class="theme-card purple"
+            [class.active]="theme === 'purple'"
+            (click)="setTheme('purple')"
+          >
+            <span class="dot"></span>
+            <strong>{{ 'settings.theme.purple' | translate }}</strong>
+            <small>{{ 'settings.theme.purpleDesc' | translate }}</small>
+          </button>
         </div>
       </app-bubble-card>
 

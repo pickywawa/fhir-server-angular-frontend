@@ -79,9 +79,18 @@
   color: #7aa2ff;
 }
 
+.theme-card.purple {
+  color: #6c4cf6;
+}
+
 .theme-card.active {
   border-color: #1a73e8;
   box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.18);
+}
+
+.theme-card.purple.active {
+  border-color: #6c4cf6;
+  box-shadow: 0 0 0 3px rgba(108, 76, 246, 0.2);
 }
 
 .language-picker {

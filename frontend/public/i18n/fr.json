@@ -28,7 +28,9 @@
       "light": "Clair",
       "lightDesc": "Interface lumineuse et contrastes doux",
       "dark": "Sombre",
-      "darkDesc": "Confort visuel pour environnement faible lumiere"
+      "darkDesc": "Confort visuel pour environnement faible lumiere",
+      "purple": "Violet",
+      "purpleDesc": "Palette lavande douce avec accents violets"
     },
     "language": {
       "title": "Langue",

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 
-export type AppTheme = 'light' | 'dark';
+export type AppTheme = 'light' | 'dark' | 'purple';
 export type AppLanguage = 'fr' | 'en' | 'it' | 'de';
 
 @Injectable({
@@ -35,7 +35,7 @@ export class AppPreferencesService {
     const storedTheme = localStorage.getItem(this.themeStorageKey);
     const storedLanguage = localStorage.getItem(this.languageStorageKey);
 
-    const theme: AppTheme = storedTheme === 'dark' ? 'dark' : 'light';
+    const theme: AppTheme = storedTheme === 'dark' || storedTheme === 'purple' ? storedTheme : 'light';
     const language: AppLanguage =
       storedLanguage === 'en' || storedLanguage === 'it' || storedLanguage === 'de' ? storedLanguage : 'fr';
 
@@ -65,7 +65,7 @@ export class AppPreferencesService {
   private syncSystemThemeColor(theme: AppTheme): void {
     const root = document.documentElement;
     const computed = getComputedStyle(root);
-    const fallback = theme === 'dark' ? '#0b1220' : '#ffffff';
+    const fallback = theme === 'dark' ? '#0b1220' : theme === 'purple' ? '#efeaf8' : '#ffffff';
     const color = (computed.getPropertyValue('--app-bg') || '').trim() || fallback;
 
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');

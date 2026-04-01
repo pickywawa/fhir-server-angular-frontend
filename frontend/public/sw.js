@@ -54,6 +54,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // Ignorer les requêtes vers des domaines externes (ex: Jitsi, external APIs)
+  if (url.origin !== self.location.origin) {
+    console.log('[ServiceWorker] Skipping external domain:', url.origin);
+    return;
+  }
+  
   // API requests: network first
   if (url.pathname.includes('/api') || url.pathname.includes('/fhir') || url.pathname.includes('/keycloak')) {
     event.respondWith(

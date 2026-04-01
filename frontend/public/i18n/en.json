@@ -27,7 +27,9 @@
       "light": "Light",
       "lightDesc": "Bright interface with soft contrast",
       "dark": "Dark",
-      "darkDesc": "Visual comfort in low-light environments"
+      "darkDesc": "Visual comfort in low-light environments",
+      "purple": "Purple",
+      "purpleDesc": "Soft lavender palette with violet accents"
     },
     "language": {
       "title": "Language",

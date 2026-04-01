@@ -313,6 +313,37 @@
   }
 }
 
+:root[data-theme='purple'] .brand-icon {
+  background: linear-gradient(135deg, #6c4cf6, #8b5cf6);
+}
+
+:root[data-theme='purple'] .collapse-btn {
+  border-color: #cdbfe8;
+  background: #f7f4fc;
+  color: #4f3b86;
+}
+
+:root[data-theme='purple'] .menu-item:hover {
+  background: #f0e9ff;
+  color: #4a2fa4;
+}
+
+:root[data-theme='purple'] .menu-item.active {
+  background: #e6ddfb;
+  color: #4a2fa4;
+  box-shadow: inset 0 0 0 1px #cfc0f3;
+}
+
+:root[data-theme='purple'] .user-card {
+  background: #ede4fb;
+}
+
+:root[data-theme='purple'] .user-card:hover,
+:root[data-theme='purple'] .user-card.user-card-active {
+  background: #f7f4fc;
+  outline-color: #6c4cf6;
+}
+
 .avatar {
   width: 40px;
   height: 40px;

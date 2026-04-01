@@ -27,7 +27,9 @@
       "light": "Chiaro",
       "lightDesc": "Interfaccia luminosa con contrasti morbidi",
       "dark": "Scuro",
-      "darkDesc": "Comfort visivo in ambienti poco illuminati"
+      "darkDesc": "Comfort visivo in ambienti poco illuminati",
+      "purple": "Viola",
+      "purpleDesc": "Palette lavanda morbida con accenti viola"
     },
     "language": {
       "title": "Lingua",

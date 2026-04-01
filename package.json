@@ -3,12 +3,7 @@
   "version": "1.0.0",
   "description": "Application fullstack de gestion des patients avec Angular 21 et Spring Boot",
   "scripts": {
-    "start:all": "./start-all.sh",
     "start:frontend": "./run-frontend.sh",
-    "start:gateway": "./run-api-gateway.sh",
-    "start:patient": "./run-patient-service.sh",
-    "start:fhir": "./run-fhir-service.sh",
-    "build:backend": "./build-backend.sh",
     "seed": "./seed-data.sh",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",

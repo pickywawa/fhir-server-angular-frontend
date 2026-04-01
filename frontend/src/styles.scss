@@ -1,6 +1,7 @@
 /* Styles globaux de l'application */
 
 :root {
+  --app-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --app-bg: #ffffff;
   --surface-bg: #ffffff;
   --card-bg: #ffffff;
@@ -28,6 +29,7 @@
 }
 
 :root[data-theme='dark'] {
+  --app-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --app-bg: #0b1220;
   --surface-bg: #0f172a;
   --card-bg: #111b31;
@@ -54,6 +56,34 @@
   --btn-neutral-text: #d5e3f8;
 }
 
+:root[data-theme='purple'] {
+  --app-font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --app-bg: #f3effb;
+  --surface-bg: #ece7f8;
+  --card-bg: #f7f4fc;
+  --card-bg-soft: #ede7f7;
+  --sidebar-bg: #f2ecfb;
+  --text-primary: #2a2540;
+  --text-secondary: #6a6187;
+  --border-color: #d9d0ef;
+  --input-bg: #ffffff;
+  --input-text: #2a2540;
+  --input-border: #cdbfe8;
+  --chip-bg: #ece4fa;
+  --chip-text: #4f3b86;
+  --overlay-bg: rgba(48, 34, 90, 0.35);
+  --focus-ring: rgba(108, 76, 246, 0.2);
+  --disabled-bg: #e7e0f3;
+  --disabled-text: #8b7cad;
+  --btn-primary-bg: #6c4cf6;
+  --btn-primary-bg-hover: #5f3fe9;
+  --btn-primary-text: #ffffff;
+  --btn-neutral-bg: #f4effd;
+  --btn-neutral-bg-hover: #ece3fb;
+  --btn-neutral-border: #cdbfe8;
+  --btn-neutral-text: #4f3b86;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -61,7 +91,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--app-font-family);
   background-color: var(--app-bg);
   color: var(--text-primary);
   line-height: 1.6;

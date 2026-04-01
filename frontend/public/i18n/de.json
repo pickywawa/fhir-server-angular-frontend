@@ -27,7 +27,9 @@
       "light": "Hell",
       "lightDesc": "Helle Oberflaeche mit weichen Kontrasten",
       "dark": "Dunkel",
-      "darkDesc": "Visueller Komfort bei wenig Licht"
+      "darkDesc": "Visueller Komfort bei wenig Licht",
+      "purple": "Lila",
+      "purpleDesc": "Sanfte Lavendelpalette mit violetten Akzenten"
     },
     "language": {
       "title": "Sprache",
