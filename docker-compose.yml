@@ -13,24 +13,6 @@ services:
     networks:
       - healthapp-network
 
-  hapi-fhir:
-    image: hapiproject/hapi:latest
-    container_name: healthapp-hapi-fhir
-    depends_on:
-      - postgres
-    ports:
-      - "8081:8080"
-    configs:
-      - source: hapi
-        target: /app/config/application.yaml
-    healthcheck:
-      test: ["CMD", "java", "-cp", "/app", "HealthCheck"]
-      interval: 20s
-      timeout: 10s
-      retries: 10
-    networks:
-      - healthapp-network
-
   keycloak:
     image: quay.io/keycloak/keycloak:26.1
     container_name: healthapp-keycloak
@@ -61,7 +43,7 @@ services:
     restart: unless-stopped
     ports:
       - "8443:443"
-      - "8080:80"
+      - "8082:80"
     environment:
       - PUBLIC_URL=https://localhost:8443
       - ENABLE_AUTH=0
@@ -163,6 +145,3 @@ networks:
     driver: bridge
   meet.jitsi:
 
-configs:
-  hapi:
-    file: ./hapi.application.yaml
