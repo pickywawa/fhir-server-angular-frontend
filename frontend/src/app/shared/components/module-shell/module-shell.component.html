@@ -7,23 +7,120 @@
         <path d="M4 17h16"></path>
       </svg>
     </button>
-    @if (breadcrumbs.length > 0) {
-      <nav [attr.aria-label]="'common.breadcrumb' | translate" class="breadcrumb-nav">
-        @for (crumb of breadcrumbs; track crumb; let last = $last) {
-          @if (crumb.route) {
-            <a [routerLink]="crumb.route">{{ crumb.label | translate }}</a>
-          } @else {
-            <span>{{ crumb.label | translate }}</span>
+    <div class="module-header-main">
+      @if (breadcrumbs.length > 0) {
+        <nav [attr.aria-label]="'common.breadcrumb' | translate" class="breadcrumb-nav">
+          @for (crumb of breadcrumbs; track crumb; let last = $last) {
+            @if (crumb.route) {
+              <a [routerLink]="crumb.route">{{ crumb.label | translate }}</a>
+            } @else {
+              <span>{{ crumb.label | translate }}</span>
+            }
+            @if (!last) {
+              <span class="sep">/</span>
+            }
           }
-          @if (!last) {
-            <span class="sep">/</span>
-          }
+        </nav>
+      }
+    </div>
+
+    <div class="module-header-search">
+      <div class="search-input-wrap" (click)="$event.stopPropagation()">
+        <span class="search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M20 20l-3.5-3.5"></path>
+          </svg>
+        </span>
+        <input
+          type="text"
+          [value]="searchQuery"
+          (input)="onSearchInput(($any($event.target)).value)"
+          (focus)="onSearchFocus()"
+          (keydown)="onSearchKeydown($event)"
+          [placeholder]="'search.placeholder' | translate"
+          [attr.aria-label]="'search.placeholder' | translate"
+        />
+
+        @if (searchQuery) {
+          <button type="button" class="clear-btn" (click)="clearSearch($event)" [attr.aria-label]="'common.close' | translate">
+            ✕
+          </button>
         }
-      </nav>
-    }
+      </div>
+
+      @if (searchOpen) {
+        <div class="search-popup" (click)="$event.stopPropagation()">
+          @if (searchLoading) {
+            <div class="search-state">{{ 'search.loading' | translate }}</div>
+          } @else if (groupedResults.length === 0 && searchQuery.trim().length >= 2) {
+            <div class="search-state">{{ 'search.empty' | translate }}</div>
+          } @else if (searchQuery.trim().length < 2) {
+            <div class="search-state">{{ 'search.quick.minChars' | translate }}</div>
+          } @else {
+            <div class="search-groups">
+              @for (group of groupedResults; track trackGroup($index, group)) {
+                <section class="search-group">
+                  <header class="search-group-title">{{ typeLabelKey(group.type) | translate }}</header>
+                  <div class="search-group-list">
+                    @for (result of group.items; track result.type + '-' + result.id) {
+                      <button type="button" class="search-result-row" (click)="openResult(result)">
+                        <span class="result-icon" [class]="'type-' + result.type" aria-hidden="true">
+                          @if (result.type === 'patient') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                              <circle cx="12" cy="8" r="4"></circle>
+                              <path d="M4 20c1.6-3.5 4.3-5 8-5s6.4 1.5 8 5"></path>
+                            </svg>
+                          } @else if (result.type === 'practitioner') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                              <path d="M9 4h6v2a3 3 0 0 1-6 0V4z"></path>
+                              <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path>
+                            </svg>
+                          } @else if (result.type === 'appointment') {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                              <rect x="4" y="6" width="16" height="14" rx="2"></rect>
+                              <path d="M8 3v4M16 3v4M4 10h16"></path>
+                            </svg>
+                          } @else {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+                              <path d="M7 4h7l5 5v11H7z"></path>
+                              <path d="M14 4v5h5"></path>
+                            </svg>
+                          }
+                        </span>
+
+                        <span class="result-content">
+                          <strong>{{ result.title }}</strong>
+                          <small>{{ result.subtitle }}</small>
+                        </span>
+                      </button>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="module-header-actions">
+      <app-notification-bell></app-notification-bell>
+
+      @if (!chatState.isOpen()) {
+        <button
+          type="button"
+          class="module-chat-btn btn btn-neutral"
+          (click)="openChat()"
+          [attr.aria-label]="'chatbot.open' | translate"
+        >
+          {{ 'chatbot.open' | translate }}
+        </button>
+      }
+    </div>
   </header>
 
-  <div class="module-body">
+  <div class="module-body" [class.no-scroll]="lockBodyScroll">
     <ng-content></ng-content>
   </div>
 </section>

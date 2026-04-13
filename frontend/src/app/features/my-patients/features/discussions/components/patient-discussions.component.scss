@@ -1,3 +1,17 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+app-bubble-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .state {
   color: var(--text-secondary);
 }
@@ -10,7 +24,9 @@
   display: grid;
   grid-template-columns: 320px 1fr;
   gap: 0.9rem;
-  min-height: 560px;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
 }
 
 .threads-pane {
@@ -26,6 +42,31 @@
   padding: 0.75rem;
   border-bottom: 1px solid var(--border-color);
   background: var(--card-bg-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.threads-search {
+  input {
+    width: 100%;
+    border: 1px solid var(--input-border, #cbd5e1);
+    border-radius: 10px;
+    padding: 0.46rem 0.62rem;
+    font-size: 0.82rem;
+    background: var(--input-bg, #ffffff);
+    color: var(--input-text, #0f172a);
+
+    &::placeholder {
+      color: var(--text-secondary);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--focus-ring, #3b82f6);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+    }
+  }
 }
 
 .threads-list {
@@ -34,6 +75,8 @@
   gap: 0.4rem;
   padding: 0.65rem;
   overflow: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .thread-item {
@@ -127,6 +170,8 @@
   flex-direction: column;
   gap: 0.65rem;
   background: var(--card-bg);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .messages-header {
@@ -152,14 +197,77 @@
   }
 }
 
+.title-row,
+.title-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.title-row h4 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title-edit-row input {
+  border: 1px solid var(--input-border, #cbd5e1);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.86rem;
+  background: var(--input-bg, #ffffff);
+  color: var(--input-text, #0f172a);
+  min-width: 220px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--focus-ring, #3b82f6);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+  }
+}
+
+.title-action {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg-soft);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+    border-color: var(--btn-primary-bg, #0f172a);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.title-action.confirm {
+  color: color-mix(in oklab, var(--btn-primary-bg, #0f172a) 85%, #22c55e 15%);
+}
+
 .messages-list {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  min-height: 240px;
-  max-height: 420px;
-  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 0.35rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.messages-list::before {
+  content: '';
+  margin-top: auto;
 }
 
 .message-row {
@@ -246,6 +354,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  flex-shrink: 0;
 }
 
 .fixed-routing {
@@ -269,7 +378,7 @@
 
 .compose-inline {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 0.5rem;
   align-items: end;
 
@@ -322,6 +431,44 @@
     opacity: 0.55;
     cursor: not-allowed;
   }
+}
+
+.btn-tts {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg-soft);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--btn-primary-bg, #0f172a);
+  }
+
+  &.listening {
+    background: color-mix(in oklab, #ef4444 12%, var(--card-bg));
+    border-color: #ef4444;
+    color: #ef4444;
+    animation: tts-pulse 1.4s ease-in-out infinite;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+@keyframes tts-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, #ef4444 28%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in oklab, #ef4444 0%, transparent); }
 }
 
 @media (max-width: 1000px) {

@@ -1,0 +1,84 @@
+<div class="chat-rail" [class.closed]="!isOpen">
+  @if (isOpen) {
+    <section class="chat-panel" [style.width.px]="!isMobile ? chatWidth : null" aria-label="chatbot panel">
+      @if (!isMobile) {
+        <div
+          class="chat-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          tabindex="0"
+          (mousedown)="startResize($event)"
+          (keydown)="onResizerKeyDown($event)"
+        ></div>
+      }
+
+      <header class="chat-header">
+        <div>
+          <h3>{{ 'chatbot.title' | translate }}</h3>
+          <p>{{ 'chatbot.subtitle' | translate }}</p>
+        </div>
+        <button type="button" class="btn btn-neutral" (click)="toggleOpen()" [attr.aria-label]="'chatbot.collapse' | translate">
+          {{ 'chatbot.collapse' | translate }}
+        </button>
+      </header>
+
+      <div #messagesContainer class="chat-messages" aria-live="polite">
+        @for (message of messages; track $index) {
+          <article class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+            <p class="message-role">
+              {{ (message.role === 'user' ? 'chatbot.user' : 'chatbot.assistant') | translate }}
+            </p>
+            <p class="message-text" [innerHTML]="message.text | linkify"></p>
+          </article>
+        }
+
+        @if (isStreaming) {
+          <div class="streaming-indicator">{{ 'chatbot.streaming' | translate }}</div>
+        }
+      </div>
+
+      <form class="chat-form" [formGroup]="form" (ngSubmit)="send()">
+        <label for="chat-message" class="sr-only">{{ 'chatbot.inputLabel' | translate }}</label>
+        <textarea
+          id="chat-message"
+          rows="3"
+          formControlName="message"
+          [placeholder]="'chatbot.placeholder' | translate"
+          (keydown)="onEnterKey($event)"
+        ></textarea>
+
+        <div class="chat-actions">
+          <button
+            class="btn btn-neutral voice-btn"
+            type="button"
+            [class.recording]="isRecording"
+            [disabled]="!speechSupported || isStreaming"
+            (pointerdown)="startVoiceInput($event)"
+            (pointerup)="stopVoiceInput($event)"
+            (pointercancel)="stopVoiceInput($event)"
+            (pointerleave)="stopVoiceInput($event)"
+          >
+            {{ (isRecording ? 'chatbot.voiceRecording' : 'chatbot.voiceStartRecording') | translate }}
+          </button>
+
+          <button class="btn btn-primary" type="submit" [disabled]="isStreaming || form.invalid">
+            {{ 'chatbot.send' | translate }}
+          </button>
+        </div>
+
+        @if (!speechSupported) {
+          <p class="voice-hint">{{ 'chatbot.voiceUnsupported' | translate }}</p>
+        }
+
+        @if (showVoiceDebug) {
+          <div class="voice-debug" aria-live="polite">
+            <p class="voice-debug-title">Voice debug</p>
+            @for (line of voiceDebugLogs; track $index) {
+              <p class="voice-debug-line">{{ line }}</p>
+            }
+          </div>
+        }
+      </form>
+    </section>
+  }
+</div>

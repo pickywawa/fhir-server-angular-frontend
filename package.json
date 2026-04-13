@@ -10,5 +10,8 @@
     "docker:logs": "docker-compose logs -f"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@angular/animations": "^21.2.8"
+  }
 }

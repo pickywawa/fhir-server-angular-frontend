@@ -59,7 +59,16 @@
     "loading": "Recherche en cours...",
     "emptyPrompt": "Saisissez un terme pour lancer la recherche.",
     "empty": "Aucun resultat.",
-    "error": "Erreur lors de la recherche"
+    "error": "Erreur lors de la recherche",
+    "quick": {
+      "minChars": "Saisissez au moins 2 caracteres.",
+      "types": {
+        "patient": "Patients",
+        "practitioner": "Professionnels",
+        "appointment": "Rendez-vous",
+        "document": "Documents"
+      }
+    }
   },
   "agenda": {
     "title": "Agenda",
@@ -333,6 +342,7 @@
         "relatedPerson": "Entourage",
         "questionnaires": "Questionnaires",
         "discussions": "Discussions",
+        "timeline": "Ligne de vie",
         "identity": "Fiche d'identite",
         "documents": "Documents"
       },
@@ -486,9 +496,17 @@
       "newDiscussion": "Nouvelle discussion",
       "threadPrefix": "Discussion",
       "messageCount": "message(s)",
+      "editTitle": "Modifier le titre",
+      "saveTitle": "Enregistrer le titre",
+      "titlePlaceholder": "Titre de la discussion",
+      "searchPlaceholder": "Rechercher une discussion...",
+      "patient": "Patient",
       "empty": "Aucune discussion pour ce patient.",
+      "emptyGlobal": "Aucune discussion pour le professionnel connecte.",
       "prompt": "Creez ou selectionnez une discussion.",
+      "promptGlobal": "Selectionnez une discussion.",
       "noMessages": "Aucun message dans cette discussion.",
+      "noResults": "Aucune discussion trouvée.",
       "sender": "Expediteur",
       "recipient": "Destinataire",
       "undetermined": "Indetermine",
@@ -497,13 +515,43 @@
       "sending": "Envoi...",
       "send": "Envoyer",
       "unknownSender": "Inconnu",
+      "ttsStart": "Dicter un message",
+      "ttsStop": "Arrêter la dictée",
+      "ttsUnsupported": "Dictée vocale non supportée par ce navigateur",
       "errors": {
         "patientNotFound": "Patient introuvable.",
         "selectDiscussion": "Selectionnez ou creez une discussion.",
         "senderNotFound": "Impossible de determiner le professionnel connecte (scope Keycloak).",
         "recipientNotFound": "Impossible de determiner le CareTeam destinataire.",
+        "titleRequired": "Le titre de discussion est obligatoire.",
+        "renameTitle": "Erreur lors de la mise à jour du titre",
         "send": "Erreur lors de l'envoi du message",
         "load": "Erreur lors du chargement des discussions"
+      }
+    },
+    "timeline": {
+      "title": "Timeline patient",
+      "loading": "Chargement des evenements...",
+      "empty": "Aucun evenement trouve pour ce patient.",
+      "by": "Par",
+      "categories": {
+        "document": "Document",
+        "questionnaire": "Questionnaire",
+        "appointment": "Rendez-vous",
+        "care-team": "Intervenant",
+        "related-person": "Entourage",
+        "careplan": "Plan de soin",
+        "patient": "Patient",
+        "discussion": "Discussion",
+        "other": "Evenement"
+      },
+      "actions": {
+        "created": "Ajout",
+        "updated": "Modification",
+        "recorded": "Activite"
+      },
+      "errors": {
+        "load": "Erreur lors du chargement de la timeline"
       }
     }
   },
@@ -559,5 +607,34 @@
     "window": {
       "loading": "Ouverture de la visioconference..."
     }
+  },
+  "chatbot": {
+    "title": "FHIR Assistant",
+    "subtitle": "Cas d'usage guides en temps reel",
+    "open": "Ouvrir le chat",
+    "collapse": "Replier",
+    "user": "Vous",
+    "assistant": "Assistant",
+    "placeholder": "Decrivez votre besoin (recherche patient, creation de rendez-vous, mise a jour d'identite...)",
+    "inputLabel": "Message du chat",
+    "send": "Envoyer",
+    "voiceStartRecording": "Demarrer la dictee",
+    "voiceStopAndSend": "Arreter et envoyer",
+    "voiceHoldToTalk": "Maintenir pour parler",
+    "voiceRecording": "Parlez... relachez pour envoyer",
+    "voiceNoTranscript": "Aucune voix detectee. Verifiez votre microphone puis reessayez.",
+    "voiceUnsupported": "La saisie vocale n'est pas disponible dans ce navigateur.",
+    "streaming": "Generation de la reponse...",
+    "greeting": "Bonjour, je peux vous aider a rechercher un patient, creer un rendez-vous, mettre a jour des donnees d'identite ou naviguer vers une ressource.",
+    "unavailable": "Le service de chat est actuellement indisponible."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "markAllAsRead": "Marquer tout comme lu",
+    "markAsRead": "Marquer comme lu",
+    "markAsUnread": "Marquer comme non lu",
+    "loading": "Chargement...",
+    "viewAll": "Voir tout"
   }
 }

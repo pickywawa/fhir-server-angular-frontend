@@ -5,10 +5,11 @@ import { SideMenuComponent } from './shared/components/side-menu/side-menu.compo
 import { FloatingVisioComponent } from './shared/components/floating-visio/floating-visio.component';
 import { AppPreferencesService } from './core/services/app-preferences.service';
 import { MenuStateService } from './core/services/menu-state.service';
+import { ChatAssistantComponent } from './shared/components/chat-assistant/chat-assistant.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, SideMenuComponent, ToastComponent, FloatingVisioComponent],
+  imports: [RouterOutlet, SideMenuComponent, ToastComponent, FloatingVisioComponent, ChatAssistantComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

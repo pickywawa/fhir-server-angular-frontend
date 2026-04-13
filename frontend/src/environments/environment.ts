@@ -1,6 +1,8 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8081/fhir',
+  eventsApiUrl: 'http://localhost:8091',
+  chatBotUrl: 'http://localhost:8090',
   keycloakUrl: 'http://localhost:8180',
   keycloakRealm: 'fhir',
   keycloakClientId: 'fhir-angular',

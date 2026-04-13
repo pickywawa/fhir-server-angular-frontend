@@ -1,0 +1,49 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: events-service
+  datasource:
+    url: ${EVENTS_DB_URL:jdbc:postgresql://localhost:5433/healthapp_events_db}
+    username: ${EVENTS_DB_USERNAME:postgres}
+    password: ${EVENTS_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    admin:
+      fail-fast: false
+      auto-create: false
+    consumer:
+      group-id: events-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: com.healthapp.events
+            value:
+              default:
+                type: com.healthapp.events.model.EventPayload
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  events:
+    topic: ${EVENTS_TOPIC:healthapp.events}

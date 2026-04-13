@@ -18,6 +18,7 @@ import { PatientQuestionnairesComponent } from '../features/questionnaires/compo
 import { RelatedPersonComponent } from '../features/related-person/components/related-person.component';
 import { PatientCarePlanComponent } from '../features/careplan/components/patient-careplan.component';
 import { PatientVisioComponent } from '../features/visio/components/patient-visio.component';
+import { PatientTimelineComponent } from '../features/timeline/components/patient-timeline.component';
 import { TabBarComponent, TabItem } from '../../../core/components/tab-bar/tab-bar.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -34,6 +35,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     PatientVisioComponent,
     PatientDocumentsComponent,
     PatientDiscussionsComponent,
+    PatientTimelineComponent,
     PatientQuestionnairesComponent,
     TabBarComponent,
     TranslateModule

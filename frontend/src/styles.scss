@@ -26,6 +26,9 @@
   --btn-neutral-bg-hover: #eef2f7;
   --btn-neutral-border: #dbe3ea;
   --btn-neutral-text: #334155;
+  --scrollbar-track: var(--card-bg-soft);
+  --scrollbar-thumb: color-mix(in srgb, var(--border-color) 62%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-secondary) 28%, transparent);
 }
 
 :root[data-theme='dark'] {
@@ -54,6 +57,9 @@
   --btn-neutral-bg-hover: #223453;
   --btn-neutral-border: #334767;
   --btn-neutral-text: #d5e3f8;
+  --scrollbar-track: var(--card-bg-soft);
+  --scrollbar-thumb: color-mix(in srgb, var(--border-color) 68%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-secondary) 38%, transparent);
 }
 
 :root[data-theme='purple'] {
@@ -82,6 +88,9 @@
   --btn-neutral-bg-hover: #ece3fb;
   --btn-neutral-border: #cdbfe8;
   --btn-neutral-text: #4f3b86;
+  --scrollbar-track: var(--card-bg-soft);
+  --scrollbar-thumb: color-mix(in srgb, var(--border-color) 66%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-secondary) 34%, transparent);
 }
 
 * {
@@ -249,4 +258,33 @@ button {
 html, body {
   height: 100%;
   margin: 0;
+}
+
+* {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border: none;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: none;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
 }

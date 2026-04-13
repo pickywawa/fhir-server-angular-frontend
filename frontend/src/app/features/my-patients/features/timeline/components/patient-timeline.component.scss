@@ -1,0 +1,96 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+app-bubble-card {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 0.75rem;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.6rem 0.15rem 0.9rem;
+  border-left: 2px solid color-mix(in oklab, var(--border-color) 80%, transparent);
+  margin-left: 0.45rem;
+  position: relative;
+
+  &:hover .timeline-type {
+    color: var(--btn-primary-bg, #0f172a);
+  }
+}
+
+.timeline-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--btn-primary-bg, #0f172a) 10%, var(--card-bg));
+  color: var(--btn-primary-bg, #0f172a);
+  border: 1px solid color-mix(in oklab, var(--btn-primary-bg, #0f172a) 22%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -12px;
+  flex-shrink: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.timeline-content {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.timeline-date {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.timeline-type {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.timeline-category,
+.timeline-actor {
+  font-size: 0.79rem;
+  color: var(--text-secondary);
+}
+
+.timeline-details {
+  margin: 0.1rem 0 0;
+  font-size: 0.83rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.state {
+  color: var(--text-secondary);
+}
+
+.state.error {
+  color: #b91c1c;
+}

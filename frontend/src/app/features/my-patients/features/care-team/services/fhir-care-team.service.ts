@@ -98,6 +98,94 @@ export class FhirCareTeamService {
     );
   }
 
+  getCareTeamReferencesByPractitioner(practitionerId: string): Observable<string[]> {
+    const normalized = String(practitionerId || '').trim();
+    if (!normalized) {
+      console.debug('[discussions-global] careteam lookup skipped: empty practitioner id');
+      return of([]);
+    }
+
+    console.debug('[discussions-global] careteam lookup start', { practitionerId: normalized });
+
+    const byQualifiedParticipantParams = new HttpParams()
+      .set('participant', `Practitioner/${normalized}`)
+      .set('_count', '200');
+
+    const byRawParticipantParams = new HttpParams()
+      .set('participant', normalized)
+      .set('_count', '200');
+
+    const allCareTeamsParams = new HttpParams().set('_count', '200');
+
+    return this.apiService.get<any>(this.endpoint, { params: byQualifiedParticipantParams }).pipe(
+      switchMap((bundleByQualified) => {
+        const qualifiedMatches = this.extractCareTeamReferences(bundleByQualified);
+        console.debug('[discussions-global] careteam lookup by participant=Practitioner/{id}', {
+          practitionerId: normalized,
+          matches: qualifiedMatches
+        });
+        if (qualifiedMatches.length > 0) {
+          return of(qualifiedMatches);
+        }
+
+        return this.apiService.get<any>(this.endpoint, { params: byRawParticipantParams }).pipe(
+          switchMap((bundleByRaw) => {
+            const rawMatches = this.extractCareTeamReferences(bundleByRaw);
+            console.debug('[discussions-global] careteam lookup by participant={id}', {
+              practitionerId: normalized,
+              matches: rawMatches
+            });
+            if (rawMatches.length > 0) {
+              return of(rawMatches);
+            }
+
+            return this.apiService.get<any>(this.endpoint, { params: allCareTeamsParams }).pipe(
+              map((allBundle) => {
+                const filtered = this.filterCareTeamsByPractitioner(allBundle, normalized);
+                console.debug('[discussions-global] careteam lookup by local filtering', {
+                  practitionerId: normalized,
+                  matches: filtered
+                });
+                return filtered;
+              })
+            );
+          })
+        );
+      })
+    );
+  }
+
+  private extractCareTeamReferences(bundle: any): string[] {
+    const entries = bundle?.entry ?? [];
+    const refs = entries
+      .map((entry: any) => String(entry?.resource?.id || '').trim())
+      .filter(Boolean)
+      .map((id: string) => `CareTeam/${id}`);
+    return Array.from(new Set(refs));
+  }
+
+  private filterCareTeamsByPractitioner(bundle: any, practitionerId: string): string[] {
+    const target = `Practitioner/${String(practitionerId || '').trim()}`;
+    const entries = bundle?.entry ?? [];
+
+    const refs = entries
+      .map((entry: any) => entry?.resource)
+      .filter((resource: any) => resource?.resourceType === 'CareTeam' && resource?.id)
+      .filter((careTeam: any) => {
+        const participants = careTeam?.participant ?? [];
+        return participants.some((participant: any) => {
+          const reference = String(participant?.member?.reference || '').trim();
+          if (!reference) {
+            return false;
+          }
+          return reference === target || reference.endsWith(`/${target}`) || reference === practitionerId;
+        });
+      })
+      .map((careTeam: any) => `CareTeam/${careTeam.id}`);
+
+    return Array.from(new Set(refs));
+  }
+
   private getOrCreateCareTeamForPatient(patientId: string): Observable<string> {
     const params = new HttpParams()
       .set('patient', patientId)

@@ -122,7 +122,17 @@ export class PatientListComponent implements OnInit, OnDestroy {
     if (!item.patientId) {
       return;
     }
-    this.router.navigate(['/my-patients', item.patientId]);
+    const carePlanContext = {
+      source: 'careplan-worklist',
+      patientId: item.patientId,
+      carePlanId: item.carePlanId,
+      createdAt: Date.now()
+    };
+    sessionStorage.setItem('chat-careplan-context', JSON.stringify(carePlanContext));
+
+    this.router.navigate(['/my-patients', item.patientId], {
+      state: { chatCarePlanContext: carePlanContext }
+    });
   }
 
   private loadPatients(): void {

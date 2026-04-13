@@ -6,6 +6,61 @@ echo "🚀 Démarrage Backend (Docker Compose + projet FHIR local)..."
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FHIR_DIR="$ROOT_DIR/backend/fhir"
+EVENTS_DIR="$ROOT_DIR/backend/events"
+
+kill_port_if_used() {
+	local port="$1"
+	local pids
+	pids=$(lsof -ti tcp:"$port" 2>/dev/null || true)
+
+	if [ -n "$pids" ]; then
+		echo "⚠️  Port $port déjà utilisé. Arrêt du/des processus: $pids"
+		kill $pids 2>/dev/null || true
+		sleep 1
+
+		# Si un process résiste, on force l'arrêt pour éviter un échec au relancement.
+		pids=$(lsof -ti tcp:"$port" 2>/dev/null || true)
+		if [ -n "$pids" ]; then
+			echo "⚠️  Forçage de l'arrêt sur le port $port: $pids"
+			kill -9 $pids 2>/dev/null || true
+			sleep 1
+		fi
+	fi
+}
+
+is_docker_service_running() {
+	local service="$1"
+	docker compose ps --status running --services 2>/dev/null | grep -qx "$service"
+}
+
+is_port_open() {
+	local port="$1"
+	lsof -ti tcp:"$port" >/dev/null 2>&1
+}
+
+wait_for_port() {
+	local port="$1"
+	local retries="${2:-20}"
+	local delay="${3:-1}"
+
+	for _ in $(seq 1 "$retries"); do
+		if is_port_open "$port"; then
+			return 0
+		fi
+		sleep "$delay"
+	done
+
+	return 1
+}
+
+print_status() {
+	local label="$1"
+	if [ "$2" -eq 0 ]; then
+		echo "✅ $label"
+	else
+		echo "❌ $label"
+	fi
+}
 
 if [ ! -d "$FHIR_DIR" ]; then
 	echo "❌ Projet FHIR introuvable: $FHIR_DIR"
@@ -18,9 +73,14 @@ if [ ! -f "$FHIR_DIR/pom.xml" ]; then
 	exit 1
 fi
 
+echo "🧹 Vérification des ports backend (8081, 8090, 8091)..."
+kill_port_if_used 8081
+kill_port_if_used 8090
+kill_port_if_used 8091
+
 echo "🐳 Démarrage de l'infrastructure Docker (PostgreSQL + Keycloak + Jitsi)..."
 cd "$ROOT_DIR"
-docker compose up -d postgres keycloak jitsi-prosody jitsi-jicofo jitsi-jvb jitsi-web
+docker compose up -d postgres postgres-events kafka keycloak jitsi-prosody jitsi-jicofo jitsi-jvb jitsi-web
 
 echo "⏳ Attente de PostgreSQL..."
 for i in {1..30}; do
@@ -31,6 +91,21 @@ for i in {1..30}; do
 
 	if [ "$i" -eq 30 ]; then
 		echo "❌ PostgreSQL ne répond pas après 60 secondes"
+		exit 1
+	fi
+
+	sleep 2
+done
+
+echo "⏳ Attente de PostgreSQL events..."
+for i in {1..30}; do
+	if docker compose exec -T postgres-events pg_isready -U postgres -d healthapp_events_db >/dev/null 2>&1; then
+		echo "✅ PostgreSQL events prêt"
+		break
+	fi
+
+	if [ "$i" -eq 30 ]; then
+		echo "❌ PostgreSQL events ne répond pas après 60 secondes"
 		exit 1
 	fi
 
@@ -68,11 +143,142 @@ if [ ! -f "$ROOT_WAR" ]; then
 	exit 1
 fi
 
-echo "☕ Lancement du WAR packagé..."
+echo "☕ Lancement du WAR packagé (arrière-plan)..."
 HAPI_FHIR_TESTER_HOME_SERVER_ADDRESS="http://localhost:8081/fhir" \
 SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/healthapp_db" \
 SPRING_DATASOURCE_USERNAME="postgres" \
 SPRING_DATASOURCE_PASSWORD="postgres" \
 SPRING_DATASOURCE_DRIVER_CLASS_NAME="org.postgresql.Driver" \
 HIBERNATE_DIALECT="ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect" \
-JAVA_HOME="$JAVA17_HOME" PATH="$JAVA17_HOME/bin:$PATH" java -Dserver.port=8081 -jar "$ROOT_WAR"
+JAVA_HOME="$JAVA17_HOME" PATH="$JAVA17_HOME/bin:$PATH" java -Dserver.port=8081 -jar "$ROOT_WAR" &
+FHIR_PID=$!
+
+echo "⏳ Attente de Kafka (readiness check)..."
+for i in {1..60}; do
+	if docker compose exec -T kafka /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server localhost:9092 >/dev/null 2>&1; then
+		echo "✅ Kafka prêt"
+		break
+	fi
+	if [ "$i" -eq 60 ]; then
+		echo "⚠️  Kafka non disponible après 60s — Events service tentera de se reconnecter"
+		break
+	fi
+	sleep 2
+done
+
+# ── Events ────────────────────────────────────────────────────────────────────
+if [ -d "$EVENTS_DIR" ] && [ -f "$EVENTS_DIR/pom.xml" ]; then
+	echo ""
+	echo "📨 Démarrage du service events (port 8091)..."
+	echo "   - API events : http://localhost:8091/api/v1/events"
+	echo "   - API notif  : http://localhost:8091/api/v1/notifications"
+	cd "$EVENTS_DIR"
+	EVENTS_DB_URL="jdbc:postgresql://localhost:5433/healthapp_events_db" \
+	EVENTS_DB_USERNAME="postgres" \
+	EVENTS_DB_PASSWORD="postgres" \
+	KAFKA_BOOTSTRAP_SERVERS="localhost:9092" \
+	JAVA_HOME="$JAVA17_HOME" PATH="$JAVA17_HOME/bin:$PATH" mvn -q spring-boot:run &
+	EVENTS_PID=$!
+else
+	echo "⚠️  Dossier events introuvable ($EVENTS_DIR) — service ignoré."
+	EVENTS_PID=""
+fi
+
+# ── Chat-bot ──────────────────────────────────────────────────────────────────
+CHATBOT_DIR="$ROOT_DIR/backend/chat-bot"
+if [ -d "$CHATBOT_DIR" ] && [ -f "$CHATBOT_DIR/pom.xml" ]; then
+	echo ""
+	echo "🤖 Démarrage du chat-bot (port 8090)..."
+	echo "   - API chat : http://localhost:8090/api/v1/chat"
+	echo "   - Santé    : http://localhost:8090/api/v1/chat/health"
+	cd "$CHATBOT_DIR"
+	JAVA_HOME="$JAVA17_HOME" PATH="$JAVA17_HOME/bin:$PATH" mvn -q spring-boot:run &
+	CHATBOT_PID=$!
+else
+	echo "⚠️  Dossier chat-bot introuvable ($CHATBOT_DIR) — service ignoré."
+	CHATBOT_PID=""
+fi
+
+# ── Arrêt propre sur Ctrl+C ───────────────────────────────────────────────────
+cleanup() {
+	echo ""
+	echo "🛑 Arrêt des services..."
+	[ -n "$EVENTS_PID" ] && kill "$EVENTS_PID" 2>/dev/null
+	[ -n "$CHATBOT_PID" ] && kill "$CHATBOT_PID" 2>/dev/null
+	kill "$FHIR_PID" 2>/dev/null
+	wait
+	echo "✅ Services arrêtés."
+}
+trap cleanup INT TERM
+
+echo ""
+echo "🔎 Vérification des composants démarrés..."
+
+postgres_status=1
+postgres_events_status=1
+kafka_status=1
+keycloak_status=1
+jitsi_status=1
+fhir_status=1
+events_status=1
+chatbot_status=1
+
+if is_docker_service_running "postgres"; then
+	postgres_status=0
+fi
+
+if is_docker_service_running "postgres-events"; then
+	postgres_events_status=0
+fi
+
+if is_docker_service_running "kafka"; then
+	kafka_status=0
+fi
+
+if is_docker_service_running "keycloak"; then
+	keycloak_status=0
+fi
+
+if is_docker_service_running "jitsi-prosody" \
+	&& is_docker_service_running "jitsi-jicofo" \
+	&& is_docker_service_running "jitsi-jvb" \
+	&& is_docker_service_running "jitsi-web"; then
+	jitsi_status=0
+fi
+
+if wait_for_port 8081 45 1; then
+	fhir_status=0
+fi
+
+if [ -n "$EVENTS_PID" ] && wait_for_port 8091 45 1; then
+	events_status=0
+fi
+
+if [ -n "$CHATBOT_PID" ] && wait_for_port 8090 45 1; then
+	chatbot_status=0
+fi
+
+echo ""
+echo "📊 Statut des composants:"
+print_status "PostgreSQL" "$postgres_status"
+print_status "PostgreSQL events" "$postgres_events_status"
+print_status "Kafka" "$kafka_status"
+print_status "Keycloak" "$keycloak_status"
+print_status "Jitsi" "$jitsi_status"
+print_status "FHIR (port 8081)" "$fhir_status"
+if [ -n "$EVENTS_PID" ]; then
+	print_status "Events (port 8091)" "$events_status"
+else
+	echo "❌ Events (non démarré)"
+fi
+if [ -n "$CHATBOT_PID" ]; then
+	print_status "Chat-bot (port 8090)" "$chatbot_status"
+else
+	echo "❌ Chat-bot (non démarré)"
+fi
+
+echo ""
+echo "✅ Backends démarrés. Appuie sur Ctrl+C pour tout arrêter."
+wait $FHIR_PID
+[ -n "$EVENTS_PID" ] && wait $EVENTS_PID
+[ -n "$CHATBOT_PID" ] && wait $CHATBOT_PID

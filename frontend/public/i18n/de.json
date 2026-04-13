@@ -58,7 +58,16 @@
     "loading": "Suche laeuft...",
     "emptyPrompt": "Geben Sie einen Suchbegriff ein.",
     "empty": "Keine Ergebnisse.",
-    "error": "Suchfehler"
+    "error": "Suchfehler",
+    "quick": {
+      "minChars": "Geben Sie mindestens 2 Zeichen ein.",
+      "types": {
+        "patient": "Patienten",
+        "practitioner": "Fachkraefte",
+        "appointment": "Termine",
+        "document": "Dokumente"
+      }
+    }
   },
   "agenda": {
     "title": "Kalender",
@@ -277,6 +286,7 @@
         "careTeam": "Behandlungsteam",
         "questionnaires": "Frageboegen",
         "discussions": "Diskussionen",
+        "timeline": "Timeline",
         "identity": "Identitaetsdaten",
         "documents": "Dokumente"
       },
@@ -390,9 +400,17 @@
       "newDiscussion": "Neue Diskussion",
       "threadPrefix": "Diskussion",
       "messageCount": "Nachricht(en)",
+      "editTitle": "Titel bearbeiten",
+      "saveTitle": "Titel speichern",
+      "titlePlaceholder": "Diskussionstitel",
+      "searchPlaceholder": "Diskussionen suchen...",
+      "patient": "Patient",
       "empty": "Keine Diskussion fuer diesen Patienten.",
+      "emptyGlobal": "Keine Diskussion fuer den verbundenen Behandler.",
       "prompt": "Erstellen oder waehlen Sie eine Diskussion.",
+      "promptGlobal": "Waehlen Sie eine Diskussion.",
       "noMessages": "Keine Nachrichten in dieser Diskussion.",
+      "noResults": "Keine Diskussion gefunden.",
       "sender": "Absender",
       "recipient": "Empfaenger",
       "undetermined": "Unbestimmt",
@@ -401,13 +419,43 @@
       "sending": "Wird gesendet...",
       "send": "Senden",
       "unknownSender": "Unbekannt",
+      "ttsStart": "Sprachdiktat starten",
+      "ttsStop": "Sprachdiktat stoppen",
+      "ttsUnsupported": "Sprachdiktat wird von diesem Browser nicht unterstützt",
       "errors": {
         "patientNotFound": "Patient nicht gefunden.",
         "selectDiscussion": "Waehlen oder erstellen Sie eine Diskussion.",
         "senderNotFound": "Verbundener Behandler kann nicht ermittelt werden (Keycloak-Scope).",
         "recipientNotFound": "Empfaenger-CareTeam kann nicht ermittelt werden.",
+        "titleRequired": "Der Diskussionstitel ist erforderlich.",
+        "renameTitle": "Fehler beim Aktualisieren des Diskussionstitels",
         "send": "Fehler beim Senden der Nachricht",
         "load": "Fehler beim Laden der Diskussionen"
+      }
+    },
+    "timeline": {
+      "title": "Patienten-Timeline",
+      "loading": "Ereignisse werden geladen...",
+      "empty": "Keine Ereignisse fuer diesen Patienten gefunden.",
+      "by": "Von",
+      "categories": {
+        "document": "Dokument",
+        "questionnaire": "Fragebogen",
+        "appointment": "Termin",
+        "care-team": "Behandlungsteam",
+        "related-person": "Angehoerige",
+        "careplan": "Behandlungsplan",
+        "patient": "Patient",
+        "discussion": "Diskussion",
+        "other": "Ereignis"
+      },
+      "actions": {
+        "created": "Erstellung",
+        "updated": "Aenderung",
+        "recorded": "Aktivitaet"
+      },
+      "errors": {
+        "load": "Fehler beim Laden der Timeline"
       }
     }
   },
@@ -422,5 +470,34 @@
     "create": "Erstellen",
     "loading": "Laedt...",
     "unknownError": "Unbekannter Fehler"
+  },
+  "chatbot": {
+    "title": "FHIR Assistent",
+    "subtitle": "Gefuehrte Anwendungsfaelle in Echtzeit",
+    "open": "Chat oeffnen",
+    "collapse": "Einklappen",
+    "user": "Sie",
+    "assistant": "Assistent",
+    "placeholder": "Beschreiben Sie Ihr Anliegen (Patientensuche, Termin erstellen, Identitaet aktualisieren...)",
+    "inputLabel": "Chat Nachricht",
+    "send": "Senden",
+    "voiceStartRecording": "Diktat starten",
+    "voiceStopAndSend": "Stoppen und senden",
+    "voiceHoldToTalk": "Zum Sprechen gedrueckt halten",
+    "voiceRecording": "Sprechen... loslassen zum Senden",
+    "voiceNoTranscript": "Keine Sprache erkannt. Bitte Mikrofon pruefen und erneut versuchen.",
+    "voiceUnsupported": "Spracheingabe ist in diesem Browser nicht verfuegbar.",
+    "streaming": "Antwort wird erstellt...",
+    "greeting": "Hallo, ich kann bei der Patientensuche, Terminerstellung, Identitaetsaktualisierung oder Navigation zu einer Ressource helfen.",
+    "unavailable": "Der Chat-Dienst ist derzeit nicht verfuegbar."
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Keine Benachrichtigungen",
+    "markAllAsRead": "Alle als gelesen markieren",
+    "markAsRead": "Als gelesen markieren",
+    "markAsUnread": "Als ungelesen markieren",
+    "loading": "Laedt...",
+    "viewAll": "Alle anzeigen"
   }
 }

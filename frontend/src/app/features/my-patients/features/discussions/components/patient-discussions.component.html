@@ -10,10 +10,21 @@
     <div class="discussions-layout">
       <aside class="threads-pane">
         <div class="threads-header">
-          <app-button-primary (click)="createDiscussion()">{{ 'myPatients.discussions.newDiscussion' | translate }}</app-button-primary>
+          @if (!isGlobalContext) {
+            <app-button-primary (click)="createDiscussion()">{{ 'myPatients.discussions.newDiscussion' | translate }}</app-button-primary>
+          }
+          <div class="threads-search">
+            <input
+              type="text"
+              [value]="threadSearchQuery"
+              (input)="onThreadSearchInput($any($event.target).value)"
+              [placeholder]="'myPatients.discussions.searchPlaceholder' | translate"
+              [attr.aria-label]="'myPatients.discussions.searchPlaceholder' | translate"
+            />
+          </div>
         </div>
         <div class="threads-list">
-          @for (thread of threads; track thread) {
+          @for (thread of filteredThreads; track thread) {
             <button
               type="button"
               class="thread-item"
@@ -21,7 +32,10 @@
               (click)="selectDiscussion(thread.id)">
               <div class="thread-avatar">{{ getThreadInitial(thread) }}</div>
               <div class="thread-content">
-                <strong>{{ 'myPatients.discussions.threadPrefix' | translate }} {{ thread.id | slice:0:8 }}</strong>
+                <strong>{{ getThreadDisplayTitle(thread) }}</strong>
+                @if (isGlobalContext && getThreadPatientLabel(thread)) {
+                  <small>{{ 'myPatients.discussions.patient' | translate }}: {{ getThreadPatientLabel(thread) }}</small>
+                }
                 <small>{{ thread.lastMessage }}</small>
               </div>
               <div class="thread-meta">
@@ -30,8 +44,11 @@
               </div>
             </button>
           }
-          @if (threads.length === 0) {
-            <div class="state">{{ 'myPatients.discussions.empty' | translate }}</div>
+          @if (filteredThreads.length === 0 && threadSearchQuery.trim().length > 0) {
+            <div class="state">{{ 'myPatients.discussions.noResults' | translate }}</div>
+          }
+          @if (threads.length === 0 && threadSearchQuery.trim().length === 0) {
+            <div class="state">{{ (isGlobalContext ? 'myPatients.discussions.emptyGlobal' : 'myPatients.discussions.empty') | translate }}</div>
           }
         </div>
       </aside>
@@ -39,16 +56,64 @@
         @if (selectedDiscussionId) {
           <header class="messages-header">
             <div class="messages-title">
-              <h4>{{ 'myPatients.discussions.threadPrefix' | translate }} {{ selectedDiscussionId | slice:0:8 }}</h4>
+              @if (!isEditingDiscussionTitle) {
+                <div class="title-row">
+                  <h4>{{ selectedThreadTitle }}</h4>
+                  <button
+                    type="button"
+                    class="title-action"
+                    (click)="startDiscussionTitleEdit()"
+                    [disabled]="renamingTitle"
+                    [attr.aria-label]="'myPatients.discussions.editTitle' | translate"
+                    [title]="'myPatients.discussions.editTitle' | translate">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                    </svg>
+                  </button>
+                </div>
+              } @else {
+                <div class="title-edit-row">
+                  <input
+                    type="text"
+                    [value]="editedDiscussionTitle"
+                    (input)="editedDiscussionTitle = $any($event.target).value"
+                    [placeholder]="'myPatients.discussions.titlePlaceholder' | translate"
+                    [attr.aria-label]="'myPatients.discussions.titlePlaceholder' | translate" />
+                  <button
+                    type="button"
+                    class="title-action confirm"
+                    (click)="saveDiscussionTitle()"
+                    [disabled]="renamingTitle"
+                    [attr.aria-label]="'myPatients.discussions.saveTitle' | translate"
+                    [title]="'myPatients.discussions.saveTitle' | translate">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="title-action"
+                    (click)="cancelDiscussionTitleEdit()"
+                    [disabled]="renamingTitle"
+                    [attr.aria-label]="'common.cancel' | translate"
+                    [title]="'common.cancel' | translate">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+              }
               <small>{{ selectedMessages.length }} {{ 'myPatients.discussions.messageCount' | translate }}</small>
             </div>
           </header>
         }
         @if (!selectedDiscussionId) {
-          <div class="state">{{ 'myPatients.discussions.prompt' | translate }}</div>
+          <div class="state">{{ (isGlobalContext ? 'myPatients.discussions.promptGlobal' : 'myPatients.discussions.prompt') | translate }}</div>
         }
         @if (selectedDiscussionId) {
-          <div class="messages-list">
+          <div class="messages-list" #messagesList>
             @for (message of selectedMessages; track message) {
               <div class="message-row" [class.mine]="isConnectedSender(message)">
                 <div class="message-bubble" [class.bubble-mine]="isConnectedSender(message)" [class.bubble-other]="!isConnectedSender(message)">
@@ -73,10 +138,30 @@
           <form class="compose-form" [formGroup]="messageForm" (ngSubmit)="sendMessage()">
             <div class="fixed-routing compact">
               <span><strong>{{ 'myPatients.discussions.sender' | translate }}:</strong> {{ senderReference || ('myPatients.discussions.undetermined' | translate) }}</span>
-              <span><strong>{{ 'myPatients.discussions.recipient' | translate }}:</strong> {{ recipientReference || ('myPatients.discussions.undetermined' | translate) }}</span>
+              <span><strong>{{ 'myPatients.discussions.recipient' | translate }}:</strong> {{ selectedThread?.recipientReference || recipientReference || ('myPatients.discussions.undetermined' | translate) }}</span>
             </div>
             <div class="compose-inline">
               <textarea id="content" formControlName="content" rows="1" [placeholder]="'myPatients.discussions.messagePlaceholder' | translate"></textarea>
+              <button
+                type="button"
+                class="btn-tts"
+                [class.listening]="isDictating"
+                [disabled]="!isTtsSupported"
+                (click)="toggleDictation()"
+                [attr.aria-label]="(isDictating ? 'myPatients.discussions.ttsStop' : 'myPatients.discussions.ttsStart') | translate"
+                [title]="(!isTtsSupported ? 'myPatients.discussions.ttsUnsupported' : isDictating ? 'myPatients.discussions.ttsStop' : 'myPatients.discussions.ttsStart') | translate">
+                @if (isDictating) {
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+                    <rect x="6" y="6" width="12" height="12" rx="2"/>
+                  </svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+                    <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" x2="12" y1="19" y2="22"/>
+                  </svg>
+                }
+              </button>
               <button type="submit" class="btn-send" [disabled]="sending || messageForm.invalid" [attr.aria-label]="'myPatients.discussions.send' | translate">
                 <span aria-hidden="true">➤</span>
               </button>

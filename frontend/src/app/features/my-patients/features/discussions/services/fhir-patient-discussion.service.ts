@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, map, of, switchMap } from 'rxjs';
+import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from '../../../../../core/services/api.service';
 import { PatientDiscussionMessage } from '../models/patient-discussion.model';
@@ -34,12 +34,79 @@ export class FhirPatientDiscussionService {
     );
   }
 
+  listMessagesByRecipients(recipientReferences: string[]): Observable<PatientDiscussionMessage[]> {
+    const normalized = Array.from(
+      new Set(
+        recipientReferences
+          .map((item) => String(item || '').trim())
+          .filter(Boolean)
+      )
+    );
+
+    if (!normalized.length) {
+      console.debug('[discussions-global] communication lookup skipped: no recipient references');
+      return of([]);
+    }
+
+    console.debug('[discussions-global] communication lookup start', {
+      recipientReferences: normalized
+    });
+
+    const requests = normalized.map((reference) => {
+      const params = new HttpParams()
+        .set('recipient', reference)
+        .set('_sort', '-sent')
+        .set('_count', '200');
+
+      return this.apiService.get<any>(this.endpoint, { params }).pipe(
+        map((bundle) => {
+          const entries = bundle?.entry ?? [];
+          console.debug('[discussions-global] communication lookup by recipient', {
+            recipient: reference,
+            entriesCount: entries.length
+          });
+          return entries
+            .map((entry: any) => entry?.resource)
+            .filter((resource: any) => resource?.resourceType === 'Communication')
+            .map((resource: any) => this.mapCommunication(resource));
+        }),
+        catchError(() => of([] as PatientDiscussionMessage[]))
+      );
+    });
+
+    return forkJoin(requests).pipe(
+      map((resultSets) => resultSets.flat()),
+      map((messages) => {
+        const byId = new Map<string, PatientDiscussionMessage>();
+        messages.forEach((message) => {
+          if (!message.id) {
+            return;
+          }
+          byId.set(message.id, message);
+        });
+
+        const deduped = Array.from(byId.values()).sort(
+          (a, b) => new Date(b.sent).getTime() - new Date(a.sent).getTime()
+        );
+
+        console.debug('[discussions-global] communication lookup aggregated', {
+          rawMessagesCount: messages.length,
+          dedupedCount: deduped.length,
+          discussionIds: Array.from(new Set(deduped.map((item) => item.discussionId)))
+        });
+
+        return deduped;
+      })
+    );
+  }
+
   sendMessage(
     patientId: string,
     discussionId: string,
     senderReference: string,
     recipientReference: string,
-    content: string
+    content: string,
+    discussionTitle?: string
   ): Observable<PatientDiscussionMessage> {
     const now = new Date().toISOString();
     const messageId = this.newUid();
@@ -61,6 +128,7 @@ export class FhirPatientDiscussionService {
       sender: { reference: senderReference },
       recipient: [{ reference: recipientReference }],
       sent: now,
+      topic: discussionTitle ? { text: discussionTitle } : undefined,
       payload: [{ contentString: content }]
     };
 
@@ -112,12 +180,50 @@ export class FhirPatientDiscussionService {
 
     return {
       id: messageId,
+      resourceId: String(resource?.id || '').trim(),
       discussionId,
+      discussionTitle: String(resource?.topic?.text || '').trim(),
       senderReference: resource?.sender?.reference || '',
       recipientReferences: (resource?.recipient ?? []).map((item: any) => item?.reference).filter(Boolean),
+      subjectReference: resource?.subject?.reference || '',
       sent: resource?.sent || '',
       content: resource?.payload?.[0]?.contentString || ''
     };
+  }
+
+  updateDiscussionTitle(messages: PatientDiscussionMessage[], title: string): Observable<void> {
+    const normalizedTitle = String(title || '').trim();
+    if (!normalizedTitle) {
+      return of(void 0);
+    }
+
+    const resourceIds = Array.from(
+      new Set(
+        messages
+          .map((message) => String(message.resourceId || '').trim())
+          .filter(Boolean)
+      )
+    );
+
+    if (!resourceIds.length) {
+      return of(void 0);
+    }
+
+    const updates = resourceIds.map((resourceId) =>
+      this.apiService.get<any>(`${this.endpoint}/${resourceId}`).pipe(
+        map((resource) => ({
+          ...resource,
+          topic: {
+            ...(resource?.topic || {}),
+            text: normalizedTitle
+          }
+        })),
+        switchMap((updated) => this.apiService.put<any>(`${this.endpoint}/${resourceId}`, updated, { headers: this.fhirHeaders })),
+        map(() => void 0)
+      )
+    );
+
+    return forkJoin(updates).pipe(map(() => void 0));
   }
 
   private getIdentifierValue(identifiers: any[], system: string): string {

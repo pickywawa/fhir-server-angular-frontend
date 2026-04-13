@@ -18,8 +18,8 @@ import { SettingsPageComponent } from './features/settings/components/settings-p
 import { PatientQuestionnairePageComponent } from './features/my-patients/features/questionnaires/components/patient-questionnaire-page.component';
 import { ProfilePageComponent } from './features/profile/components/profile-page.component';
 import { authGuard } from './core/guards/auth.guard';
-import { ModulePlaceholderComponent } from './shared/components/module-placeholder/module-placeholder.component';
 import { VisioExternalWindowComponent } from './features/my-patients/features/visio/components/visio-external-window.component';
+import { DiscussionsPageComponent } from './features/discussions/components/discussions-page.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/my-patients', pathMatch: 'full' },
@@ -41,7 +41,7 @@ export const routes: Routes = [
   { path: 'patient', redirectTo: '/my-patients', pathMatch: 'full' },
   { path: 'patient/:id', redirectTo: '/my-patients/:id', pathMatch: 'full' },
   { path: 'agenda', component: AgendaPageComponent, canActivate: [authGuard] },
-  { path: 'discussions', component: ModulePlaceholderComponent, canActivate: [authGuard], data: { title: 'Discussions' } },
+  { path: 'discussions', component: DiscussionsPageComponent, canActivate: [authGuard] },
   { path: 'rechercher', component: SearchPageComponent, canActivate: [authGuard] },
   { path: 'support', component: SupportPageComponent, canActivate: [authGuard] },
   { path: 'parametres', component: SettingsPageComponent, canActivate: [authGuard] },

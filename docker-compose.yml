@@ -13,6 +13,47 @@ services:
     networks:
       - healthapp-network
 
+  postgres-events:
+    image: postgres:15-alpine
+    container_name: healthapp-postgres-events
+    environment:
+      POSTGRES_DB: healthapp_events_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-events-data:/var/lib/postgresql/data
+    networks:
+      - healthapp-network
+
+  kafka:
+    image: apache/kafka:3.9.0
+    hostname: kafka
+    container_name: healthapp-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qg
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    ports:
+      - "9092:9092"
+    networks:
+      - healthapp-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.1
     container_name: healthapp-keycloak
@@ -139,6 +180,7 @@ services:
 
 volumes:
   postgres-data:
+  postgres-events-data:
 
 networks:
   healthapp-network:

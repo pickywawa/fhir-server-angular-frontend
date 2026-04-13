@@ -58,7 +58,16 @@
     "loading": "Searching...",
     "emptyPrompt": "Enter a term to start searching.",
     "empty": "No result.",
-    "error": "Search error"
+    "error": "Search error",
+    "quick": {
+      "minChars": "Type at least 2 characters.",
+      "types": {
+        "patient": "Patients",
+        "practitioner": "Practitioners",
+        "appointment": "Appointments",
+        "document": "Documents"
+      }
+    }
   },
   "agenda": {
     "title": "Agenda",
@@ -277,6 +286,7 @@
         "careTeam": "Care team",
         "questionnaires": "Questionnaires",
         "discussions": "Discussions",
+        "timeline": "Timeline",
         "identity": "Identity",
         "documents": "Documents"
       },
@@ -390,9 +400,17 @@
       "newDiscussion": "New discussion",
       "threadPrefix": "Discussion",
       "messageCount": "message(s)",
+      "editTitle": "Edit title",
+      "saveTitle": "Save title",
+      "titlePlaceholder": "Discussion title",
+      "searchPlaceholder": "Search discussions...",
+      "patient": "Patient",
       "empty": "No discussion for this patient.",
+      "emptyGlobal": "No discussion for the connected practitioner.",
       "prompt": "Create or select a discussion.",
+      "promptGlobal": "Select a discussion.",
       "noMessages": "No message in this discussion.",
+      "noResults": "No discussion found.",
       "sender": "Sender",
       "recipient": "Recipient",
       "undetermined": "Undetermined",
@@ -401,13 +419,43 @@
       "sending": "Sending...",
       "send": "Send",
       "unknownSender": "Unknown",
+      "ttsStart": "Dictate a message",
+      "ttsStop": "Stop dictation",
+      "ttsUnsupported": "Voice dictation not supported by this browser",
       "errors": {
         "patientNotFound": "Patient not found.",
         "selectDiscussion": "Select or create a discussion.",
         "senderNotFound": "Unable to resolve connected professional (Keycloak scope).",
         "recipientNotFound": "Unable to resolve recipient care team.",
+        "titleRequired": "Discussion title is required.",
+        "renameTitle": "Error while updating discussion title",
         "send": "Error while sending message",
         "load": "Error while loading discussions"
+      }
+    },
+    "timeline": {
+      "title": "Patient timeline",
+      "loading": "Loading events...",
+      "empty": "No event found for this patient.",
+      "by": "By",
+      "categories": {
+        "document": "Document",
+        "questionnaire": "Questionnaire",
+        "appointment": "Appointment",
+        "care-team": "Care team",
+        "related-person": "Family",
+        "careplan": "Care plan",
+        "patient": "Patient",
+        "discussion": "Discussion",
+        "other": "Event"
+      },
+      "actions": {
+        "created": "Created",
+        "updated": "Updated",
+        "recorded": "Activity"
+      },
+      "errors": {
+        "load": "Error while loading timeline"
       }
     }
   },
@@ -422,5 +470,34 @@
     "create": "Create",
     "loading": "Loading...",
     "unknownError": "Unknown error"
+  },
+  "chatbot": {
+    "title": "FHIR Assistant",
+    "subtitle": "Guided use cases in real time",
+    "open": "Open chat",
+    "collapse": "Collapse",
+    "user": "You",
+    "assistant": "Assistant",
+    "placeholder": "Describe your need (patient search, appointment creation, identity update...)",
+    "inputLabel": "Chat message",
+    "send": "Send",
+    "voiceStartRecording": "Start dictation",
+    "voiceStopAndSend": "Stop and send",
+    "voiceHoldToTalk": "Hold to talk",
+    "voiceRecording": "Speak... release to send",
+    "voiceNoTranscript": "No speech was detected. Check your microphone and try again.",
+    "voiceUnsupported": "Voice input is not available in this browser.",
+    "streaming": "Generating response...",
+    "greeting": "Hello, I can help you search a patient, create an appointment, update identity data, or navigate to a resource.",
+    "unavailable": "The chat service is currently unavailable."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllAsRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "markAsUnread": "Mark as unread",
+    "loading": "Loading...",
+    "viewAll": "View all"
   }
 }

@@ -271,8 +271,9 @@
 }
 
 .menu-item.active {
-  background: #0f172a;
-  color: #ffffff;
+  background: var(--btn-neutral-bg-hover);
+  color: var(--btn-neutral-text);
+  box-shadow: inset 0 0 0 1px var(--btn-neutral-border);
 }
 
 .icon {
@@ -329,9 +330,9 @@
 }
 
 :root[data-theme='purple'] .menu-item.active {
-  background: #e6ddfb;
-  color: #4a2fa4;
-  box-shadow: inset 0 0 0 1px #cfc0f3;
+  background: var(--btn-neutral-bg-hover);
+  color: var(--btn-neutral-text);
+  box-shadow: inset 0 0 0 1px var(--btn-neutral-border);
 }
 
 :root[data-theme='purple'] .user-card {

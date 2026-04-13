@@ -1,9 +1,12 @@
 <div class="overview-content">
   <div class="overview-priority-grid">
-    <app-patient-careplan [patientId]="patient.id"></app-patient-careplan>
-    <div class="overview-secondary-stack">
-      <app-care-team [patientId]="patient.id"></app-care-team>
-      <app-related-persons [patientId]="patient.id"></app-related-persons>
+    <app-patient-timeline [patientId]="patient.id"></app-patient-timeline>
+    <div class="overview-right-column">
+      <div class="overview-secondary-stack">
+        <app-care-team [patientId]="patient.id"></app-care-team>
+        <app-related-persons [patientId]="patient.id"></app-related-persons>
+      </div>
+      <app-patient-careplan [patientId]="patient.id"></app-patient-careplan>
     </div>
   </div>
 

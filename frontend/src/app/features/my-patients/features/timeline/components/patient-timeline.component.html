@@ -1,0 +1,63 @@
+<app-bubble-card [title]="'myPatients.timeline.title' | translate">
+  @if (loading) {
+    <div class="state">{{ 'myPatients.timeline.loading' | translate }}</div>
+  }
+
+  @if (!loading && error) {
+    <div class="state error">{{ error }}</div>
+  }
+
+  @if (!loading && !error) {
+    <div class="timeline-list">
+      @for (event of events; track event.id) {
+        <button type="button" class="timeline-item" (click)="openEvent(event)">
+          <div class="timeline-icon" [attr.data-icon]="iconFor(event.category)">
+            @switch (iconFor(event.category)) {
+              @case ('file') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>
+              }
+              @case ('questionnaire') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+              }
+              @case ('calendar') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+              }
+              @case ('team') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3.5 18c0-2.8 2.5-5 5.5-5s5.5 2.2 5.5 5"/><circle cx="17" cy="9" r="2"/></svg>
+              }
+              @case ('people') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="9" r="2.5"/><path d="M3 18c0-3 2.8-5 6-5s6 2 6 5"/></svg>
+              }
+              @case ('plan') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+              }
+              @case ('user') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 20c0-3 3-5 7-5s7 2 7 5"/></svg>
+              }
+              @case ('chat') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h6"/></svg>
+              }
+              @default {
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
+              }
+            }
+          </div>
+
+          <div class="timeline-content">
+            <small class="timeline-date">{{ event.occurredAt | date:'dd/MM/yyyy, HH:mm' }}</small>
+            <strong class="timeline-type">{{ getEventTypeLabel(event) }}</strong>
+            <small class="timeline-category">{{ getCategoryLabel(event.category) }}</small>
+            <small class="timeline-actor">{{ 'myPatients.timeline.by' | translate }} {{ event.actor }}</small>
+            @if (event.details) {
+              <p class="timeline-details">{{ event.details }}</p>
+            }
+          </div>
+        </button>
+      }
+
+      @if (events.length === 0) {
+        <div class="state">{{ 'myPatients.timeline.empty' | translate }}</div>
+      }
+    </div>
+  }
+</app-bubble-card>
