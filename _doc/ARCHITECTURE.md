@@ -1,178 +1,152 @@
-# 🏗️ Architecture du Système
+# Architecture du projet HealthApp
 
-## Vue d'ensemble
+## 1) Vue d'ensemble
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                       FRONTEND                              │
-│                    Angular 19 + NgRx                        │
-│                   http://localhost:4200                     │
-│                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                 │
-│  │  Core    │  │ Features │  │  Shared  │                 │
-│  │ Services │  │  Patient │  │Components│                 │
-│  │  Models  │  │   NgRx   │  │   Pipes  │                 │
-│  └──────────┘  └──────────┘  └──────────┘                 │
-└────────────────────┬────────────────────────────────────────┘
-                     │ HTTP REST
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│                    API GATEWAY                              │
-│              Spring Cloud Gateway                           │
-│                http://localhost:8080                        │
-│                                                             │
-│        ┌──────────────┐    ┌──────────────┐               │
-│        │   Routing    │    │     CORS     │               │
-│        │ Load Balance │    │  Security    │               │
-│        └──────────────┘    └──────────────┘               │
-└─────────┬──────────────────────────┬───────────────────────┘
-          │                          │
-          │                          │
-┌─────────▼─────────────┐   ┌────────▼──────────────┐
-│  PATIENT SERVICE      │   │   FHIR SERVICE        │
-│   Spring Boot         │   │   HAPI FHIR           │
-│  localhost:8081       │   │  localhost:8082       │
-│                       │   │                       │
-│  ┌────────────────┐   │   │  ┌────────────────┐  │
-│  │    Domain      │   │   │  │  FHIR Resources│  │
-│  │  - Patient     │   │   │  │   - Patient    │  │
-│  │  - Address     │   │   │  │   - CRUD Ops   │  │
-│  │  - Business    │   │   │  │   - Search     │  │
-│  └────────────────┘   │   │  └────────────────┘  │
-│  ┌────────────────┐   │   │                       │
-│  │  Application   │   │   │                       │
-│  │  - Use Cases   │   │   │                       │
-│  │  - DTOs        │   │   │                       │
-│  └────────────────┘   │   │                       │
-│  ┌────────────────┐   │   │                       │
-│  │Infrastructure  │   │   │                       │
-│  │  - JPA Repos   │   │   │                       │
-│  │  - Controllers │   │   │                       │
-│  └────────┬───────┘   │   │                       │
-└───────────┼───────────┘   └──────────┬────────────┘
-            │                          │
-            │                          │
-┌───────────▼────────────┐   ┌─────────▼─────────────┐
-│   PostgreSQL           │   │   PostgreSQL          │
-│   Patient DB           │   │   FHIR DB             │
-│   localhost:5432       │   │   localhost:5433      │
-│                        │   │                       │
-│  ┌─────────────────┐   │   │  ┌─────────────────┐  │
-│  │  patients       │   │   │  │  hfj_resource   │  │
-│  │  - id (PK)      │   │   │  │  - res_id (PK)  │  │
-│  │  - first_name   │   │   │  │  - res_type     │  │
-│  │  - last_name    │   │   │  │  - res_text     │  │
-│  │  - dob          │   │   │  │  ...            │  │
-│  │  - gender       │   │   │  └─────────────────┘  │
-│  │  - email        │   │   │                       │
-│  │  - address...   │   │   │                       │
-│  └─────────────────┘   │   │                       │
-└────────────────────────┘   └───────────────────────┘
-```
+Le projet est une application sante basee sur FHIR avec:
+- un frontend Angular (SPA)
+- un serveur FHIR principal (HAPI FHIR JPA)
+- un microservice Events (Kafka + Postgres)
+- un microservice Chat-bot (Spring AI + Ollama)
+- des services d'infrastructure (Postgres, Kafka, Keycloak, Jitsi)
 
-## 🔄 Flux de données
+En local, l'infrastructure est orchestree par `docker-compose.yml` et les backends Java sont lances via `run-backend.sh`.
 
-### 1. Chargement des patients
+## 2) Structure repository
 
-```
-User → Angular Component
-       ↓ dispatch(loadPatients)
-     NgRx Store
-       ↓ Effect
-     Patient Service (API call)
-       ↓ HTTP GET
-     API Gateway :8080
-       ↓ Route to
-     Patient Service :8081
-       ↓ Use Case
-     Domain Repository
-       ↓ JPA
-     PostgreSQL
-       ↓ Return
-     Back through the chain
-       ↓ dispatch(loadPatientsSuccess)
-     NgRx Store (update state)
-       ↓ selector
-     Angular Component (display)
-```
+- `frontend/`: application Angular
+- `backend/fhir/`: serveur FHIR principal (HAPI FHIR, port 8081)
+- `backend/events/`: service notifications/evenements (port 8091)
+- `backend/chat-bot/`: service chat IA (port 8090)
+- `docker-compose.yml`: infra locale (db, kafka, keycloak, jitsi)
+- `run-backend.sh`: bootstrap de l'infra et demarrage des services Java
+- `run-frontend.sh`: lancement Angular en dev sur 4200
+- `seed-data.sh`: injection de donnees FHIR de test
 
-### 2. Création d'un patient
+## 3) Composants runtime
 
-```
-User fills form → Component
-       ↓ dispatch(createPatient)
-     NgRx Effect
-       ↓ HTTP POST
-     API Gateway
-       ↓
-     Patient Service Controller
-       ↓
-     PatientUseCase.createPatient()
-       ↓
-     PatientDomainService.validate()
-       ↓
-     PatientRepository.save()
-       ↓
-     JPA → PostgreSQL
-       ↓
-     Return Patient DTO
-       ↓
-     dispatch(createPatientSuccess)
-       ↓
-     Update NgRx Store
-       ↓
-     Component re-renders
-```
+| Composant | Tech | Port | Role | Dependances |
+|---|---|---:|---|---|
+| Frontend | Angular 21 | 4200 | UI metier, routing, auth guard | FHIR, Events, Chat-bot, Keycloak, Jitsi |
+| FHIR API | HAPI FHIR JPA (Spring Boot) | 8081 | API FHIR R4, persistence clinique | Postgres, (optionnel: Elastic), Keycloak (selon usage OAuth) |
+| Events API | Spring Boot | 8091 | Publication/consommation events + notifications | Kafka, Postgres events |
+| Chat-bot API | Spring Boot WebFlux + Spring AI | 8090 | Chat synchrone/SSE + tools FHIR | FHIR API, Ollama |
+| Postgres | postgres:15-alpine | 5432 | Base principale FHIR | FHIR API |
+| Postgres Events | postgres:15-alpine | 5433->5432 | Base notifications/events | Events API |
+| Kafka | apache/kafka:3.9.0 | 9092 | Bus d'evenements | Events API |
+| Keycloak | keycloak:26.1 | 8180 | IAM/OIDC | Frontend |
+| Jitsi stack | jitsi web/prosody/jicofo/jvb | 8443, 8082, 10000/udp | Visioconference | Frontend |
 
-## 📦 Modules et Responsabilités
+## 4) Flux applicatifs principaux
 
-### Frontend (Angular)
+### 4.1 UI -> FHIR
+- Le frontend utilise `ApiService` avec `environment.apiUrl`.
+- En dev: `http://localhost:8081/fhir`.
+- Ressources majeures: Patient, CarePlan, Questionnaire, Communication, DocumentReference, Appointment, etc.
 
-- **Core**: Services globaux, modèles, guards
-- **Features/Patient**: Logique métier patient isolée
-  - Components: UI
-  - State: NgRx (actions, reducers, effects, selectors)
-  - Services: Communication API
-- **Shared**: Composants réutilisables
+### 4.2 UI -> Events
+- `NotificationService` consomme `eventsApiUrl/api/v1/notifications`.
+- Polling toutes les 10s pour les notifications utilisateur.
 
-### Backend (Spring Boot)
+### 4.3 UI -> Chat-bot
+- `ChatBotService` appelle `chatBotUrl/api/v1/chat`.
+- Streaming SSE via `POST /api/v1/chat/stream`.
+- Le chat-bot appelle ensuite FHIR via `app.fhir.base-url`.
 
-#### Patient Service (Clean Architecture + DDD)
+### 4.4 Events interne
+- `POST /api/v1/events/publish` publie vers Kafka.
+- `EventConsumer` consomme Kafka et persiste des notifications en base events.
 
-**Domain Layer** (Cœur métier)
-- `Patient` entity
-- `Address` value object
-- `PatientRepository` interface
-- `PatientDomainService` (règles métier)
+### 4.5 Authentification
+- Frontend base sur Keycloak JS (`check-sso`, OIDC).
+- Config via `keycloakUrl`, `keycloakRealm`, `keycloakClientId`.
 
-**Application Layer** (Orchestration)
-- `PatientUseCase` (CRUD operations)
-- `PatientDTO` (Data Transfer Objects)
+## 5) Endpoints clefs
 
-**Infrastructure Layer** (Détails techniques)
-- `PatientEntity` (JPA)
-- `JpaPatientRepository`
-- `PatientRepositoryImpl` (Adapter)
-- `PatientController` (REST API)
+### Frontend
+- `http://localhost:4200`
 
-#### FHIR Service
+### FHIR
+- `http://localhost:8081/fhir`
+- `http://localhost:8081/fhir/metadata`
+- `http://localhost:8081/actuator/health`
 
-- Resource Providers (Patient, etc.)
-- HAPI FHIR Server configuration
-- PostgreSQL persistence
+### Events
+- `GET /api/v1/events/health`
+- `POST /api/v1/events/publish`
+- `GET /api/v1/notifications/{userId}`
+- `POST /api/v1/notifications/{notificationId}/ack`
+- `POST /api/v1/notifications/{userId}/ack-all`
 
-#### API Gateway
+### Chat-bot
+- `GET /api/v1/chat/health`
+- `POST /api/v1/chat`
+- `POST /api/v1/chat/stream` (SSE)
 
-- Routes configuration
-- CORS handling
-- Load balancing (futur)
+## 6) Configuration et variables importantes
 
-## 🔐 Principes appliqués
+### Frontend (`frontend/src/environments/environment.ts`)
+- `apiUrl`
+- `eventsApiUrl`
+- `chatBotUrl`
+- `keycloakUrl`
+- `keycloakRealm`
+- `keycloakClientId`
+- `jitsiDomain`
+- `jitsiScriptUrl`
 
-1. **Separation of Concerns**: Chaque couche a sa responsabilité
-2. **Dependency Inversion**: Les dépendances pointent vers l'intérieur
-3. **Domain-Driven Design**: Le domaine métier au centre
-4. **CQRS**: Séparation lecture/écriture dans les use cases
-5. **Reactive Programming**: RxJS pour la gestion asynchrone
-6. **Immutability**: NgRx state immutable
-7. **Microservices**: Services indépendants et déployables séparément
+### FHIR (`backend/fhir/src/main/resources/application.yaml`)
+- `server.port=8081`
+- datasource via `SPRING_DATASOURCE_URL/USERNAME/PASSWORD`
+- dialect via `HIBERNATE_DIALECT`
+- CORS configure avec `allowed_origin: ["*"]` par defaut
+
+### Events (`backend/events/src/main/resources/application.yaml`)
+- `server.port=8091`
+- `EVENTS_DB_URL`, `EVENTS_DB_USERNAME`, `EVENTS_DB_PASSWORD`
+- `KAFKA_BOOTSTRAP_SERVERS`
+- `EVENTS_TOPIC`
+
+### Chat-bot (`backend/chat-bot/src/main/resources/application.yaml`)
+- `server.port=8090`
+- `FHIR_BASE_URL`
+- `OLLAMA_BASE_URL`, `OLLAMA_MODEL`
+
+## 7) Scripts d'execution (etat actuel)
+
+### `run-backend.sh`
+- tue les process sur 8081/8090/8091 si besoin
+- lance compose: postgres, postgres-events, kafka, keycloak, jitsi-*
+- build et lance `backend/fhir` (WAR) sur 8081
+- lance `backend/events` sur 8091
+- lance `backend/chat-bot` sur 8090
+
+### `run-frontend.sh`
+- impose Node 22 Homebrew (`/opt/homebrew/opt/node@22/bin`)
+- lance Angular dev server sur 4200
+
+### `seed-data.sh`
+- recupere token Keycloak
+- injecte CodeSystems, CarePlans, puis Patients
+- utilise majoritairement FHIR en `http://localhost:8081/fhir`
+- note: une variable `FHIR_BASE_URL` interne est initialisee sur `http://localhost:8080/fhir` mais les appels principaux patient/careplan ciblent 8081
+
+## 8) Contraintes et points d'attention architecture
+
+- CORS Events est restreint a `http://localhost:4200` (a rendre configurable en env en prod).
+- CORS Chat-bot autorise `*` (a durcir en prod).
+- `docker-compose.yml` decrit seulement l'infra, pas les 3 services applicatifs Java.
+- Un seul Dockerfile detecte: `backend/fhir/Dockerfile`.
+  - Aucun Dockerfile present pour `backend/events` et `backend/chat-bot`.
+- Le frontend prod contient encore des URLs placeholder (`*.production.com`) a parametrer avant deploiement reel.
+
+## 9) Cible d'architecture pour Kubernetes
+
+Cible recommandee:
+- Namespace dedie (ex: `healthapp`)
+- 4 Deployments applicatifs: frontend, fhir-api, events-api, chat-bot
+- 4+ Deployments/stateful tiers techniques: keycloak, kafka, postgres, postgres-events (ou services managés)
+- Ingress unique avec routage par host/path
+- ConfigMaps/Secrets pour externaliser toute config runtime
+- Probes liveness/readiness sur tous les pods
+
+Le detail operationnel est documente dans `_doc/KUBERNETES_PREPARATION.md`.

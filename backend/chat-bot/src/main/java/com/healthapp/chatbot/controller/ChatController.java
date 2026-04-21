@@ -15,12 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -67,32 +65,14 @@ public class ChatController {
             request.fromUrl(),
             truncate(request.message()));
 
-        AtomicInteger chunkCount = new AtomicInteger(0);
-        StringBuilder aggregatedResponse = new StringBuilder();
-
-        Flux<ServerSentEvent<StreamEvent>> chunks = chatBotService.stream(
+        return chatBotService.stream(
                 request.message(),
                 sessionId,
                 request.practitionerId(),
                 request.patientId(),
                 request.fromUrl()
             )
-            .map(chunk -> {
-                chunkCount.incrementAndGet();
-                aggregatedResponse.append(chunk);
-                return ServerSentEvent.builder(new StreamEvent(sessionId, "chunk", chunk)).build();
-            })
             .doOnError(ex -> logger.warn("[stream][error] sessionId={}, message={}", sessionId, ex.getMessage()));
-
-        Mono<ServerSentEvent<StreamEvent>> done = Mono.fromSupplier(() -> {
-            logger.info("[stream][out] sessionId={}, chunks={}, response={}",
-                sessionId,
-                chunkCount.get(),
-                truncate(aggregatedResponse.toString()));
-            return ServerSentEvent.builder(new StreamEvent(sessionId, "done", "")).build();
-        });
-
-        return chunks.concatWith(done);
     }
 
     @GetMapping("/health")

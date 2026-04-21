@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-diabetes-diet",
+  "status": "ready",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "approve",
+        "display": "Approve"
+      }
+    ]
+  },
+  "description": "Suivre un régime adapté au diabète avec comptage approprié des glucides",
+  "priority": "routine"
+}

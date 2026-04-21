@@ -8,6 +8,7 @@
     "codeSystems": "Code systems",
     "questionnaires": "Questionnaires",
     "organizations": "Organisations",
+    "carePlans": "Dossiers de soin",
     "patients": "Patients",
     "support": "Support",
     "settings": "Parametres",
@@ -23,6 +24,11 @@
       "subtitle": "Choisissez votre theme visuel et la langue de l'interface.",
       "badge": "Module Parametres"
     },
+    "tabs": {
+      "title": "Sections des parametres",
+      "general": "General",
+      "notifications": "Notifications"
+    },
     "theme": {
       "title": "Theme",
       "light": "Clair",
@@ -30,7 +36,13 @@
       "dark": "Sombre",
       "darkDesc": "Confort visuel pour environnement faible lumiere",
       "purple": "Violet",
-      "purpleDesc": "Palette lavande douce avec accents violets"
+      "purpleDesc": "Palette lavande douce avec accents violets",
+      "midnight": "Nuit bleue",
+      "midnightDesc": "Theme sombre profond avec accents cyan modernes",
+      "forest": "Foret",
+      "forestDesc": "Palette naturelle verte, lisible et apaisante",
+      "sunrise": "Aurore",
+      "sunriseDesc": "Theme chaud et lumineux avec accents ambre"
     },
     "language": {
       "title": "Langue",
@@ -39,6 +51,75 @@
       "it": "Italien",
       "de": "Allemand",
       "hint": "Le choix est sauvegarde automatiquement pour votre prochaine session."
+    },
+    "accessibility": {
+      "title": "Accessibilite",
+      "contrast": "Contraste",
+      "contrastDesc": "Augmente la lisibilite des textes, bordures et elements interactifs.",
+      "contrastNormal": "Normal",
+      "contrastHigh": "Eleve",
+      "colorMode": "Mode daltonien",
+      "colorModeDesc": "Remappe certaines couleurs de statut pour mieux les distinguer.",
+      "colorModeNone": "Standard",
+      "colorModeDaltonian": "Palette adaptee",
+      "textSize": "Taille du texte",
+      "textSizeDesc": "Agrandit la taille de base du texte dans toute l interface.",
+      "lineHeight": "Interligne",
+      "lineHeightDesc": "Augmente l espacement vertical entre les lignes pour faciliter la lecture.",
+      "reduceMotion": "Reduire les animations",
+      "reduceMotionDesc": "Limite les transitions et animations pour plus de confort visuel.",
+      "hint": "Ces reglages sont appliques immediatement et sauvegardes sur cet appareil."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "browserTitle": "Notifications du navigateur",
+      "browserSubtitle": "Controlez l'autorisation locale de ce navigateur pour recevoir les push web.",
+      "pushBrowser": "Notifications push navigateur",
+      "pushBrowserDesc": "Recevez des alertes en temps reel meme lorsque l'application est en arriere-plan.",
+      "pushBrowserDescDefault": "Activez pour recevoir des alertes. Le navigateur vous demandera l'autorisation.",
+      "pushTest": "Tester",
+      "pushTesting": "Test en cours...",
+      "pushTestSent": "Notification push de test envoyee.",
+      "pushTestError": "Impossible d'envoyer la notification push de test.",
+      "pushScenarioTest": "Tester les scenarios",
+      "pushScenarioTesting": "Scenario en cours...",
+      "pushScenarioTestSent": "Scenarios push envoyes (intervenant, questionnaire, rdv, visio).",
+      "pushScenarioTestError": "Impossible d'envoyer les scenarios push.",
+      "pushUnsubscribed": "Notifications push desactivees. Reactiver le bouton pour recevoir a nouveau des alertes.",
+      "pushNotSupported": "Votre navigateur ne supporte pas les notifications push.",
+      "pushDenied": "Les notifications ont ete bloquees dans votre navigateur. Modifiez les permissions du site pour les reactiver.",
+      "preferencesTitle": "Preferences par categorie",
+      "preferencesSubtitle": "Choisissez pour chaque categorie et sous-categorie l'activation, la criticite et les canaux utilises.",
+      "loadingPreferences": "Chargement des preferences de notifications...",
+      "noPreferencesAvailable": "Aucune preference chargee pour cet utilisateur. Verifiez l'identifiant utilisateur si le probleme persiste.",
+      "save": "Enregistrer les preferences",
+      "saving": "Enregistrement...",
+      "saved": "Preferences de notifications enregistrees.",
+      "saveError": "Impossible d'enregistrer les preferences de notifications.",
+      "customized": "Personnalise",
+      "default": "Par defaut",
+      "categoryRule": "Regle de categorie",
+      "categoryRuleDesc": "Valeur de reference pour cette categorie. Les sous-categories peuvent ensuite diverger.",
+      "enabledLabel": "Actif",
+      "metadataDocTitle": "Metadonnees requises par sous-categorie",
+      "metadataDocSubtitle": "Utilise ces cles metadata pour personnaliser liens, actions et rendu des notifications push.",
+      "columns": {
+        "item": "Element",
+        "enabled": "Activation",
+        "priority": "Criticite",
+        "channels": "Canaux"
+      },
+      "priorities": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "critical": "Critical"
+      },
+      "channels": {
+        "push": "Push",
+        "email": "Email",
+        "sms": "SMS"
+      }
     }
   },
   "support": {
@@ -75,7 +156,14 @@
     "list": "Liste",
     "planning": "Planning",
     "add": "Ajouter un RDV",
-    "loading": "Chargement des rendez-vous..."
+    "loading": "Chargement des rendez-vous...",
+    "today": "aujourd'hui",
+    "views": {
+      "month": "mois",
+      "week": "semaine",
+      "day": "jour",
+      "list": "liste"
+    }
   },
   "practitioners": {
     "search": {
@@ -273,6 +361,75 @@
       "country": "Pays"
     }
   },
+  "carePlans": {
+    "title": "Dossiers de soin",
+    "create": {
+      "title": "Creation d'un plan de soin"
+    },
+    "add": "Ajouter",
+    "tabs": {
+      "plans": "Plans",
+      "actions": "Actions",
+      "objectives": "Objectifs"
+    },
+    "list": {
+      "emptyPlans": "Aucun plan trouve.",
+      "emptyActions": "Aucune action trouvee.",
+      "emptyObjectives": "Aucun objectif trouve.",
+      "noTitle": "Sans titre",
+      "noDescription": "Sans description"
+    },
+    "detail": {
+      "plan": "Plan",
+      "newPlan": "Nouveau plan",
+      "action": "Action",
+      "newAction": "Nouvelle action",
+      "objective": "Objectif",
+      "newObjective": "Nouvel objectif"
+    },
+    "fields": {
+      "title": "Titre",
+      "description": "Description",
+      "status": "Statut",
+      "version": "Version",
+      "goals": "Liste des objectifs lies",
+      "actions": "Liste des actions liees",
+      "code": "Code",
+      "relatedActions": "Related action",
+      "timing": "Timing",
+      "participantType": "Type de participant",
+      "participantRole": "Role du participant",
+      "conditions": "Conditions",
+      "addCondition": "Ajouter une condition",
+      "definition": "Definition",
+      "priority": "Priorite",
+      "goalId": "goalId",
+      "required": "Obligatoire",
+      "lifecycleStatus": "Statut du cycle",
+      "achievementStatus": "Statut d'avancement",
+      "dueDate": "Date cible"
+    },
+    "search": {
+      "goalPlaceholder": "Rechercher un objectif",
+      "actionPlaceholder": "Rechercher une action"
+    },
+    "steps": {
+      "title": "Etapes du plan",
+      "step": "Etape",
+      "type": "Type d'etape",
+      "empty": "Aucune etape definie.",
+      "addQuestionnaire": "+ Etape Questionnaire",
+      "addAppointment": "+ Etape RDV",
+      "addCommunication": "+ Etape Communication",
+      "addTask": "+ Etape Task",
+      "questionnaireRef": "Modele de questionnaire",
+      "activityDefinitionRef": "Modele ActivityDefinition (RDV)",
+      "communicationMessage": "Message de communication",
+      "taskRef": "Task existante",
+      "appointmentHint": "Cette etape de RDV ne cree pas de rendez-vous immediatement: elle definit une activite a executer plus tard.",
+      "selectOne": "-- Selectionner --"
+    }
+  },
   "patients": {
     "detailPage": {
       "patient": "Patient",
@@ -304,8 +461,8 @@
       }
     },
     "search": {
-      "title": "Recherche patients",
-      "titleSingle": "Recherche patient",
+      "title": "Recherche avancee",
+      "titleSingle": "Recherche avancee",
       "family": "Nom",
       "given": "Prenom",
       "birthDate": "Date de naissance",
@@ -568,6 +725,7 @@
     "create": "Creer",
     "loading": "Chargement...",
     "unknownError": "Erreur inconnue",
+    "back": "Retour",
     "more": "Plus"
   },
   "pwa": {
@@ -635,6 +793,28 @@
     "markAsRead": "Marquer comme lu",
     "markAsUnread": "Marquer comme non lu",
     "loading": "Chargement...",
-    "viewAll": "Voir tout"
+    "viewAll": "Voir tout",
+    "openSettings": "Ouvrir les preferences de notifications",
+    "expand": "(agrandir)",
+    "collapse": "(reduire)"
+  },
+  "push": {
+    "prompt": {
+      "title": "Activer les notifications",
+      "description": "Recevez des alertes en temps réel même lorsque l'application est fermée.",
+      "accept": "Activer",
+      "decline": "Plus tard"
+    },
+    "toast": {
+      "close": "Fermer la notification",
+      "actions": {
+        "openPractitioner": "Acceder aux intervenants",
+        "openQuestionnaire": "Acceder au questionnaire",
+        "openAppointment": "Acceder au rendez-vous",
+        "joinVisio": "Rejoindre la visio",
+        "accept": "Accepter",
+        "decline": "Refuser"
+      }
+    }
   }
 }

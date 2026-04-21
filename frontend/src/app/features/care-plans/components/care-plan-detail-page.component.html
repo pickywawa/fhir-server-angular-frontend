@@ -1,0 +1,244 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <app-bubble-card [title]="isCreate ? ('carePlans.detail.newPlan' | translate) : ('carePlans.detail.plan' | translate)">
+    @if (!isCreate) {
+      <div bubbleActions>
+        @if (!editMode) {
+          <button type="button" class="btn btn-primary" (click)="enableEdit()">{{ 'common.edit' | translate }}</button>
+        }
+      </div>
+    }
+
+    @if (loading) {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading && error) {
+      <div class="state error">{{ error }}</div>
+    }
+
+    @if (!loading) {
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form-layout">
+        <div class="grid two">
+          <app-form-control-field
+            [label]="('carePlans.fields.title' | translate) + ' *'"
+            forId="careplan-title"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="title"></app-form-control-field>
+
+          <app-form-control-field
+            [label]="'carePlans.fields.status' | translate"
+            forId="careplan-status"
+            kind="select"
+            [uiDisabled]="!(editMode || isCreate)"
+            [options]="statusOptions"
+            formControlName="status"></app-form-control-field>
+        </div>
+
+        <app-form-control-field
+          [label]="'carePlans.fields.description' | translate"
+          forId="careplan-description"
+          kind="textarea"
+          [rows]="3"
+          [uiDisabled]="!(editMode || isCreate)"
+          formControlName="description"></app-form-control-field>
+
+        <app-form-control-field
+          [label]="'carePlans.fields.version' | translate"
+          forId="careplan-version"
+          [uiDisabled]="!(editMode || isCreate)"
+          formControlName="version"></app-form-control-field>
+
+        <div class="picker-block">
+          <label>
+            <span>{{ 'carePlans.fields.goals' | translate }}</span>
+            <input
+              type="text"
+              [value]="goalQuery"
+              [disabled]="!(editMode || isCreate)"
+              [placeholder]="'carePlans.search.goalPlaceholder' | translate"
+              (input)="searchGoals(($any($event.target)).value)"
+            />
+          </label>
+
+          @if ((editMode || isCreate) && goalResults.length > 0) {
+            <div class="results">
+              @for (item of goalResults; track item.reference) {
+                <button type="button" (click)="addGoal(item)">{{ item.label }}</button>
+              }
+            </div>
+          }
+
+          @if (selectedGoals.length > 0) {
+            <div class="ordered-list">
+              @for (item of selectedGoals; track item.reference; let i = $index) {
+                <div class="ordered-row">
+                  <span>{{ item.label }}</span>
+                  @if (editMode || isCreate) {
+                    <div class="ordered-actions">
+                      <button type="button" class="btn btn-neutral" (click)="moveGoal(i, -1)">↑</button>
+                      <button type="button" class="btn btn-neutral" (click)="moveGoal(i, 1)">↓</button>
+                      <button type="button" class="btn icon danger" (click)="removeGoal(i)">✕</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="picker-block">
+          <div class="section-head">
+            <span>{{ 'carePlans.steps.title' | translate }}</span>
+            @if (editMode || isCreate) {
+              <div class="step-add-actions">
+                <button type="button" class="btn btn-neutral" (click)="addStep('questionnaire')">{{ 'carePlans.steps.addQuestionnaire' | translate }}</button>
+                <button type="button" class="btn btn-neutral" (click)="addStep('appointment')">{{ 'carePlans.steps.addAppointment' | translate }}</button>
+                <button type="button" class="btn btn-neutral" (click)="addStep('communication')">{{ 'carePlans.steps.addCommunication' | translate }}</button>
+                <button type="button" class="btn btn-neutral" (click)="addStep('task')">{{ 'carePlans.steps.addTask' | translate }}</button>
+              </div>
+            }
+          </div>
+
+          @if (steps.length === 0) {
+            <div class="empty-steps">{{ 'carePlans.steps.empty' | translate }}</div>
+          }
+
+          @if (steps.length > 0) {
+            <div class="step-list">
+              @for (step of steps; track step.uid; let i = $index) {
+                <div class="step-card">
+                  <div class="step-card-head">
+                    <div class="step-index">{{ i + 1 }}</div>
+                    <strong>{{ 'carePlans.steps.step' | translate }} {{ i + 1 }}</strong>
+                    @if (editMode || isCreate) {
+                      <div class="ordered-actions">
+                        <button type="button" class="btn btn-neutral" (click)="moveStep(i, -1)">↑</button>
+                        <button type="button" class="btn btn-neutral" (click)="moveStep(i, 1)">↓</button>
+                        <button type="button" class="btn icon danger" (click)="removeStep(i)">✕</button>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="grid two">
+                    <label>
+                      <span>{{ 'carePlans.steps.type' | translate }}</span>
+                      <select
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.type"
+                        (change)="onStepTypeChange(i, ($any($event.target)).value)">
+                        @for (opt of stepTypeOptions; track opt.value) {
+                          <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                      </select>
+                    </label>
+
+                    <label>
+                      <span>{{ 'carePlans.fields.priority' | translate }}</span>
+                      <select
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.priority"
+                        (change)="updateStepField(i, 'priority', ($any($event.target)).value)">
+                        @for (opt of priorityOptions; track opt.value) {
+                          <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                      </select>
+                    </label>
+                  </div>
+
+                  <div class="grid two">
+                    <label>
+                      <span>{{ 'carePlans.fields.title' | translate }}</span>
+                      <input
+                        type="text"
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.title"
+                        (input)="updateStepField(i, 'title', ($any($event.target)).value)"
+                      />
+                    </label>
+
+                    <label>
+                      <span>{{ 'carePlans.fields.description' | translate }}</span>
+                      <input
+                        type="text"
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.description"
+                        (input)="updateStepField(i, 'description', ($any($event.target)).value)"
+                      />
+                    </label>
+                  </div>
+
+                  @if (step.type === 'questionnaire') {
+                    <label>
+                      <span>{{ 'carePlans.steps.questionnaireRef' | translate }}</span>
+                      <select
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.questionnaireRef"
+                        (change)="updateStepField(i, 'questionnaireRef', ($any($event.target)).value)">
+                        <option value="">{{ 'carePlans.steps.selectOne' | translate }}</option>
+                        @for (opt of questionnaireOptions; track opt.reference) {
+                          <option [value]="opt.reference">{{ opt.label }}</option>
+                        }
+                      </select>
+                    </label>
+                  }
+
+                  @if (step.type === 'appointment') {
+                    <label>
+                      <span>{{ 'carePlans.steps.activityDefinitionRef' | translate }}</span>
+                      <select
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.activityDefinitionRef"
+                        (change)="updateStepField(i, 'activityDefinitionRef', ($any($event.target)).value)">
+                        <option value="">{{ 'carePlans.steps.selectOne' | translate }}</option>
+                        @for (opt of activityDefinitionOptions; track opt.reference) {
+                          <option [value]="opt.reference">{{ opt.label }}</option>
+                        }
+                      </select>
+                    </label>
+                    <p class="step-hint">{{ 'carePlans.steps.appointmentHint' | translate }}</p>
+                  }
+
+                  @if (step.type === 'communication') {
+                    <label>
+                      <span>{{ 'carePlans.steps.communicationMessage' | translate }}</span>
+                      <textarea
+                        rows="3"
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.communicationMessage"
+                        (input)="updateStepField(i, 'communicationMessage', ($any($event.target)).value)">
+                      </textarea>
+                    </label>
+                  }
+
+                  @if (step.type === 'task') {
+                    <label>
+                      <span>{{ 'carePlans.steps.taskRef' | translate }}</span>
+                      <select
+                        [disabled]="!(editMode || isCreate)"
+                        [value]="step.taskRef"
+                        (change)="updateStepField(i, 'taskRef', ($any($event.target)).value)">
+                        <option value="">{{ 'carePlans.steps.selectOne' | translate }}</option>
+                        @for (opt of taskOptions; track opt.reference) {
+                          <option [value]="opt.reference">{{ opt.label }}</option>
+                        }
+                      </select>
+                    </label>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (editMode || isCreate) {
+          <div class="actions">
+            <button type="button" class="btn btn-neutral" (click)="cancelEdit()">{{ 'common.cancel' | translate }}</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+              {{ saving ? ('common.saving' | translate) : ('common.save' | translate) }}
+            </button>
+          </div>
+        }
+      </form>
+    }
+  </app-bubble-card>
+</app-module-shell>

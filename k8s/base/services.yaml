@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: healthapp
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fhir-api
+  namespace: healthapp
+spec:
+  selector:
+    app: fhir-api
+  ports:
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: events-api
+  namespace: healthapp
+spec:
+  selector:
+    app: events-api
+  ports:
+    - port: 8091
+      targetPort: 8091
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-bot
+  namespace: healthapp
+spec:
+  selector:
+    app: chat-bot
+  ports:
+    - port: 8090
+      targetPort: 8090
+      protocol: TCP

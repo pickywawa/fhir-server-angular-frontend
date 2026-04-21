@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-copd-oxygen-therapy",
+  "status": "requested",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "fulfill",
+        "display": "Fulfill"
+      }
+    ]
+  },
+  "description": "Utiliser l'oxygène supplémentaire selon la prescription (typiquement 2-3L/min au repos)",
+  "priority": "routine"
+}

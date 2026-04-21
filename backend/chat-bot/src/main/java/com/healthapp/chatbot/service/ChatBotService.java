@@ -1,11 +1,15 @@
 package com.healthapp.chatbot.service;
 
+import com.healthapp.chatbot.model.StreamEvent;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,6 +22,7 @@ import java.time.Duration;
 public class ChatBotService {
 
     private static final int HISTORY_WINDOW = 12;
+    private static final Logger logger = LoggerFactory.getLogger(ChatBotService.class);
 
     private final ChatClient chatClient;
     private final FhirToolService fhirToolService;
@@ -55,16 +60,45 @@ public class ChatBotService {
                     ? "Je n'ai pas de reponse exploitable pour le moment."
                     : response;
         } catch (Exception ex) {
+            logger.error("[chat] failed sessionId={}, message={}", sid, ex.getMessage(), ex);
             return unavailableMessage();
         }
     }
 
-    public Flux<String> stream(String userMessage, String sessionId, String practitionerId, String patientId, String fromUrl) {
-        return Mono.fromCallable(() -> chat(userMessage, sessionId, practitionerId, patientId, fromUrl))
-                .subscribeOn(Schedulers.boundedElastic())
-                .timeout(Duration.ofSeconds(180))
-                .onErrorReturn(unavailableMessage())
-                .flux();
+    public Flux<ServerSentEvent<StreamEvent>> stream(String userMessage, String sessionId, String practitionerId, String patientId, String fromUrl) {
+        String sid = safeSession(sessionId);
+        String enrichedUserMessage = enrichUserMessage(userMessage, practitionerId, patientId, fromUrl);
+
+        Flux<ServerSentEvent<StreamEvent>> chunks = chatClient.prompt()
+            .system(systemPrompt)
+            .user(enrichedUserMessage)
+            .advisors(MessageChatMemoryAdvisor.builder(chatMemory)
+                            .conversationId(sid)
+                            .build())
+            .tools(fhirToolService)
+            .stream()
+            .content()
+            .map(chunk -> ServerSentEvent.builder(new StreamEvent(sid, "chunk", chunk)).build())
+            .timeout(Duration.ofSeconds(180))
+            .switchIfEmpty(Flux.just(ServerSentEvent.builder(new StreamEvent(
+                    sid,
+                    "chunk",
+                    "Je n'ai pas de reponse exploitable pour le moment."
+            )).build()))
+            .onErrorResume(ex -> {
+                logger.error("[stream] failed sessionId={}, fallback to non-stream call: {}", sid, ex.getMessage(), ex);
+                return Mono.fromCallable(() -> chat(userMessage, sessionId, practitionerId, patientId, fromUrl))
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .flatMapMany(response -> Flux.just(ServerSentEvent.builder(new StreamEvent(sid, "chunk", response)).build()));
+            })
+            .doOnSubscribe(s -> logger.info("[stream] start sessionId={}", sid))
+            .doOnComplete(() -> logger.info("[stream] complete sessionId={}", sid));
+
+        Mono<ServerSentEvent<StreamEvent>> done = Mono.fromSupplier(() ->
+                ServerSentEvent.builder(new StreamEvent(sid, "done", "")).build()
+        );
+
+        return chunks.concatWith(done);
     }
 
     private String enrichUserMessage(String userMessage, String practitionerId, String patientId, String fromUrl) {

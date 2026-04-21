@@ -1,0 +1,27 @@
+{
+  "resourceType": "Goal",
+  "id": "diabetes-exercise-goal",
+  "status": "active",
+  "lifecycleStatus": "active",
+  "description": {
+    "text": "Activité physique régulière"
+  },
+  "target": [
+    {
+      "measure": {
+        "text": "Durée minimale d'exercice"
+      },
+      "detailCodeableConcept": {
+        "text": "Au moins 150 minutes par semaine"
+      }
+    }
+  ],
+  "achievementStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/goal-achievement",
+        "code": "in-progress"
+      }
+    ]
+  }
+}

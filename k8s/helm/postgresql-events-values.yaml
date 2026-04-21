@@ -1,0 +1,10 @@
+auth:
+  postgresPassword: change-me
+  username: postgres
+  password: change-me
+  database: healthapp_events_db
+primary:
+  persistence:
+    enabled: true
+    size: 8Gi
+fullnameOverride: postgresql-events

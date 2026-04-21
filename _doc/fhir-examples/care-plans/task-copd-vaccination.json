@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-copd-vaccination",
+  "status": "ready",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "perceive",
+        "display": "Perceive"
+      }
+    ]
+  },
+  "description": "Vaccin annuel contre la grippe et vaccin pneumococcique selon le calendrier",
+  "priority": "routine"
+}

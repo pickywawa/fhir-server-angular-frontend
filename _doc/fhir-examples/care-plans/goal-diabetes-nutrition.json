@@ -1,0 +1,17 @@
+{
+  "resourceType": "Goal",
+  "id": "diabetes-nutrition-goal",
+  "status": "active",
+  "lifecycleStatus": "active",
+  "description": {
+    "text": "Amélioration de la nutrition"
+  },
+  "achievementStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/goal-achievement",
+        "code": "improving"
+      }
+    ]
+  }
+}

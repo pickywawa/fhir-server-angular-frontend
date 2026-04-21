@@ -1,0 +1,27 @@
+{
+  "resourceType": "Goal",
+  "id": "copd-exercise-tolerance-goal",
+  "status": "active",
+  "lifecycleStatus": "active",
+  "description": {
+    "text": "Améliorer la tolérance à l'effort"
+  },
+  "target": [
+    {
+      "measure": {
+        "text": "Distance de marche"
+      },
+      "detailCodeableConcept": {
+        "text": "Au moins 100 mètres sans dyspnée"
+      }
+    }
+  ],
+  "achievementStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/goal-achievement",
+        "code": "in-progress"
+      }
+    ]
+  }
+}

@@ -11,15 +11,15 @@ public class EventConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(EventConsumer.class);
 
-    private final NotificationService notificationService;
+    private final UserNotificationCreationService notificationCreationService;
 
-    public EventConsumer(NotificationService notificationService) {
-        this.notificationService = notificationService;
+    public EventConsumer(UserNotificationCreationService notificationCreationService) {
+        this.notificationCreationService = notificationCreationService;
     }
 
     @KafkaListener(topics = "${app.events.topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void onEvent(EventPayload payload) {
-        int created = notificationService.createNotifications(payload);
+        int created = notificationCreationService.createAndDispatchFromEvent(payload);
         logger.info("Event consumed type={} eventId={} recipients={} notificationsCreated={}",
             payload.type(), payload.eventId(),
             payload.recipientUserIds() == null ? 0 : payload.recipientUserIds().size(),

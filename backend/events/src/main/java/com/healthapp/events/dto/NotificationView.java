@@ -1,5 +1,6 @@
 package com.healthapp.events.dto;
 
+import com.healthapp.events.model.NotificationPriority;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ public record NotificationView(
     String metadataJson,
     boolean acknowledged,
     Instant createdAt,
-    Instant acknowledgedAt
+    Instant acknowledgedAt,
+    NotificationPriority priority
 ) {
 }

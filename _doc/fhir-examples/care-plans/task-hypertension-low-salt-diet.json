@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-hypertension-low-salt-diet",
+  "status": "ready",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "approve",
+        "display": "Approve"
+      }
+    ]
+  },
+  "description": "Éviter les aliments transformés et limiter le sel dans la préparation des repas",
+  "priority": "routine"
+}

@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-asthma-spirometry",
+  "status": "ready",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "monitor",
+        "display": "Monitor"
+      }
+    ]
+  },
+  "description": "Tests de la fonction pulmonaire tous les 6 mois",
+  "priority": "routine"
+}

@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-copd-spirometry",
+  "status": "ready",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "monitor",
+        "display": "Monitor"
+      }
+    ]
+  },
+  "description": "Tests de spirométrie tous les 3 à 6 mois pour surveiller la fonction pulmonaire",
+  "priority": "routine"
+}

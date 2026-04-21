@@ -1,0 +1,9 @@
+auth:
+  postgresPassword: change-me
+  username: postgres
+  password: change-me
+  database: healthapp_db
+primary:
+  persistence:
+    enabled: true
+    size: 10Gi

@@ -1,0 +1,12 @@
+controller:
+  replicaCount: 1
+broker:
+  replicaCount: 1
+listeners:
+  client:
+    protocol: PLAINTEXT
+kraft:
+  enabled: true
+persistence:
+  enabled: true
+  size: 10Gi

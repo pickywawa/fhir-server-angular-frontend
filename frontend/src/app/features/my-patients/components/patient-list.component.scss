@@ -4,6 +4,56 @@
   gap: 1rem;
 }
 
+.btn-collapse {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: color 0.15s ease, transform 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: var(--btn-primary-bg);
+    transform: scale(1.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--btn-primary-bg);
+    outline-offset: 2px;
+  }
+}
+
+.collapse-icon {
+  width: 1rem;
+  height: 1rem;
+  border-right: 2.6px solid currentColor;
+  border-bottom: 2.6px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+
+.collapse-icon.expanded {
+  transform: rotate(225deg);
+}
+
+:host ::ng-deep app-bubble-card.search-card .bubble-body {
+  overflow: hidden;
+}
+
+:host ::ng-deep app-bubble-card.search-card.search-collapsed .bubble-header {
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+:host ::ng-deep app-bubble-card.search-card.search-collapsed .bubble-body {
+  padding: 0;
+}
 .search-form {
   display: flex;
   flex-direction: column;

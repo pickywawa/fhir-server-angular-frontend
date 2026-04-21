@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, inject } from '@angular/core';
 
 import { Router, RouterLink } from '@angular/router';
@@ -28,6 +29,7 @@ interface SearchResultGroup {
   styleUrl: './module-shell.component.scss'
 })
 export class ModuleShellComponent {
+  private readonly location = inject(Location);
   private readonly menuState = inject(MenuStateService);
   private readonly router = inject(Router);
   private readonly searchService = inject(FhirSearchService);
@@ -43,6 +45,8 @@ export class ModuleShellComponent {
   searchQuery = '';
   searchOpen = false;
   searchLoading = false;
+  mobileSearchExpanded = false;
+  isMobileViewport = window.innerWidth <= 900;
   groupedResults: SearchResultGroup[] = [];
 
   private readonly typePriority: SearchResultType[] = ['patient', 'practitioner', 'appointment', 'document'];
@@ -88,6 +92,29 @@ export class ModuleShellComponent {
     this.menuState.toggle();
   }
 
+  get isMenuOpenOnMobile(): boolean {
+    return this.isMobileViewport && this.menuState.isOpen();
+  }
+
+  get shouldShowBackButton(): boolean {
+    return this.breadcrumbs.length > 1;
+  }
+
+  goBackFromBreadcrumb(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+
+    const previousCrumbRoute = this.breadcrumbs[this.breadcrumbs.length - 2]?.route;
+    if (previousCrumbRoute) {
+      this.router.navigateByUrl(previousCrumbRoute);
+      return;
+    }
+
+    this.router.navigate(['/']);
+  }
+
   openChat(): void {
     this.chatState.open();
   }
@@ -98,9 +125,24 @@ export class ModuleShellComponent {
   }
 
   onSearchFocus(): void {
+    this.mobileSearchExpanded = true;
     if (this.searchQuery.trim().length >= 2) {
       this.searchOpen = true;
     }
+  }
+
+  toggleMobileSearch(event: Event): void {
+    event.stopPropagation();
+    this.mobileSearchExpanded = !this.mobileSearchExpanded;
+    if (!this.mobileSearchExpanded) {
+      this.searchOpen = false;
+      return;
+    }
+
+    queueMicrotask(() => {
+      const input = this.host.nativeElement.querySelector('.module-header-search input') as HTMLInputElement | null;
+      input?.focus();
+    });
   }
 
   clearSearch(event: Event): void {
@@ -119,6 +161,7 @@ export class ModuleShellComponent {
 
   openResult(result: SearchResultItem): void {
     this.searchOpen = false;
+    this.mobileSearchExpanded = false;
     this.router.navigate(result.routeCommands, { queryParams: result.queryParams });
   }
 
@@ -132,7 +175,7 @@ export class ModuleShellComponent {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.searchOpen) {
+    if (!this.searchOpen && !this.mobileSearchExpanded) {
       return;
     }
 
@@ -146,7 +189,18 @@ export class ModuleShellComponent {
       return;
     }
 
+    const searchToggle = this.host.nativeElement.querySelector('.search-toggle-btn');
+    if (searchToggle?.contains(target)) {
+      return;
+    }
+
     this.searchOpen = false;
+    this.mobileSearchExpanded = false;
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.isMobileViewport = window.innerWidth <= 900;
   }
 
   private groupByPriority(items: SearchResultItem[]): SearchResultGroup[] {

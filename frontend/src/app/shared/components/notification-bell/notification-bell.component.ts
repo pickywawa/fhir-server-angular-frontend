@@ -1,13 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, NgZone, OnDestroy, OnInit, inject } from '@angular/core';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
-import { NotificationService, Notification, NotificationState } from '../../../core/services/notification.service';
+import { NotificationService, Notification } from '../../../core/services/notification.service';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ConnectedPractitionerResolverService } from '../../../core/services/connected-practitioner-resolver.service';
+
+interface NotificationAction {
+  key: string;
+  labelKey: string;
+  kind: 'link' | 'decision';
+  route?: string;
+  url?: string;
+  queryParams?: Record<string, string>;
+  decision?: 'ACCEPT' | 'DECLINE';
+}
 
 @Component({
   selector: 'app-notification-bell',
@@ -15,6 +25,7 @@ import { ConnectedPractitionerResolverService } from '../../../core/services/con
   imports: [CommonModule, TranslateModule, RouterModule],
   templateUrl: './notification-bell.component.html',
   styleUrl: './notification-bell.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('popoverAnimation', [
       transition(':enter', [style({ opacity: 0, transform: 'translateY(-10px)' }), animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))]),
@@ -26,19 +37,30 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
   private readonly practitionerResolver = inject(ConnectedPractitionerResolverService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly zone = inject(NgZone);
+  private readonly router = inject(Router);
   private readonly destroy$ = new Subject<void>();
 
   isPopoverOpen = false;
-  unreadCount$!: Observable<number>;
-  notifications$!: Observable<Notification[]>;
-  isLoading$!: Observable<boolean>;
+  isExpandedView = false;
+  notifications: Notification[] = [];
+  unreadCount = 0;
+  isLoading = false;
   private practitionerId = '';
 
   ngOnInit(): void {
-    const state$: Observable<NotificationState> = this.notificationService.getState();
-    this.unreadCount$ = state$.pipe(map((state) => state.unreadCount));
-    this.notifications$ = state$.pipe(map((state) => state.notifications));
-    this.isLoading$ = state$.pipe(map((state) => state.isLoading));
+    this.notificationService.getState()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        // Force UI update inside Angular zone to avoid stale popover rendering.
+        this.zone.run(() => {
+          this.notifications = state.notifications;
+          this.unreadCount = state.unreadCount;
+          this.isLoading = state.isLoading;
+          this.cdr.detectChanges();
+        });
+      });
 
     const fromClaims = this.authService.getConnectedPractitionerId();
     if (fromClaims) {
@@ -69,6 +91,23 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   togglePopover(event: Event): void {
     event.stopPropagation();
     this.isPopoverOpen = !this.isPopoverOpen;
+    if (!this.isPopoverOpen) {
+      this.isExpandedView = false;
+    }
+    this.cdr.detectChanges();
+  }
+
+  toggleExpandedView(event: Event): void {
+    event.stopPropagation();
+    this.isExpandedView = !this.isExpandedView;
+    this.cdr.detectChanges();
+  }
+
+  openNotificationSettings(event: Event): void {
+    event.stopPropagation();
+    this.isPopoverOpen = false;
+    this.isExpandedView = false;
+    this.router.navigate(['/parametres/notifications']);
   }
 
   toggleNotificationStatus(notif: Notification): void {
@@ -78,12 +117,129 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     }
 
     if (notif.acknowledged) {
-      // TODO: Implement mark as unread when API supports it
       console.log('Mark as unread not yet implemented');
     } else {
       this.notificationService.acknowledge(notif.id, practitionerId).subscribe({
         error: (err) => console.error('Failed to acknowledge notification:', err)
       });
+    }
+  }
+
+  handleNotificationAction(notif: Notification, action: NotificationAction): void {
+    const practitionerId = this.practitionerId || this.authService.getConnectedPractitionerId();
+
+    if (action.kind === 'decision' && action.decision) {
+      if (!practitionerId) return;
+      this.notificationService.respond(notif.id, practitionerId, action.decision)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => this.cdr.detectChanges(),
+          error: (err) => console.error('Failed to respond to notification:', err)
+        });
+      return;
+    }
+
+    if (action.url) {
+      window.open(action.url, '_blank', 'noopener,noreferrer');
+    } else if (action.route) {
+      this.isPopoverOpen = false;
+      this.isExpandedView = false;
+      this.router.navigate([action.route], { queryParams: action.queryParams || {} });
+    }
+  }
+
+  getNotificationIcon(notif: Notification): string {
+    const category = this.getMetadataValue(notif, 'category');
+    switch (category) {
+      case 'intervenants': return '⊙';
+      case 'questionnaires': return '✓';
+      case 'agenda': return '⏱';
+      case 'visio-conferences': return '☎';
+      case 'chat': return '✉';
+      default: return '◇';
+    }
+  }
+
+  getNotificationActions(notif: Notification): NotificationAction[] {
+    const actions: NotificationAction[] = [];
+    const metadata = this.getMetadataObject(notif);
+    const category = this.getMetadataValue(notif, 'category');
+    const subcategory = this.getMetadataValue(notif, 'subcategory');
+
+    if (category === 'intervenants' && metadata['practitionerId']) {
+      actions.push({
+        key: 'open-practitioner',
+        labelKey: 'push.toast.actions.openPractitioner',
+        kind: 'link',
+        route: '/professionnels',
+        queryParams: { id: String(metadata['practitionerId']) }
+      });
+    }
+
+    if (category === 'questionnaires' && metadata['questionnaireId']) {
+      actions.push({
+        key: 'open-questionnaire',
+        labelKey: 'push.toast.actions.openQuestionnaire',
+        kind: 'link',
+        route: '/questionnaires',
+        queryParams: { id: String(metadata['questionnaireId']) }
+      });
+    }
+
+    if (category === 'agenda' && metadata['appointmentId']) {
+      actions.push({
+        key: 'open-appointment',
+        labelKey: 'push.toast.actions.openAppointment',
+        kind: 'link',
+        route: '/agenda',
+        queryParams: { appointmentId: String(metadata['appointmentId']) }
+      });
+    }
+
+    if (category === 'visio-conferences') {
+      if (metadata['meetingUrl']) {
+        actions.push({
+          key: 'join-visio',
+          labelKey: 'push.toast.actions.joinVisio',
+          kind: 'link',
+          url: String(metadata['meetingUrl'])
+        });
+      }
+      if (subcategory === 'invitation') {
+        actions.push({
+          key: 'accept-visio',
+          labelKey: 'push.toast.actions.accept',
+          kind: 'decision',
+          decision: 'ACCEPT'
+        });
+        actions.push({
+          key: 'decline-visio',
+          labelKey: 'push.toast.actions.decline',
+          kind: 'decision',
+          decision: 'DECLINE'
+        });
+      }
+    }
+
+    return actions;
+  }
+
+  private getMetadataValue(notif: Notification, key: string): string | undefined {
+    try {
+      if (!notif.metadataJson) return undefined;
+      const metadata = typeof notif.metadataJson === 'string' ? JSON.parse(notif.metadataJson) : notif.metadataJson;
+      return metadata?.[key];
+    } catch {
+      return undefined;
+    }
+  }
+
+  private getMetadataObject(notif: Notification): Record<string, unknown> {
+    try {
+      if (!notif.metadataJson) return {};
+      return typeof notif.metadataJson === 'string' ? JSON.parse(notif.metadataJson) : notif.metadataJson;
+    } catch {
+      return {};
     }
   }
 
@@ -96,6 +252,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     this.notificationService.acknowledgeAll(practitionerId).subscribe({
       next: () => {
         this.isPopoverOpen = false;
+        this.isExpandedView = false;
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Failed to mark all as read:', err)
     });
@@ -103,7 +261,11 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   @HostListener('document:click')
   onDocumentClick(): void {
-    this.isPopoverOpen = false;
+    if (this.isPopoverOpen) {
+      this.isPopoverOpen = false;
+      this.isExpandedView = false;
+      this.cdr.detectChanges();
+    }
   }
 
   getInitials(text: string): string {

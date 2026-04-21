@@ -29,7 +29,13 @@
       "dark": "Scuro",
       "darkDesc": "Comfort visivo in ambienti poco illuminati",
       "purple": "Viola",
-      "purpleDesc": "Palette lavanda morbida con accenti viola"
+      "purpleDesc": "Palette lavanda morbida con accenti viola",
+      "midnight": "Mezzanotte",
+      "midnightDesc": "Tema scuro profondo con accenti ciano moderni",
+      "forest": "Foresta",
+      "forestDesc": "Palette verde naturale con leggibilita equilibrata",
+      "sunrise": "Alba",
+      "sunriseDesc": "Palette calda e luminosa con accenti ambra"
     },
     "language": {
       "title": "Lingua",
@@ -38,6 +44,24 @@
       "it": "Italiano",
       "de": "Tedesco",
       "hint": "La scelta viene salvata automaticamente per la prossima sessione."
+    },
+    "accessibility": {
+      "title": "Accessibilita",
+      "contrast": "Contrasto",
+      "contrastDesc": "Migliora la leggibilita di testi, bordi ed elementi interattivi.",
+      "contrastNormal": "Normale",
+      "contrastHigh": "Alto",
+      "colorMode": "Modalita daltonismo",
+      "colorModeDesc": "Rimappa alcuni colori di stato per distinguerli meglio.",
+      "colorModeNone": "Standard",
+      "colorModeDaltonian": "Palette accessibile",
+      "textSize": "Dimensione testo",
+      "textSizeDesc": "Aumenta la dimensione base del testo in tutta l interfaccia.",
+      "lineHeight": "Interlinea",
+      "lineHeightDesc": "Aumenta la spaziatura verticale tra le righe per facilitare la lettura.",
+      "reduceMotion": "Riduci animazioni",
+      "reduceMotionDesc": "Limita transizioni e animazioni per un maggiore comfort visivo.",
+      "hint": "Queste impostazioni vengono applicate subito e salvate su questo dispositivo."
     }
   },
   "support": {
@@ -469,7 +493,8 @@
     "cancel": "Annulla",
     "create": "Crea",
     "loading": "Caricamento...",
-    "unknownError": "Errore sconosciuto"
+    "unknownError": "Errore sconosciuto",
+    "back": "Indietro"
   },
   "chatbot": {
     "title": "Assistente FHIR",

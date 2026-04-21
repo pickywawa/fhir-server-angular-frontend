@@ -12,6 +12,7 @@ public record EventPayload(
     String actorUserId,
     List<String> recipientUserIds,
     Map<String, Object> metadata,
-    Instant occurredAt
+    Instant occurredAt,
+    NotificationPriority priority
 ) {
 }

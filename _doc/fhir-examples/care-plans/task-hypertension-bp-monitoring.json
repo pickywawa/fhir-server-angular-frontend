@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-hypertension-bp-monitoring",
+  "status": "requested",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "monitor",
+        "display": "Monitor"
+      }
+    ]
+  },
+  "description": "Vérifier la tension artérielle à domicile chaque matin et soir",
+  "priority": "routine"
+}

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -993,6 +994,133 @@ public class FhirToolService {
         }
         
         return result.toString();
+    }
+
+    @Tool(description = "Generate a synthesized summary of a patient's complete medical record including care plans, care team, related persons, documents, and questionnaires")
+    public String synthesis(String patientId) {
+        logger.info("[synthesis] Generating synthesis for patientId={}", patientId);
+        if (patientId == null || patientId.isBlank()) {
+            return "patientId is required";
+        }
+
+        try {
+            String contextStr = buildPatientSynthesisContext(patientId);
+            if (contextStr.startsWith("Unable") || contextStr.startsWith("Patient not found")) {
+                return contextStr;
+            }
+
+            // Parse the context to extract key metrics
+            String[] lines = contextStr.split("\n");
+            Map<String, Integer> counts = new HashMap<>();
+            counts.put("carePlans", 0);
+            counts.put("careTeam", 0);
+            counts.put("appointments", 0);
+            counts.put("documents", 0);
+            counts.put("communications", 0);
+            counts.put("relatedPersons", 0);
+            counts.put("questionnaires", 0);
+
+            String currentSection = "";
+            StringBuilder result = new StringBuilder();
+            result.append("=== SYNTHÈSE PATIENT ===\n\n");
+
+            String patientName = "";
+            String patientBirthDate = "";
+            String patientGender = "";
+            String patientActive = "";
+
+            for (String line : lines) {
+                if (line.startsWith("[Patient]")) {
+                    currentSection = "patient";
+                } else if (line.startsWith("[CarePlans]")) {
+                    currentSection = "carePlans";
+                } else if (line.startsWith("[CareTeam]")) {
+                    currentSection = "careTeam";
+                } else if (line.startsWith("[Appointments]")) {
+                    currentSection = "appointments";
+                } else if (line.startsWith("[Documents")) {
+                    currentSection = "documents";
+                } else if (line.startsWith("[Correspondances]")) {
+                    currentSection = "communications";
+                } else if (line.startsWith("[Entourage]")) {
+                    currentSection = "relatedPersons";
+                } else if (line.startsWith("[Questionnaires]")) {
+                    currentSection = "questionnaires";
+                } else if (line.startsWith("id=") && currentSection.equals("patient")) {
+                    // Extract patient info
+                    if (line.contains("name=")) {
+                        patientName = extractValue(line, "name=");
+                    }
+                    if (line.contains("birthDate=")) {
+                        patientBirthDate = extractValue(line, "birthDate=");
+                    }
+                    if (line.contains("gender=")) {
+                        patientGender = extractValue(line, "gender=");
+                    }
+                    if (line.contains("active=")) {
+                        patientActive = extractValue(line, "active=");
+                    }
+                } else if (!line.isBlank() && !line.startsWith("--") && !line.startsWith("patientId")) {
+                    if (currentSection.equals("carePlans") && line.startsWith("id=")) {
+                        counts.put("carePlans", counts.get("carePlans") + 1);
+                    } else if (currentSection.equals("careTeam") && line.startsWith("id=")) {
+                        counts.put("careTeam", counts.get("careTeam") + 1);
+                    } else if (currentSection.equals("appointments") && line.startsWith("id=")) {
+                        counts.put("appointments", counts.get("appointments") + 1);
+                    } else if (currentSection.equals("documents") && line.startsWith("id=")) {
+                        counts.put("documents", counts.get("documents") + 1);
+                    } else if (currentSection.equals("communications") && line.startsWith("id=")) {
+                        counts.put("communications", counts.get("communications") + 1);
+                    } else if (currentSection.equals("relatedPersons") && line.startsWith("id=")) {
+                        counts.put("relatedPersons", counts.get("relatedPersons") + 1);
+                    } else if (currentSection.equals("questionnaires") && line.startsWith("id=")) {
+                        counts.put("questionnaires", counts.get("questionnaires") + 1);
+                    }
+                }
+            }
+
+            // Format the synthesis
+            result.append("📋 PATIENT : ").append(patientName.isBlank() ? "Unknown" : patientName).append("\n");
+            if (!patientBirthDate.isBlank()) {
+                result.append("   Né(e) le : ").append(patientBirthDate).append("\n");
+            }
+            if (!patientGender.isBlank()) {
+                result.append("   Sexe : ").append(patientGender).append("\n");
+            }
+            result.append("   Statut : ").append(patientActive.isBlank() || patientActive.equals("true") ? "Actif" : "Inactif").append("\n\n");
+
+            result.append("📊 RÉCAPITULATIF :\n");
+            result.append("   • Plans de soin : ").append(counts.get("carePlans")).append("\n");
+            result.append("   • Équipe soignante : ").append(counts.get("careTeam")).append(" intervenant(s)\n");
+            result.append("   • Rendez-vous : ").append(counts.get("appointments")).append("\n");
+            result.append("   • Documents : ").append(counts.get("documents")).append("\n");
+            result.append("   • Entourage : ").append(counts.get("relatedPersons")).append(" personne(s)\n");
+            result.append("   • Questionnaires saisis : ").append(counts.get("questionnaires")).append("\n");
+            result.append("   • Correspondances : ").append(counts.get("communications")).append("\n\n");
+
+            result.append("Pour plus de détails, demande-moi des informations précises sur un élément spécifique.");
+
+            String output = result.toString();
+            logger.info("[synthesis] Response size={} chars", output.length());
+            return output;
+        } catch (Exception ex) {
+            logger.warn("[synthesis] Error for patientId={}: {}", patientId, ex.getMessage());
+            return "Impossible de générer la synthèse pour le patient " + patientId;
+        }
+    }
+
+    private String extractValue(String line, String key) {
+        int startIndex = line.indexOf(key);
+        if (startIndex == -1) {
+            return "";
+        }
+        startIndex += key.length();
+        int endIndex = line.indexOf(",", startIndex);
+        if (endIndex == -1) {
+            endIndex = line.length();
+        }
+        String value = line.substring(startIndex, endIndex).trim();
+        return value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
     }
 
     private String asString(Object value) {

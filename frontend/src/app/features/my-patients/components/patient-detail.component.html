@@ -2,29 +2,64 @@
   @if (patient$ | async; as patient) {
     <div class="page">
       <div class="summary-bar">
-        <div class="patient-info">
-          <div class="avatar">{{ (patient.firstName.charAt(0) || '') + (patient.lastName.charAt(0) || '') }}</div>
-          <div class="info-text">
-            <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
-            <p>{{ patient.dateOfBirth | date: 'dd/MM/yyyy' }} <span class="dot">•</span> {{ patient.gender || ('patients.detailPage.unknownGender' | translate) }}</p>
+        <div class="summary-top">
+          <div class="patient-info">
+            <div class="avatar">{{ (patient.firstName.charAt(0) || '') + (patient.lastName.charAt(0) || '') }}</div>
+            <div class="info-text">
+              <h1>{{ patient.firstName }} {{ patient.lastName }}</h1>
+              <p>{{ patient.dateOfBirth | date: 'dd/MM/yyyy' }} <span class="dot">•</span> {{ patient.gender || ('patients.detailPage.unknownGender' | translate) }}</p>
+            </div>
+          </div>
+          <div class="actions">
+            <button
+              type="button"
+              class="btn btn-primary btn-action"
+              (click)="joinVisioCall(patient.id)"
+              [title]="'visio.lobby.join' | translate"
+            >
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+              </svg>
+              <span class="btn-label">{{ 'visio.lobby.join' | translate }}</span>
+              @if (hasFloatingSession | async) {
+                <span class="status-indicator">●</span>
+              }
+            </button>
           </div>
         </div>
-        <div class="actions">
-          <button
-            type="button"
-            class="btn btn-primary btn-action"
-            (click)="joinVisioCall(patient.id)"
-            [title]="'visio.lobby.join' | translate"
-          >
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
-            </svg>
-            <span class="btn-label">{{ 'visio.lobby.join' | translate }}</span>
-            @if (hasFloatingSession | async) {
-              <span class="status-indicator">●</span>
-            }
-          </button>
-        </div>
+
+        @if (carePlanStepper$ | async; as stepper) {
+          @if (stepper.steps.length > 0) {
+            <div class="careplan-stepper-compact" aria-label="Etapes du careplan">
+              <div class="stepper-line">
+                @for (step of stepper.steps; track step.reference; let i = $index; let last = $last) {
+                  <div class="stepper-node" [class.active]="i === stepper.currentIndex" [class.done]="step.done">
+                    <div class="step-bullet">{{ i + 1 }}</div>
+                    <div class="step-title">{{ step.title || ('Etape ' + (i + 1)) }}</div>
+                  </div>
+                  @if (!last) {
+                    <div class="stepper-separator" [class.done]="step.done"></div>
+                  }
+                }
+              </div>
+
+              @if (stepper.steps[stepper.currentIndex]; as currentStep) {
+                <div class="current-step-detail">
+                  <div class="current-step-main">
+                    <strong>{{ currentStep.title || 'Etape en cours' }}</strong>
+                    <p>{{ currentStep.details }}</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-neutral btn-step-link"
+                    (click)="navigateToStepAction(currentStep)">
+                    {{ currentStep.actionLabel }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
       </div>
       <app-tab-bar
         class="desktop-tab-bar"

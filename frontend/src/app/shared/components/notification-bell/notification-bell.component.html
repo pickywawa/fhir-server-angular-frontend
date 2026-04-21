@@ -3,37 +3,43 @@
     type="button"
     class="notification-bell-btn btn btn-neutral"
     (click)="togglePopover($event)"
-    [attr.aria-label]="'Notifications (' + (unreadCount$ | async) + ')'"
+    [attr.aria-label]="'Notifications (' + unreadCount + ')'"
   >
     <svg class="bell-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
       <path
         d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.96 5.36 6.31 7.92 6.31 11v5l-2 2v1h16v-1l-2-2z"
       />
     </svg>
-    @if (unreadCount$ | async; as count) {
-      @if (count > 0) {
-        <span class="notification-badge">{{ count > 99 ? '99+' : count }}</span>
-      }
+    @if (unreadCount > 0) {
+      <span class="notification-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
     }
   </button>
 
   @if (isPopoverOpen) {
-    <div class="notification-popover" [@popoverAnimation] (click)="$event.stopPropagation()">
+    <div class="notification-popover" [class.expanded]="isExpandedView" [@popoverAnimation] (click)="$event.stopPropagation()">
       <header class="popover-header">
         <h3>{{ 'notifications.title' | translate }}</h3>
 
         <div class="popover-header-actions">
-          @if (unreadCount$ | async; as unreadCount) {
-            @if (unreadCount > 0) {
-              <button
-                type="button"
-                class="btn btn-primary btn-sm"
-                (click)="markAllAsRead()"
-                [disabled]="isLoading$ | async"
-              >
-                {{ 'notifications.markAllAsRead' | translate }}
-              </button>
-            }
+          <button
+            type="button"
+            class="btn-icon"
+            (click)="openNotificationSettings($event)"
+            [attr.aria-label]="'notifications.openSettings' | translate"
+            [title]="'notifications.openSettings' | translate"
+          >
+            ⚙
+          </button>
+
+          @if (unreadCount > 0) {
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="markAllAsRead()"
+              [disabled]="isLoading"
+            >
+              {{ 'notifications.markAllAsRead' | translate }}
+            </button>
           }
 
           <button
@@ -49,59 +55,82 @@
       </header>
 
       <div class="popover-body" role="region" aria-live="polite">
-        @if (isLoading$ | async) {
+        @if (isLoading) {
           <div class="loading-indicator">
             <p>{{ 'notifications.loading' | translate }}</p>
           </div>
-        } @else if (notifications$ | async; as notifications) {
-          @if (notifications.length === 0) {
-            <p class="empty-state">{{ 'notifications.empty' | translate }}</p>
-          } @else {
-            <ul class="notifications-list">
-              @for (notif of notifications; track notif.id) {
-                <li class="notification-item" [class.unread]="!notif.acknowledged">
-                  <div class="notification-avatar">
-                    <span class="avatar-placeholder">
-                      {{ getInitials(notif.actorUserId || 'U') }}
-                    </span>
+        } @else if (notifications.length === 0) {
+          <p class="empty-state">{{ 'notifications.empty' | translate }}</p>
+        } @else {
+          <ul class="notifications-list">
+            @for (notif of notifications; track notif.id) {
+              @let actions = getNotificationActions(notif);
+              <li
+                class="notification-item"
+                [class.unread]="!notif.acknowledged"
+                [class.priority-critical]="notif.priority === 'CRITICAL'"
+                [class.priority-high]="notif.priority === 'HIGH'"
+                [class.priority-medium]="notif.priority === 'MEDIUM'"
+                [class.priority-low]="notif.priority === 'LOW'"
+              >
+                <span class="notification-icon" aria-hidden="true">{{ getNotificationIcon(notif) }}</span>
+
+                <div class="notification-content">
+                  <div class="notification-title-row">
+                    <p class="notification-title">{{ notif.title }}</p>
                   </div>
 
-                  <div class="notification-body">
-                    <div class="notification-main">
-                      <p class="notification-title">{{ notif.title }}</p>
-                      <p class="notification-message">{{ notif.message }}</p>
+                  <p class="notification-message">{{ notif.message }}</p>
+
+                  @if (actions.length > 0) {
+                    <div class="notification-actions">
+                      @for (action of actions; track action.key) {
+                        <button
+                          type="button"
+                          class="notification-action"
+                          [class.notification-action--danger]="action.decision === 'DECLINE'"
+                          (click)="handleNotificationAction(notif, action)"
+                        >
+                          {{ action.labelKey | translate }}
+                        </button>
+                      }
                     </div>
-                    <p class="notification-time">{{ formatTime(notif.createdAt) }}</p>
-                  </div>
+                  }
 
-                  <button
-                    type="button"
-                    class="notification-action-btn"
-                    [class.acknowledged]="notif.acknowledged"
-                    (click)="toggleNotificationStatus(notif)"
-                    [title]="notif.acknowledged ? ('notifications.markAsUnread' | translate) : ('notifications.markAsRead' | translate)"
-                  >
-                    @if (notif.acknowledged) {
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                      </svg>
-                    } @else {
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                      </svg>
-                    }
-                  </button>
-                </li>
-              }
-            </ul>
-          }
+                  <p class="notification-time">{{ formatTime(notif.createdAt) }}</p>
+                </div>
+
+                <button
+                  type="button"
+                  class="notification-status-btn"
+                  [title]="notif.acknowledged ? ('notifications.markAsUnread' | translate) : ('notifications.markAsRead' | translate)"
+                  (click)="toggleNotificationStatus(notif)"
+                >
+                  @if (notif.acknowledged) {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                    </svg>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
         }
       </div>
 
       <footer class="popover-footer">
-        <a [routerLink]="'/notifications'" class="link-small">
+        <button type="button" class="link-small btn-link" (click)="toggleExpandedView($event)">
           {{ 'notifications.viewAll' | translate }}
-        </a>
+          @if (isExpandedView) {
+            {{ 'notifications.collapse' | translate }}
+          } @else {
+            {{ 'notifications.expand' | translate }}
+          }
+        </button>
       </footer>
     </div>
   }

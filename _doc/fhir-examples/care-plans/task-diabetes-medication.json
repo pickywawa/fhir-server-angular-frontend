@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-diabetes-medication",
+  "status": "requested",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "fulfill",
+        "display": "Fulfill"
+      }
+    ]
+  },
+  "description": "Prendre la métformine 500mg deux fois par jour avec les repas",
+  "priority": "routine"
+}

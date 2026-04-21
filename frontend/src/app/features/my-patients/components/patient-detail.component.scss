@@ -9,14 +9,21 @@
 /* ─── Summary Bar (Action Bar) ──────────────────────────────── */
 .summary-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 1rem;
   padding: 1.2rem;
   background: var(--card-bg);
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.summary-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .patient-info {
@@ -141,6 +148,116 @@
   margin-left: 0.25rem;
 }
 
+.careplan-stepper-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.2rem;
+}
+
+.stepper-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.stepper-node {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.step-bullet {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--card-bg);
+}
+
+.step-title {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stepper-node.active .step-bullet {
+  border-color: var(--btn-primary-bg, #2563eb);
+  color: var(--btn-primary-bg, #2563eb);
+}
+
+.stepper-node.active .step-title {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.stepper-node.done .step-bullet {
+  background: var(--btn-primary-bg, #2563eb);
+  border-color: var(--btn-primary-bg, #2563eb);
+  color: var(--btn-primary-text, #fff);
+}
+
+.stepper-separator {
+  width: 36px;
+  height: 1px;
+  background: var(--border-color);
+  flex-shrink: 0;
+}
+
+.stepper-separator.done {
+  background: var(--btn-primary-bg, #2563eb);
+}
+
+.current-step-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg-soft);
+}
+
+.current-step-main {
+  min-width: 0;
+}
+
+.current-step-main strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.current-step-main p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-step-link {
+  flex-shrink: 0;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+}
+
 .state-message {
   color: #64748b;
 }
@@ -174,6 +291,10 @@
   .summary-bar {
     gap: 0.6rem;
     padding: 0.7rem 0.85rem;
+  }
+
+  .summary-top {
+    gap: 0.6rem;
   }
 
   .patient-info {
@@ -224,6 +345,24 @@
 
   .desktop-tab-bar {
     display: none;
+  }
+
+  .step-title {
+    max-width: 110px;
+    font-size: 0.72rem;
+  }
+
+  .stepper-line {
+    display: none;
+  }
+
+  .current-step-detail {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-step-link {
+    width: 100%;
   }
 
   .tab-content {

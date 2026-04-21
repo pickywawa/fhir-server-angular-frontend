@@ -30,24 +30,15 @@
   <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
-      const host = window.location.hostname;
-      const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
-
-      if (isLocalhost) {
-        navigator.serviceWorker.getRegistrations()
-          .then((registrations) => Promise.all(registrations.map((r) => r.unregister())))
-          .then(() => console.log('[PWA] Service workers disabled on localhost'));
-      } else {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('[PWA] Service Worker registered:', registration);
-            })
-            .catch((error) => {
-              console.error('[PWA] Service Worker registration failed:', error);
-            });
-        });
-      }
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('[PWA] Service Worker registered:', registration);
+          })
+          .catch((error) => {
+            console.error('[PWA] Service Worker registration failed:', error);
+          });
+      });
     }
   </script>
 </body>

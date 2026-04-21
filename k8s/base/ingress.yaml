@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: healthapp-ingress
+  namespace: healthapp
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: healthapp.local
+      http:
+        paths:
+          - path: /fhir
+            pathType: Prefix
+            backend:
+              service:
+                name: fhir-api
+                port:
+                  number: 8081
+          - path: /events
+            pathType: Prefix
+            backend:
+              service:
+                name: events-api
+                port:
+                  number: 8091
+          - path: /chat
+            pathType: Prefix
+            backend:
+              service:
+                name: chat-bot
+                port:
+                  number: 8090
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

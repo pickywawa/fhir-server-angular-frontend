@@ -11,6 +11,7 @@ type MenuIcon =
   | 'questionnaires'
   | 'code-systems'
   | 'organizations'
+  | 'care-plans'
   | 'agenda'
   | 'discussions'
   | 'search'
@@ -63,7 +64,8 @@ export class SideMenuComponent {
     { labelKey: 'menu.patients', route: '/patients', icon: 'patients' },
     { labelKey: 'menu.questionnaires', route: '/questionnaires', icon: 'questionnaires' },
     { labelKey: 'menu.codeSystems', route: '/code-systems', icon: 'code-systems' },
-    { labelKey: 'menu.organizations', route: '/organizations', icon: 'organizations' }
+    { labelKey: 'menu.organizations', route: '/organizations', icon: 'organizations' },
+    { labelKey: 'menu.carePlans', route: '/care-plans', icon: 'care-plans' }
   ];
 
   readonly bottomMenuItems: MenuItem[] = [

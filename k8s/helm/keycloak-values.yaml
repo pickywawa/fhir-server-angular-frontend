@@ -1,0 +1,17 @@
+auth:
+  adminUser: admin
+  adminPassword: change-me
+proxy: edge
+httpRelativePath: /
+replicaCount: 1
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hostname: keycloak.healthapp.local
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: change-me
+    username: keycloak
+    password: change-me
+    database: keycloak

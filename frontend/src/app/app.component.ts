@@ -6,10 +6,20 @@ import { FloatingVisioComponent } from './shared/components/floating-visio/float
 import { AppPreferencesService } from './core/services/app-preferences.service';
 import { MenuStateService } from './core/services/menu-state.service';
 import { ChatAssistantComponent } from './shared/components/chat-assistant/chat-assistant.component';
+import { PushPermissionPromptComponent } from './shared/components/push-permission-prompt/push-permission-prompt.component';
+import { PushNotificationToastComponent } from './shared/components/push-notification-toast/push-notification-toast.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, SideMenuComponent, ToastComponent, FloatingVisioComponent, ChatAssistantComponent],
+  imports: [
+    RouterOutlet,
+    SideMenuComponent,
+    ToastComponent,
+    FloatingVisioComponent,
+    ChatAssistantComponent,
+    PushPermissionPromptComponent,
+    PushNotificationToastComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

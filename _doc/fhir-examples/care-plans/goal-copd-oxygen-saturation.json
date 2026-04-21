@@ -1,0 +1,33 @@
+{
+  "resourceType": "Goal",
+  "id": "copd-oxygen-saturation-goal",
+  "status": "active",
+  "lifecycleStatus": "active",
+  "description": {
+    "text": "Maintenir la saturation en oxygène"
+  },
+  "target": [
+    {
+      "measure": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "3150-0",
+            "display": "Oxygen saturation"
+          }
+        ]
+      },
+      "detailCodeableConcept": {
+        "text": "Supérieur à 88% au repos"
+      }
+    }
+  ],
+  "achievementStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/goal-achievement",
+        "code": "in-progress"
+      }
+    ]
+  }
+}

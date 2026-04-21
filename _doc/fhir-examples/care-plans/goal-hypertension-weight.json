@@ -1,0 +1,27 @@
+{
+  "resourceType": "Goal",
+  "id": "hypertension-weight-goal",
+  "status": "active",
+  "lifecycleStatus": "active",
+  "description": {
+    "text": "Gestion du poids"
+  },
+  "target": [
+    {
+      "measure": {
+        "text": "IMC"
+      },
+      "detailCodeableConcept": {
+        "text": "Inférieur à 25"
+      }
+    }
+  ],
+  "achievementStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/goal-achievement",
+        "code": "in-progress"
+      }
+    ]
+  }
+}

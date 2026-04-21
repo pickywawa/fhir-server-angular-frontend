@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: healthapp-config
+  namespace: healthapp
+data:
+  HIBERNATE_DIALECT: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect
+  EVENTS_TOPIC: healthapp.events
+  OLLAMA_MODEL: llama3.1:8b
+  OLLAMA_CONNECT_TIMEOUT: 10s
+  OLLAMA_READ_TIMEOUT: 180s

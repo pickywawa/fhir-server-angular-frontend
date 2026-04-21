@@ -1,0 +1,79 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "plan-copd-management",
+  "url": "https://health-fhir.fr/PlanDefinition/copd-management",
+  "version": "1.0.0",
+  "name": "PlanCOPDManagement",
+  "title": "Plan de Gestion de la BPCO",
+  "description": "Plan de gestion complet pour la BPCO modérée à sévère incluant oxygénothérapie, bronchodilatateurs et réadaptation pulmonaire",
+  "status": "active",
+  "experimental": false,
+  "date": "2026-04-15",
+  "publisher": "Health App",
+  "contact": [
+    {
+      "telecom": [
+        {
+          "system": "url",
+          "value": "https://health-fhir.fr"
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/10"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/11"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/12"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/15"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/16"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/17"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/18"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/19"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/20"
+      }
+    }
+  ]
+}

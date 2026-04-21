@@ -1,0 +1,334 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="stepper-page">
+
+    <!-- STEPPER HEADER -->
+    <div class="stepper-header">
+      @for (step of steps; track step.key; let last = $last) {
+        <div class="step-item" [class.active]="currentStep === step.key" [class.done]="currentStep > step.key">
+          <div class="step-circle">
+            @if (currentStep > step.key) { ✓ } @else { {{ step.key }} }
+          </div>
+          <span class="step-label">{{ step.label }}</span>
+        </div>
+        @if (!last) {
+          <div class="step-connector" [class.done]="currentStep > step.key"></div>
+        }
+      }
+    </div>
+
+    <!-- STEP CONTENT -->
+    <div class="step-content">
+      @if (loading) {
+        <div class="state-msg">Chargement des données…</div>
+      }
+
+      @if (!loading) {
+
+        <!-- STEP 1: Informations générales -->
+        @if (currentStep === 1) {
+          <div class="step-panel">
+
+            <div class="patient-search-field">
+              <label class="field-label" for="cp-patient-search">Patient *</label>
+              <div class="patient-search-wrapper">
+                <input
+                  id="cp-patient-search"
+                  type="text"
+                  class="picker-input"
+                  [value]="patientQuery"
+                  placeholder="Rechercher un patient..."
+                  autocomplete="off"
+                  (input)="onPatientQueryChanged(($any($event.target)).value)"
+                />
+                @if (patientSearchResults.length > 0) {
+                  <div class="picker-results">
+                    @for (option of patientSearchResults; track option.reference) {
+                      <button type="button" class="picker-result-item" (click)="selectPatient(option)">
+                        {{ option.label }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+              @if (selectedPatient) {
+                <div class="selected-chip">
+                  <span>{{ selectedPatient.label }}</span>
+                  <button type="button" class="chip-remove" (click)="clearSelectedPatient()">×</button>
+                </div>
+              }
+            </div>
+
+            <div class="plan-def-field">
+              <label class="field-label" for="cp-plandef">Plan de définition (template)</label>
+              <select
+                id="cp-plandef"
+                class="picker-select"
+                [value]="selectedPlanDefId"
+                (change)="onPlanDefChange(($any($event.target)).value)">
+                <option value="">— Aucun —</option>
+                @for (plan of planDefinitions; track plan.id) {
+                  <option [value]="plan.id">{{ plan.title || 'Plan ' + plan.id }}</option>
+                }
+              </select>
+            </div>
+
+            <form [formGroup]="form" class="step-form">
+              <app-form-control-field
+                label="Catégorie *"
+                forId="cp-category"
+                kind="select"
+                [options]="categorySelectOptions"
+                formControlName="categoryCode">
+              </app-form-control-field>
+
+              <div class="grid two">
+                <app-form-control-field
+                  label="Statut"
+                  forId="cp-status"
+                  kind="select"
+                  [options]="statusOptions"
+                  formControlName="status">
+                </app-form-control-field>
+
+                <app-form-control-field
+                  label="Intent"
+                  forId="cp-intent"
+                  kind="select"
+                  [options]="intentOptions"
+                  formControlName="intent">
+                </app-form-control-field>
+              </div>
+
+              <app-form-control-field
+                label="Titre *"
+                forId="cp-title"
+                placeholder="Intitulé du plan de soin"
+                formControlName="title">
+              </app-form-control-field>
+
+              <app-form-control-field
+                label="Description"
+                forId="cp-description"
+                kind="textarea"
+                [rows]="3"
+                formControlName="description">
+              </app-form-control-field>
+
+              <app-form-control-field
+                label="Commentaire"
+                forId="cp-note"
+                kind="textarea"
+                [rows]="3"
+                formControlName="note">
+              </app-form-control-field>
+            </form>
+          </div>
+        }
+
+        <!-- STEP 2: Intervenants -->
+        @if (currentStep === 2) {
+          <div class="step-panel">
+            <div class="picker-section">
+              <h3 class="picker-title">Intervenants du patient</h3>
+              <p class="picker-hint">Ajoutez les membres à inclure dans la CareTeam. Ils seront créés uniquement lors de la validation finale du CarePlan.</p>
+
+              <div class="care-team-actions">
+                <button type="button" class="btn btn-primary" (click)="openAddMemberDialog()" [disabled]="!selectedPatient">
+                  Ajouter un intervenant
+                </button>
+              </div>
+
+              @if (!selectedPatient) {
+                <p class="empty-list">Sélectionnez d'abord un patient à l'étape Informations.</p>
+              }
+
+              @if (selectedPatient && pendingMembers.length === 0) {
+                <p class="empty-list">Aucun intervenant en attente d'ajout.</p>
+              }
+
+              @if (pendingMembers.length > 0) {
+                <div class="member-list">
+                  @for (member of pendingMembers; track member.practitionerId + '-' + member.role; let i = $index) {
+                    <div class="member-row">
+                      <div class="member-main">
+                        <div class="avatar">{{ member.practitionerName.charAt(0) | uppercase }}</div>
+                        <div class="content">
+                          <strong>{{ member.practitionerName }}</strong>
+                          <span>{{ member.roleDisplay }}</span>
+                        </div>
+                      </div>
+                      <button type="button" class="member-remove" (click)="removePendingMember(i)">Retirer</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- STEP 3: Objectifs -->
+        @if (currentStep === 3) {
+          <div class="step-panel">
+            <div class="picker-section">
+              <h3 class="picker-title">Objectifs du plan de soin</h3>
+              <p class="picker-hint">Ajoutez et ordonnez les objectifs cliniques. Ils sont pré-remplis si vous avez choisi un template.</p>
+
+              <div class="picker-search-block">
+                <label class="field-label">Ajouter un objectif</label>
+                <div class="patient-search-wrapper">
+                  <input
+                    type="text"
+                    class="picker-input"
+                    [value]="goalQuery"
+                    placeholder="Rechercher un objectif…"
+                    autocomplete="off"
+                    (input)="searchGoals(($any($event.target)).value)"
+                  />
+                  @if (goalResults.length > 0) {
+                    <div class="picker-results">
+                      @for (item of goalResults; track item.reference) {
+                        <button type="button" class="picker-result-item" (click)="addGoal(item)">
+                          {{ item.label }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @if (selectedGoals.length === 0) {
+                <p class="empty-list">Aucun objectif sélectionné.</p>
+              }
+
+              @if (selectedGoals.length > 0) {
+                <div class="ordered-list">
+                  @for (item of selectedGoals; track item.reference; let i = $index) {
+                    <div class="ordered-row">
+                      <span class="ordered-index">{{ i + 1 }}</span>
+                      <span class="ordered-label">{{ item.label }}</span>
+                      <div class="ordered-actions">
+                        <button type="button" class="btn btn-neutral" (click)="moveGoal(i, -1)" [disabled]="i === 0">↑</button>
+                        <button type="button" class="btn btn-neutral" (click)="moveGoal(i, 1)" [disabled]="i === selectedGoals.length - 1">↓</button>
+                        <button type="button" class="btn icon danger" (click)="removeGoal(i)">✕</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- STEP 4: Etapes -->
+        @if (currentStep === 4) {
+          <div class="step-panel">
+            <div class="picker-section">
+              <h3 class="picker-title">Etapes</h3>
+              <p class="picker-hint">Ces étapes proviennent du PlanDefinition sélectionné. Elles sont pliées par défaut et peuvent être supprimées pour ce CarePlan.</p>
+
+              @if (!selectedPlanDefId) {
+                <p class="empty-list">Sélectionnez un PlanDefinition à l'étape Informations pour charger les étapes.</p>
+              }
+
+              @if (selectedPlanDefId && selectedPlanSteps.length === 0) {
+                <p class="empty-list">Aucune étape trouvée dans ce PlanDefinition.</p>
+              }
+
+              @if (selectedPlanSteps.length > 0) {
+                <div class="tasks-list">
+                  @for (step of selectedPlanSteps; track step.uid || step.title + '-' + $index; let i = $index) {
+                    <div class="task-card" [class.expanded]="expandedStepIndex === i">
+                      <div class="task-header" (click)="toggleStepExpansion(i)">
+                        <div class="task-main">
+                          <span class="task-index">{{ i + 1 }}</span>
+                          <div class="task-content">
+                            <strong>{{ step.title || ('Etape ' + (i + 1)) }}</strong>
+                            @if (step.description) {
+                              <p class="task-description">{{ step.description }}</p>
+                            }
+                          </div>
+                        </div>
+                        <div class="task-status-badge">
+                          <span class="status-label">{{ getStepTypeLabel(step.type) }}</span>
+                        </div>
+                        <div class="expand-icon">{{ expandedStepIndex === i ? '▼' : '▶' }}</div>
+                      </div>
+
+                      @if (expandedStepIndex === i) {
+                        <div class="task-details">
+                          <div class="task-field">
+                            <label class="field-label">Priorité</label>
+                            <input type="text" class="field-input" [value]="step.priority || 'routine'" readonly />
+                          </div>
+
+                          <div class="task-field" *ngIf="step.type === 'questionnaire'">
+                            <label class="field-label">Modèle questionnaire</label>
+                            <input type="text" class="field-input" [value]="step.questionnaireRef || '-'" readonly />
+                          </div>
+
+                          <div class="task-field" *ngIf="step.type === 'task'">
+                            <label class="field-label">Task modèle</label>
+                            <input type="text" class="field-input" [value]="step.taskRef || '-'" readonly />
+                          </div>
+
+                          <div class="task-field" *ngIf="step.type === 'appointment'">
+                            <label class="field-label">ActivityDefinition (RDV)</label>
+                            <input type="text" class="field-input" [value]="step.activityDefinitionRef || '(création RDV dédiée)'" readonly />
+                          </div>
+
+                          <div class="task-field" *ngIf="step.type === 'communication'">
+                            <label class="field-label">Message de communication</label>
+                            <textarea class="field-input" rows="3" readonly>{{ step.communicationMessage || '-' }}</textarea>
+                          </div>
+
+                          <div class="task-field" *ngIf="step.description">
+                            <label class="field-label">Description</label>
+                            <textarea class="field-input" rows="3" readonly>{{ step.description }}</textarea>
+                          </div>
+
+                          <div class="task-footer">
+                            <button type="button" class="btn icon danger" (click)="removeAction(i)">Supprimer</button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      }
+    </div>
+
+    <!-- FOOTER NAVIGATION -->
+    <div class="step-footer">
+      @if (error) {
+        <span class="error-msg">{{ error }}</span>
+      }
+      <div class="footer-actions">
+        @if (currentStep === 1) {
+          <button type="button" class="btn btn-neutral" (click)="cancel()">Annuler</button>
+        } @else {
+          <button type="button" class="btn btn-neutral" (click)="prevStep()">Précédent</button>
+        }
+        @if (currentStep < 4) {
+          <button type="button" class="btn btn-primary" (click)="nextStep()">Suivant</button>
+        } @else {
+          <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="saving">
+            {{ saving ? 'Enregistrement…' : 'Créer le CarePlan' }}
+          </button>
+        }
+      </div>
+    </div>
+
+  </div>
+</app-module-shell>
+
+@if (showAddMemberDialog) {
+  <app-add-care-team-member-dialog
+    (save)="onAddMember($event)"
+    (cancel)="closeAddMemberDialog()"
+  ></app-add-care-team-member-dialog>
+}

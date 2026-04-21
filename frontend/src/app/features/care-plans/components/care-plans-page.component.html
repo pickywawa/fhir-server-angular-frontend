@@ -1,0 +1,93 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <app-bubble-card [title]="'carePlans.title' | translate">
+    <div bubbleActions>
+      <button type="button" class="btn btn-primary" (click)="addCurrent()">
+        {{ 'carePlans.add' | translate }}
+      </button>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Navigation dossiers de soin">
+      @for (tab of tabs; track tab.key) {
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="tab.key === activeTab"
+          [attr.aria-selected]="tab.key === activeTab"
+          (click)="setTab(tab.key)">
+          {{ tab.labelKey | translate }}
+        </button>
+      }
+    </div>
+
+    @if (loading) {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading && error) {
+      <div class="state error">{{ error }}</div>
+    }
+
+    @if (!loading && !error && activeTab === 'plans') {
+      <div class="list">
+        @for (plan of plans; track plan.id) {
+          <button type="button" class="row" (click)="openPlan(plan)">
+            <div class="identity">
+              <strong>{{ plan.title || ('carePlans.list.noTitle' | translate) }}</strong>
+              <span>{{ plan.description || ('carePlans.list.noDescription' | translate) }}</span>
+            </div>
+            <div class="meta">
+              <span class="badge">{{ plan.status || '-' }}</span>
+              <span>{{ 'carePlans.fields.version' | translate }}: {{ plan.version || '-' }}</span>
+            </div>
+          </button>
+        }
+
+        @if (plans.length === 0) {
+          <div class="state">{{ 'carePlans.list.emptyPlans' | translate }}</div>
+        }
+      </div>
+    }
+
+    @if (!loading && !error && activeTab === 'actions') {
+      <div class="list">
+        @for (action of actions; track action.id) {
+          <button type="button" class="row" (click)="openAction(action)">
+            <div class="identity">
+              <strong>{{ action.title || ('carePlans.list.noTitle' | translate) }}</strong>
+              <span>{{ action.description || ('carePlans.list.noDescription' | translate) }}</span>
+            </div>
+            <div class="meta">
+              <span class="badge">{{ action.priority || '-' }}</span>
+              <span>{{ action.code || '-' }}</span>
+            </div>
+          </button>
+        }
+
+        @if (actions.length === 0) {
+          <div class="state">{{ 'carePlans.list.emptyActions' | translate }}</div>
+        }
+      </div>
+    }
+
+    @if (!loading && !error && activeTab === 'objectives') {
+      <div class="list">
+        @for (goal of goals; track goal.id) {
+          <button type="button" class="row" (click)="openGoal(goal)">
+            <div class="identity">
+              <strong>{{ goal.title || ('carePlans.list.noTitle' | translate) }}</strong>
+              <span>{{ goal.description || ('carePlans.list.noDescription' | translate) }}</span>
+            </div>
+            <div class="meta">
+              <span class="badge">{{ goal.lifecycleStatus || '-' }}</span>
+              <span>{{ goal.achievementStatus || '-' }}</span>
+            </div>
+          </button>
+        }
+
+        @if (goals.length === 0) {
+          <div class="state">{{ 'carePlans.list.emptyObjectives' | translate }}</div>
+        }
+      </div>
+    }
+  </app-bubble-card>
+</app-module-shell>

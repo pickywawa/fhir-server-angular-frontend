@@ -1,0 +1,27 @@
+{
+  "resourceType": "Goal",
+  "id": "hypertension-sodium-goal",
+  "status": "active",
+  "lifecycleStatus": "active",
+  "description": {
+    "text": "Réduction du sodium"
+  },
+  "target": [
+    {
+      "measure": {
+        "text": "Consommation quotidienne de sodium"
+      },
+      "detailCodeableConcept": {
+        "text": "Moins de 2300mg par jour"
+      }
+    }
+  ],
+  "achievementStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/goal-achievement",
+        "code": "improving"
+      }
+    ]
+  }
+}

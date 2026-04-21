@@ -47,3 +47,8 @@ management:
 app:
   events:
     topic: ${EVENTS_TOPIC:healthapp.events}
+  vapid:
+    # Generate a VAPID key pair with: npx web-push generate-vapid-keys
+    public-key: ${VAPID_PUBLIC_KEY:CHANGE_ME_GENERATE_WITH_WEB_PUSH}
+    private-key: ${VAPID_PRIVATE_KEY:CHANGE_ME_GENERATE_WITH_WEB_PUSH}
+    subject: ${VAPID_SUBJECT:mailto:admin@healthapp.local}

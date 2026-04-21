@@ -1,156 +1,23 @@
-# 🏥 Application Fullstack de Gestion des Patients
-## 📋 Description
-Application fullstack moderne pour la gestion des patients avec:
-- **Frontend**: Angular 19 avec NgRx (State Management) et Clean Architecture
-- **Backend**: Spring Boot avec serveur HAPI FHIR
-- **Base de données**: PostgreSQL
-## 🏗️ Architecture Simplifiée
-```
-┌─────────────────────────────┐
-│   Frontend Angular 19       │
-│   + NgRx + RxJS             │
-│   http://localhost:4200     │
-└──────────┬──────────────────┘
-           │ HTTP/REST
-           ▼
-┌─────────────────────────────┐
-│   Backend Spring Boot       │
-│   + HAPI FHIR Server        │
-│   http://localhost:8080     │
-└──────────┬──────────────────┘
-           │ JPA/Hibernate
-           ▼
-┌─────────────────────────────┐
-│   PostgreSQL Database       │
-│   localhost:5432            │
-└─────────────────────────────┘
-```
-### Frontend (Angular 19)
-```
-frontend/
-├── src/app/
-│   ├── core/    │   ├── core/    │   ├── core/    │   ├── core/    │   ├── nt │   ├── core/    │   �             # Composants partagés
-```
-### Backend (Spring Boot + HAPI FHIR)
-```
-backend/
-└── backend-service/        # Service unique
-    ├── config/          ├── configon FH    ├
-�    �    �    �    �    �    �    �    �    �    �    �    �    �    �    �    �    �    �    �s**     �    �    �    �    � - **Maven** 3.8+
-- **Docker** & Docker Compose- **Docker** & Docker ## 📦 Installation & Démarrage
-### 1. Démarrer PostgreSQL
-```bash
-./start-all.sh
-```
-### 2. Compiler le backend (première fois uniqu### 2. ```bash
-cd backend/backend-service
-mvn clean install
-```
-### 3. Démarrer le backend (Terminal 1)
-```bash
-./run-backend.sh
-```
-Le backend démarre sur **http://localhost:8080**
-### 4. Démarrer le frontend (Terminal 2)
-```bash
-./run-frontend.sh
-```
-Le frontend démarre sur **http://localhost:4200*Le### 5. (Optionnel) Ajouter des données de test
-```bash
-./seed-data.sh
-```
-## 🌐 Accès aux services
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Frontend** | http://localhost:4200 | Interface Angul| **F| **Backend FHIR** | http://localhost:8080/fhir | Serveur HAPI FHIR |
-| **FHIR Metadata** | http://localhost:8080/fhir/metadata | Capabilities du serveur |
-| **PostgreSQL** | localhost:5432 | Base de données |
-## 📖 Utilisation
-### Interface Web
-1. Ouvrez http://localhost:4200
-2. Visualisez la liste des patients
-3. Créez, modifiez ou supprimez des patients
-### API FHIR
-#### Créer un patient
-```bash
-curl -X POST http://localhost:8080/fhir/Patient \
-  -H "Content-Type: application/fhir+json" \
-  -d '{
-    "resourceType": "Patient",
-    "name":          "family": "Dupont",
-      "given": ["Jean"]
-    }],
-    "gend    "gend    "gend    "gend    "gend    "gen    "telecom": [
-      {"system": "email", "value": "jean.dupont@example.com"},
-      {"system": "phone", "value": "+33612345678"}
-    ]
-  }'
-```
-#### Récupérer tous les patients
-```bash
-curl http://loccurl http://loccurl http:```
-#### Récupérer un patient par ID
-```bash
-curl http://localhoscurl http://localhoscurl http://localhoscurl http://localhoscurl http://localhoscurl http://localhoscurl http://localhoscurl htt️ Technologies
-### Frontend
-- **Angular** 19.2.19
-- **NgRx** 19 (Store, Effects, Entity)
-- **RxJS** 7.8+
-- **TypeScript** 5.6+
-- **SCSS**
-### Backend
-- **Spring Boot** 3.2.3
-- **HAPI FHIR** 6.10.0 (R4)
-- **Spring Data JPA**
-- **PostgreSQL** 15
-- **Lombok**
-## 📚 Principes Appliqués
-- ✅ **Clean Architecture** (Frontend)
-- ✅ **State Management** avec NgRx
-- ✅ **Reactive Programm- ✅ **Reactive Programm- ✅ **Retandard
-- ✅ **RESTful API**
-- ✅ **CORS** configuré
-## 🔧 Configuration
-### Backend
-Fichier: `backend/backenF-service/src/main/resources/application.properties`
-```properties
-server.port=8080
-spring.datasource.url=jdbc:postgresql://localhost:5432/healthapp_db
-hapi.fhir.server_address=http://localhost:8080/fhir
-```
-### Frontend
-Fichier: `frontend/src/enviroFichier: `frontend/src/enviroFichier:export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/fhir'
-};
-```
-## 🐛 Dépannage
-### PostgreSQL ne démarre pas
-```bash
-docker-compose down
-docker-compose up -d
-```
-### Erreur de compilation Mav###```bash
-cd backend/backend-service
-mvn clean install -DskipTests
-```
-### E### E### E### ```bash
-cd frontendcrm -rf node_modules package-lock.json
-npm install
-```
-## 📝 Scripts Disponibles
-````````./start-all.sh      # Démarre PostgreSQL
-./run-backend.s./run-backend.s./run-backend.s./run-bt + FHIR
-./run-frontend.sh   # Démarre le frontend Angular
-./seed-data.sh      # Insère des données de test
-```
-## 🎯 Fonctionnalités
-- [x] Liste des patients avec design moderne
-- [x] State management NgRx complet
-- [x] Serveur FHIR R4 opérationnel
-- [x] CRUD complet via API FHIR
-- [x] Con- [x] Con- [x] Con- [x] Con- [x] Con- [x] Con- [x] Con- [x] Con-Design responsive
-## 📄 Licence
-MIT
----
-**Créé avec ❤️ - Architecture simplifiée avec HAPI FHIR** 🚀
+# Documentation projet (_doc)
+
+Ce dossier rassemble la documentation technique pour l'exploitation et la migration de la plateforme.
+
+## Documents
+
+- `ARCHITECTURE.md`
+  - Vue globale de l'architecture applicative
+  - Cartographie des composants, flux, ports, dependances
+  - Inventaire des scripts de lancement
+
+- `KUBERNETES_PREPARATION.md`
+  - Guide de preparation au deploiement Kubernetes
+  - Mapping docker compose -> ressources K8s
+  - Variables, secrets, probes, checklist go-live
+
+- `fhir-examples/`
+  - Jeux de ressources FHIR de test (CodeSystem, CarePlan, etc.)
+
+## Point important
+
+L'etat actuel est optimise pour un run local via scripts shell + Docker Compose infra.
+La cible Kubernetes demandera de completer la containerisation des services `events` et `chat-bot`, puis de formaliser les manifests et la gestion de configuration/secrets.

@@ -1,0 +1,11 @@
+web:
+  replicaCount: 1
+prosody:
+  replicaCount: 1
+jicofo:
+  replicaCount: 1
+jvb:
+  replicaCount: 1
+publicURL: https://meet.healthapp.local
+enableAuth: false
+enableGuests: true

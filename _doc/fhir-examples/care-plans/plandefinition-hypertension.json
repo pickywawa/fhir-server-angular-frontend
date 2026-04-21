@@ -1,0 +1,73 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "plan-hypertension-treatment",
+  "url": "https://health-fhir.fr/PlanDefinition/hypertension-treatment",
+  "version": "1.0.0",
+  "name": "PlanHypertensionTreatment",
+  "title": "Plan de Traitement de l'Hypertension",
+  "description": "Plan de gestion à long terme de l'hypertension essentielle incluant surveillance, médicaments et modifications du mode de vie",
+  "status": "active",
+  "experimental": false,
+  "date": "2026-04-15",
+  "publisher": "Health App",
+  "contact": [
+    {
+      "telecom": [
+        {
+          "system": "url",
+          "value": "https://health-fhir.fr"
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/4"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/5"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/6"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/6"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/7"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/8"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/9"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/10"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+grafana:
+  enabled: true
+  adminPassword: change-me
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana.healthapp.local
+prometheus:
+  prometheusSpec:
+    retention: 7d
+alertmanager:
+  enabled: true

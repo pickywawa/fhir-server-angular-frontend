@@ -29,7 +29,13 @@
       "dark": "Dark",
       "darkDesc": "Visual comfort in low-light environments",
       "purple": "Purple",
-      "purpleDesc": "Soft lavender palette with violet accents"
+      "purpleDesc": "Soft lavender palette with violet accents",
+      "midnight": "Midnight",
+      "midnightDesc": "Deep dark theme with modern cyan accents",
+      "forest": "Forest",
+      "forestDesc": "Natural green palette with balanced readability",
+      "sunrise": "Sunrise",
+      "sunriseDesc": "Warm bright palette with amber accents"
     },
     "language": {
       "title": "Language",
@@ -38,6 +44,24 @@
       "it": "Italian",
       "de": "German",
       "hint": "Your choice is automatically saved for your next session."
+    },
+    "accessibility": {
+      "title": "Accessibility",
+      "contrast": "Contrast",
+      "contrastDesc": "Improves readability for text, borders, and interactive elements.",
+      "contrastNormal": "Normal",
+      "contrastHigh": "High",
+      "colorMode": "Color-blind mode",
+      "colorModeDesc": "Remaps key status colors to make them easier to distinguish.",
+      "colorModeNone": "Standard",
+      "colorModeDaltonian": "Accessible palette",
+      "textSize": "Text size",
+      "textSizeDesc": "Increases the base text size across the interface.",
+      "lineHeight": "Line height",
+      "lineHeightDesc": "Increases vertical spacing between lines for easier reading.",
+      "reduceMotion": "Reduce motion",
+      "reduceMotionDesc": "Limits transitions and animations for improved comfort.",
+      "hint": "These settings apply immediately and are saved on this device."
     }
   },
   "support": {
@@ -251,8 +275,8 @@
       }
     },
     "search": {
-      "title": "Patient search",
-      "titleSingle": "Patient search",
+      "title": "Advanced search",
+      "titleSingle": "Advanced search",
       "family": "Last name",
       "given": "First name",
       "birthDate": "Birth date",
@@ -469,7 +493,8 @@
     "cancel": "Cancel",
     "create": "Create",
     "loading": "Loading...",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "back": "Back"
   },
   "chatbot": {
     "title": "FHIR Assistant",

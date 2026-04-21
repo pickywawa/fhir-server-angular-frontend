@@ -159,7 +159,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--overlay-bg) 88%, var(--card-bg) 12%);
+  backdrop-filter: blur(2px) saturate(115%);
+  -webkit-backdrop-filter: blur(2px) saturate(115%);
   z-index: 998;
   display: none;
   opacity: 0;
@@ -203,12 +205,17 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  border: 1px solid #d1dae5;
-  background: #ffffff;
-  color: #334155;
+  border: 1px solid var(--btn-neutral-border);
+  background: var(--btn-neutral-bg);
+  color: var(--btn-neutral-text);
   cursor: pointer;
   display: grid;
   place-items: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--btn-neutral-bg-hover);
+  }
 }
 
 .collapse-btn svg {

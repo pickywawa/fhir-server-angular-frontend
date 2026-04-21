@@ -29,7 +29,13 @@
       "dark": "Dunkel",
       "darkDesc": "Visueller Komfort bei wenig Licht",
       "purple": "Lila",
-      "purpleDesc": "Sanfte Lavendelpalette mit violetten Akzenten"
+      "purpleDesc": "Sanfte Lavendelpalette mit violetten Akzenten",
+      "midnight": "Mitternacht",
+      "midnightDesc": "Tiefes dunkles Thema mit modernen Cyan-Akzenten",
+      "forest": "Wald",
+      "forestDesc": "Natuerliche Gruenpalette mit ausgewogener Lesbarkeit",
+      "sunrise": "Sonnenaufgang",
+      "sunriseDesc": "Warme helle Palette mit Bernstein-Akzenten"
     },
     "language": {
       "title": "Sprache",
@@ -38,6 +44,24 @@
       "it": "Italienisch",
       "de": "Deutsch",
       "hint": "Ihre Auswahl wird automatisch fuer die naechste Sitzung gespeichert."
+    },
+    "accessibility": {
+      "title": "Barrierefreiheit",
+      "contrast": "Kontrast",
+      "contrastDesc": "Verbessert die Lesbarkeit von Texten, Rahmen und interaktiven Elementen.",
+      "contrastNormal": "Normal",
+      "contrastHigh": "Hoch",
+      "colorMode": "Farbenblind-Modus",
+      "colorModeDesc": "Ordnet wichtige Statusfarben neu zu, damit sie besser unterscheidbar sind.",
+      "colorModeNone": "Standard",
+      "colorModeDaltonian": "Angepasste Palette",
+      "textSize": "Textgroesse",
+      "textSizeDesc": "Erhoeht die grundlegende Textgroesse in der gesamten Oberflaeche.",
+      "lineHeight": "Zeilenabstand",
+      "lineHeightDesc": "Erhoeht den vertikalen Abstand zwischen Zeilen fuer leichteres Lesen.",
+      "reduceMotion": "Bewegung reduzieren",
+      "reduceMotionDesc": "Begrenzt Uebergaenge und Animationen fuer mehr visuellen Komfort.",
+      "hint": "Diese Einstellungen werden sofort angewendet und auf diesem Geraet gespeichert."
     }
   },
   "support": {
@@ -469,7 +493,8 @@
     "cancel": "Abbrechen",
     "create": "Erstellen",
     "loading": "Laedt...",
-    "unknownError": "Unbekannter Fehler"
+    "unknownError": "Unbekannter Fehler",
+    "back": "Zurueck"
   },
   "chatbot": {
     "title": "FHIR Assistent",

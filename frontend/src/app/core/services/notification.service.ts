@@ -16,12 +16,22 @@ export interface Notification {
   acknowledged: boolean;
   createdAt: string;
   acknowledgedAt?: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 }
 
 export interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
   isLoading: boolean;
+}
+
+export interface NotificationResponsePayload {
+  status: string;
+  sent?: number;
+}
+
+export interface NotificationMetadataSchemas {
+  [key: string]: string[];
 }
 
 @Injectable({
@@ -128,6 +138,27 @@ export class NotificationService {
       tap(() => {
         this.loadNotifications();
       })
+    );
+  }
+
+  sendPushTest(userId: string): Observable<{ status: string }> {
+    return this.http.post<{ status: string }>(`${this.notificationsApiBase}/${userId}/test-push`, {});
+  }
+
+  sendPushScenarioTests(userId: string): Observable<NotificationResponsePayload> {
+    return this.http.post<NotificationResponsePayload>(`${this.notificationsApiBase}/${userId}/test-push-scenarios`, {});
+  }
+
+  getMetadataSchemas(): Observable<NotificationMetadataSchemas> {
+    return this.http.get<NotificationMetadataSchemas>(`${this.notificationsApiBase}/metadata-schemas`);
+  }
+
+  respond(notificationId: string, userId: string, decision: 'ACCEPT' | 'DECLINE'): Observable<void> {
+    return this.http.post<void>(
+      `${this.notificationsApiBase}/${notificationId}/respond?userId=${encodeURIComponent(userId)}&decision=${decision}`,
+      {}
+    ).pipe(
+      tap(() => this.loadNotifications())
     );
   }
 

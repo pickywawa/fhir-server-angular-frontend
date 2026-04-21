@@ -1,0 +1,73 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "plan-diabetes-management",
+  "url": "https://health-fhir.fr/PlanDefinition/diabetes-management",
+  "version": "1.0.0",
+  "name": "PlanDiabetesManagement",
+  "title": "Plan de Gestion du Diabète",
+  "description": "Plan complet de gestion du diabète de type 2 incluant surveillance glycémique, traitement médicamenteux, nutrition et exercice",
+  "status": "active",
+  "experimental": false,
+  "date": "2026-04-15",
+  "publisher": "Health App",
+  "contact": [
+    {
+      "telecom": [
+        {
+          "system": "url",
+          "value": "https://health-fhir.fr"
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/1"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/2"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/3"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/1"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/2"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/3"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/4"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/5"
+      }
+    }
+  ]
+}

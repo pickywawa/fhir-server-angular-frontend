@@ -1,11 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
+import { CalendarOptions, DatesSetArg, EventClickArg, EventInput } from '@fullcalendar/core';
+import frLocale from '@fullcalendar/core/locales/fr';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
+import timeGridPlugin from '@fullcalendar/timegrid';
 import { Subject, debounceTime, distinctUntilChanged, forkJoin, map, of, switchMap, takeUntil } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ModuleShellComponent } from '../../../shared/components/module-shell/module-shell.component';
-import { BubbleCardComponent } from '../../../shared/components/bubble-card/bubble-card.component';
 import { ModalComponent } from '../../../core/components/modal/modal.component';
 import { AuthService } from '../../../core/services/auth.service';
 import {
@@ -18,30 +24,19 @@ import {
 } from '../models/agenda-appointment.model';
 import { FhirAppointmentService } from '../services/fhir-appointment.service';
 
-interface CalendarDay {
-  date: Date;
-  dayOfMonth: number;
-  isCurrentMonth: boolean;
-  isSelected: boolean;
-  isToday: boolean;
-}
-
-interface WeekDay {
-  date: Date;
-  label: string;
-  dayOfMonth: number;
-  isSelected: boolean;
-}
-
-interface TimeSlot {
-  hour: number;
-  appointments: AgendaAppointment[];
-}
+type AgendaViewMode = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek';
 
 @Component({
   selector: 'app-agenda-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, ModuleShellComponent, BubbleCardComponent, ModalComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    FullCalendarModule,
+    ModuleShellComponent,
+    ModalComponent
+  ],
   templateUrl: './agenda-page.component.html',
   styleUrl: './agenda-page.component.scss'
 })
@@ -51,25 +46,23 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
   readonly typeOptions = APPOINTMENT_TYPE_OPTIONS;
   readonly modelOptions = APPOINTMENT_MODEL_OPTIONS;
   readonly recurrenceOptions = RECURRENCE_OPTIONS;
-  readonly hours = Array.from({ length: 24 }, (_, i) => i);
+  readonly viewButtons: Array<{ mode: AgendaViewMode; labelKey: string }> = [
+    { mode: 'dayGridMonth', labelKey: 'agenda.views.month' },
+    { mode: 'timeGridWeek', labelKey: 'agenda.views.week' },
+    { mode: 'timeGridDay', labelKey: 'agenda.views.day' },
+    { mode: 'listWeek', labelKey: 'agenda.views.list' }
+  ];
 
   readonly appointmentForm: FormGroup;
 
-  viewMode: 'list' | 'week' = 'week';
   loading = false;
   saving = false;
   error = '';
   showCreateModal = false;
   selectedAppointment: AgendaAppointment | null = null;
   appointmentModalMode: 'create' | 'view' | 'edit' = 'create';
-  isMobileLayout = false;
-  isCalendarCollapsedMobile = false;
-
-  currentMonth = new Date();
-  selectedDate = new Date();
-  calendarDays: CalendarDay[] = [];
-  weekDays: WeekDay[] = [];
-  timeSlots: TimeSlot[] = [];
+  currentViewMode: AgendaViewMode = 'dayGridMonth';
+  currentTitle = '';
 
   appointments: AgendaAppointment[] = [];
 
@@ -79,13 +72,16 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
   practitionerSearchResults: ResourceOption[] = [];
   selectedPatients: ResourceOption[] = [];
   selectedPractitioners: ResourceOption[] = [];
+  calendarOptions: CalendarOptions;
 
-  @ViewChild('planningContainer') planningContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('calendar') calendarComponent?: FullCalendarComponent;
 
   private readonly destroy$ = new Subject<void>();
   private readonly patientSearch$ = new Subject<string>();
   private readonly practitionerSearch$ = new Subject<string>();
   private connectedPractitionerReference = '';
+  private visibleRangeStart: Date | null = null;
+  private visibleRangeEnd: Date | null = null;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -102,254 +98,129 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
       recurrence: ['none', Validators.required],
       comment: ['']
     });
+
+    this.calendarOptions = {
+      plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+      locale: frLocale,
+      initialView: this.currentViewMode,
+      headerToolbar: false,
+      firstDay: 1,
+      weekends: true,
+      nowIndicator: true,
+      selectable: true,
+      dayMaxEvents: 3,
+      height: '100%',
+      contentHeight: '100%',
+      expandRows: true,
+      stickyHeaderDates: true,
+      allDaySlot: true,
+      slotMinTime: '06:00:00',
+      slotMaxTime: '22:00:00',
+      listDayFormat: { weekday: 'long', day: 'numeric', month: 'long' },
+      listDaySideFormat: { year: 'numeric', month: 'short', day: 'numeric' },
+      eventTimeFormat: {
+        hour: '2-digit',
+        minute: '2-digit',
+        meridiem: false
+      },
+      slotLabelFormat: {
+        hour: '2-digit',
+        minute: '2-digit',
+        meridiem: false
+      },
+      titleFormat: { year: 'numeric', month: 'long' },
+      views: {
+        timeGridWeek: { titleFormat: { month: 'short', day: 'numeric', year: 'numeric' } },
+        timeGridDay: { titleFormat: { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' } },
+        listWeek: { titleFormat: { month: 'short', day: 'numeric', year: 'numeric' } }
+      },
+      events: [],
+      datesSet: (arg) => this.onDatesSet(arg),
+      eventClick: (arg) => this.onEventClick(arg),
+      dateClick: (arg) => this.onDateClick(arg)
+    };
   }
 
   ngOnInit(): void {
-    this.syncMobileLayout();
     this.initializeConnectedPractitioner();
     this.initializeSearchStreams();
-    this.buildCalendar();
-    this.loadWeekAppointments();
-    this.schedulePlanningScroll();
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', this.onWindowResize);
-    }
   }
 
   ngOnDestroy(): void {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', this.onWindowResize);
-    }
-
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  toggleCalendarMobile(): void {
-    if (!this.isMobileLayout) {
+  previousRange(): void {
+    this.calendarComponent?.getApi().prev();
+  }
+
+  nextRange(): void {
+    this.calendarComponent?.getApi().next();
+  }
+
+  goToToday(): void {
+    this.calendarComponent?.getApi().today();
+  }
+
+  setViewMode(mode: AgendaViewMode): void {
+    if (mode === this.currentViewMode) {
       return;
     }
-    this.isCalendarCollapsedMobile = !this.isCalendarCollapsedMobile;
+    this.calendarComponent?.getApi().changeView(mode);
   }
 
-  private readonly onWindowResize = (): void => {
-    this.syncMobileLayout();
-    if (this.viewMode === 'week') {
-      this.schedulePlanningScroll();
-    }
-  };
-
-  private syncMobileLayout(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const mobile = window.innerWidth <= 860;
-    if (this.isMobileLayout !== mobile) {
-      this.isMobileLayout = mobile;
-      this.isCalendarCollapsedMobile = mobile;
-    }
+  isActiveView(mode: AgendaViewMode): boolean {
+    return this.currentViewMode === mode;
   }
 
-  setViewMode(mode: 'list' | 'week'): void {
-    if (mode === this.viewMode) {
-      return;
-    }
-    this.viewMode = mode;
-    if (mode === 'week') {
-      this.schedulePlanningScroll();
-    }
-  }
-
-  // Calendar navigation and building
-  previousMonth(): void {
-    const prev = new Date(this.currentMonth);
-    prev.setMonth(prev.getMonth() - 1);
-    this.currentMonth = prev;
-    this.buildCalendar();
-  }
-
-  nextMonth(): void {
-    const next = new Date(this.currentMonth);
-    next.setMonth(next.getMonth() + 1);
-    this.currentMonth = next;
-    this.buildCalendar();
-  }
-
-  selectDay(day: CalendarDay): void {
-    if (day.isCurrentMonth) {
-      this.selectedDate = new Date(day.date);
-      this.buildCalendar();
-      this.loadWeekAppointments();
-    }
-  }
-
-  monthYearLabel(): string {
-    return this.currentMonth.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
-  }
-
-  buildCalendar(): void {
-    const year = this.currentMonth.getFullYear();
-    const month = this.currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    this.calendarDays = [];
-    const today = new Date();
-
-    // Previous month's days
-    const prevMonthLastDay = new Date(year, month, 0).getDate();
-    for (let i = startingDayOfWeek - 1; i > 0; i--) {
-      const date = new Date(year, month - 1, prevMonthLastDay - i + 1);
-      this.calendarDays.push({
-        date,
-        dayOfMonth: prevMonthLastDay - i + 1,
-        isCurrentMonth: false,
-        isSelected: false,
-        isToday: false
-      });
-    }
-
-    // Current month's days
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const isSelected = this.isSameDay(date, this.selectedDate);
-      const isToday = this.isSameDay(date, today);
-      this.calendarDays.push({
-        date,
-        dayOfMonth: day,
-        isCurrentMonth: true,
-        isSelected,
-        isToday
-      });
-    }
-
-    // Next month's days
-    const remainingDays = 42 - this.calendarDays.length;
-    for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(year, month + 1, day);
-      this.calendarDays.push({
-        date,
-        dayOfMonth: day,
-        isCurrentMonth: false,
-        isSelected: false,
-        isToday: false
-      });
-    }
-  }
-
-  // Week display and appointments
-  buildWeekDisplay(): void {
-    const startOfWeek = this.getStartOfWeek(this.selectedDate);
-    this.weekDays = [];
-
-    const labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startOfWeek);
-      date.setDate(date.getDate() + i);
-      this.weekDays.push({
-        date,
-        label: labels[i],
-        dayOfMonth: date.getDate(),
-        isSelected: this.isSameDay(date, this.selectedDate)
-      });
-    }
-  }
-
-  loadWeekAppointments(): void {
-    this.buildWeekDisplay();
-    const startOfWeek = this.getStartOfWeek(this.selectedDate);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(endOfWeek.getDate() + 7);
-
+  private loadAppointments(start: Date, end: Date): void {
     this.loading = true;
     this.error = '';
 
-    this.appointmentService.searchAppointments(startOfWeek, endOfWeek).pipe(
+    this.appointmentService.searchAppointments(start, end).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (appointments) => {
         this.loading = false;
         this.appointments = appointments;
-        this.buildTimeSlots();
+        this.updateCalendarEvents();
         this.resolveParticipantLabels(appointments);
-        if (this.viewMode === 'week') {
-          this.schedulePlanningScroll();
-        }
       },
       error: (error: unknown) => {
         this.loading = false;
         this.error = this.formatError(error, 'Erreur lors du chargement des rendez-vous');
+        this.calendarOptions = {
+          ...this.calendarOptions,
+          events: []
+        };
       }
     });
   }
 
-  buildTimeSlots(): void {
-    this.timeSlots = [];
-    for (let hour = 0; hour < 24; hour++) {
-      this.timeSlots.push({
-        hour,
-        appointments: this.getAppointmentsForHour(hour)
-      });
+  private refreshVisibleRange(): void {
+    if (this.visibleRangeStart && this.visibleRangeEnd) {
+      this.loadAppointments(this.visibleRangeStart, this.visibleRangeEnd);
     }
   }
 
-  getAppointmentsForHour(hour: number, dayIndex?: number): AgendaAppointment[] {
-    return this.appointments.filter((apt) => {
-      const start = new Date(apt.start);
-      if (start.getHours() !== hour) return false;
-      if (dayIndex !== undefined) {
-        return this.appointmentDayIndex(apt) === dayIndex;
-      }
-      return true;
-    });
-  }
+  private updateCalendarEvents(): void {
+    const events: EventInput[] = this.appointments.map((appointment) => ({
+      id: appointment.id,
+      title: appointment.title,
+      start: appointment.start,
+      end: appointment.end,
+      allDay: false,
+      extendedProps: { appointment }
+    }));
 
-  getAppointmentStyle(appointment: AgendaAppointment, hour: number): any {
-    const start = new Date(appointment.start);
-    const end = new Date(appointment.end);
-    
-    if (start.getHours() !== hour) {
-      return {};
-    }
-
-    const durationMs = end.getTime() - start.getTime();
-    const durationHours = Math.max(0.25, durationMs / (1000 * 60 * 60));
-    const heightPercent = Math.max(5, durationHours * 100);
-    const topPercent = (start.getMinutes() / 60) * 100;
-
-    return {
-      height: heightPercent + '%',
-      top: topPercent + '%'
+    this.calendarOptions = {
+      ...this.calendarOptions,
+      events
     };
   }
 
-  appointmentDayIndex(appointment: AgendaAppointment): number {
-    const start = new Date(appointment.start);
-    const startOfWeek = this.getStartOfWeek(this.selectedDate);
-    const diffDays = Math.floor((start.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, Math.min(6, diffDays));
-  }
-
-  getAppointmentsForDay(dateInput: Date | number): AgendaAppointment[] {
-    if (typeof dateInput === 'number') {
-      const day = this.weekDays[dateInput];
-      if (!day) return [];
-      return this.appointments.filter((apt) => {
-        const aptDate = new Date(apt.start);
-        return this.isSameDay(aptDate, day.date);
-      });
-    }
-    return this.appointments.filter((apt) => {
-      const aptDate = new Date(apt.start);
-      return this.isSameDay(aptDate, dateInput);
-    });
-  }
-
-  // Modal operations
-  openCreateModal(): void {
+  openCreateModal(presetDate?: Date): void {
     this.appointmentModalMode = 'create';
     this.selectedAppointment = null;
     this.showCreateModal = true;
@@ -361,14 +232,11 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
       modelCode: this.modelOptions[0].code,
       title: '',
       status: this.statusOptions[2].value,
-      start: '',
+      start: this.toDateTimeLocalInput(presetDate ?? new Date()),
       durationMinutes: 30,
       recurrence: 'none',
       comment: ''
     });
-    if (!this.appointmentForm.value.start) {
-      this.appointmentForm.patchValue({ start: this.toDateTimeLocalInput(new Date()) });
-    }
   }
 
   closeCreateModal(): void {
@@ -496,17 +364,15 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
     request$.subscribe({
       next: (appointment) => {
         this.saving = false;
-        this.upsertAppointment(appointment);
         if (this.isEditMode()) {
           this.selectedAppointment = appointment;
           this.appointmentModalMode = 'view';
           this.applyAppointmentToForm(appointment);
           this.disableAppointmentForm();
         } else {
-          this.showCreateModal = false;
           this.closeCreateModal();
-          this.loadWeekAppointments();
         }
+        this.refreshVisibleRange();
       },
       error: (error: unknown) => {
         this.saving = false;
@@ -579,6 +445,25 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
       return '-';
     }
     return items.map((item) => item.label).join(', ');
+  }
+
+  private onDatesSet(arg: DatesSetArg): void {
+    this.currentViewMode = arg.view.type as AgendaViewMode;
+    this.currentTitle = arg.view.title;
+    this.visibleRangeStart = new Date(arg.start);
+    this.visibleRangeEnd = new Date(arg.end);
+    this.loadAppointments(arg.start, arg.end);
+  }
+
+  private onEventClick(arg: EventClickArg): void {
+    const appointment = arg.event.extendedProps['appointment'] as AgendaAppointment | undefined;
+    if (appointment) {
+      this.openAppointmentDetails(appointment);
+    }
+  }
+
+  private onDateClick(arg: DateClickArg): void {
+    this.openCreateModal(arg.date);
   }
 
   // Private helpers
@@ -669,7 +554,7 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
             label: labelMap.get(participant.reference) || participant.label
           }))
         }));
-        this.buildTimeSlots();
+        this.updateCalendarEvents();
       });
   }
 
@@ -740,28 +625,6 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
     this.appointmentForm.disable({ emitEvent: false });
   }
 
-  private upsertAppointment(appointment: AgendaAppointment): void {
-    const merged = new Map<string, AgendaAppointment>();
-    this.appointments.forEach((item) => merged.set(item.id, item));
-    merged.set(appointment.id, appointment);
-    this.appointments = Array.from(merged.values()).sort(
-      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
-    );
-  }
-
-  private isSameDay(date1: Date, date2: Date): boolean {
-    return date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate();
-  }
-
-  private getStartOfWeek(date: Date): Date {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(d.setDate(diff));
-  }
-
   private localDateTimeToIso(value: string): string {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
@@ -786,28 +649,6 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
       return String((error as { message: unknown }).message);
     }
     return fallback;
-  }
-
-  private schedulePlanningScroll(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    // Trigger twice to handle async layout changes (appointments, responsive rows).
-    window.setTimeout(() => this.scrollPlanningToWorkingHours(), 0);
-    window.setTimeout(() => this.scrollPlanningToWorkingHours(), 120);
-  }
-
-  private scrollPlanningToWorkingHours(): void {
-    const container = this.planningContainer?.nativeElement;
-    if (!container) {
-      return;
-    }
-
-    const hourLabel = container.querySelector<HTMLElement>('.hour-label');
-    const hourHeight = hourLabel?.offsetHeight || 60;
-    const targetTop = Math.max(0, hourHeight * 8);
-    container.scrollTop = targetTop;
   }
 }
 

@@ -1,0 +1,17 @@
+{
+  "resourceType": "Goal",
+  "id": "asthma-control-goal",
+  "status": "active",
+  "lifecycleStatus": "active",
+  "description": {
+    "text": "Contrôle de l'asthme"
+  },
+  "achievementStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/goal-achievement",
+        "code": "in-progress"
+      }
+    ]
+  }
+}

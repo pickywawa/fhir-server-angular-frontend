@@ -1,0 +1,67 @@
+{
+  "resourceType": "PlanDefinition",
+  "id": "plan-asthma-management",
+  "url": "https://health-fhir.fr/PlanDefinition/asthma-management",
+  "version": "1.0.0",
+  "name": "PlanAsthmaManagement",
+  "title": "Plan de Gestion de l'Asthme",
+  "description": "Plan de gestion progressif de l'asthme persistant modéré incluant inhalateurs prévention et soulagement",
+  "status": "active",
+  "experimental": false,
+  "date": "2026-04-15",
+  "publisher": "Health App",
+  "contact": [
+    {
+      "telecom": [
+        {
+          "system": "url",
+          "value": "https://health-fhir.fr"
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/7"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/8"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-goal-reference",
+      "valueReference": {
+        "reference": "Goal/9"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/11"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/12"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/13"
+      }
+    },
+    {
+      "url": "https://health-fhir.fr/StructureDefinition/plandefinition-action-reference",
+      "valueReference": {
+        "reference": "Task/14"
+      }
+    }
+  ]
+}

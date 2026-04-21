@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpParams } from '@angular/common/http';
-import { forkJoin, map, Observable } from 'rxjs';
+import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { ApiService } from '../../../../../core/services/api.service';
 import {
   CarePlanCategoryOption,
   PatientCarePlanFormValue,
-  PatientCarePlanLoadResult
+  PatientCarePlanLoadResult,
+  TaskConfig
 } from '../models/patient-care-plan.model';
 
 export interface CarePlanCreateInput {
@@ -16,12 +17,31 @@ export interface CarePlanCreateInput {
   title: string;
   description: string;
   note: string;
+  goalRefs?: string[];
+  taskConfigs?: TaskConfig[];
+}
+
+export interface CarePlanTaskCreateInput {
+  basedOnReference?: string;
+  title?: string;
+  description?: string;
+  priority?: string;
+  status?: string;
+  authoredOn?: string;
+  requesterPractitionerId?: string;
+  ownerReference?: string;
+  requestedPerformerPractitionerId?: string;
+  requestedPeriodStart?: string;
+  requestedPeriodEnd?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class FhirCarePlanService {
   private readonly carePlanEndpoint = '/CarePlan';
   private readonly codeSystemEndpoint = '/CodeSystem';
+  private readonly taskEndpoint = '/Task';
+  private readonly appointmentEndpoint = '/Appointment';
+  private readonly communicationRequestEndpoint = '/CommunicationRequest';
   private readonly categoryCodeSystemUrl = 'https://healthapp.local/fhir/CodeSystem/care-plan-category/fr_FR';
 
   private readonly fhirHeaders = new HttpHeaders({
@@ -73,7 +93,7 @@ export class FhirCarePlanService {
       status: input.status,
       intent: input.intent,
       title: input.title,
-      description: input.description,
+      description: input.description?.trim() || undefined,
       subject: {
         reference: input.patientReference
       },
@@ -87,7 +107,8 @@ export class FhirCarePlanService {
           ]
         }
       ],
-      note: input.note?.trim() ? [{ text: input.note.trim() }] : []
+      note: input.note?.trim() ? [{ text: input.note.trim() }] : [],
+      goal: (input.goalRefs ?? []).map(ref => ({ reference: ref }))
     };
 
     return this.apiService.post<any>(this.carePlanEndpoint, payload, { headers: this.fhirHeaders }).pipe(
@@ -97,6 +118,149 @@ export class FhirCarePlanService {
         const patientId = this.extractPatientId(ref);
         return { id, patientId };
       })
+    );
+  }
+
+  createTask(taskConfig: TaskConfig, patientReference: string, ownerReference?: string): Observable<{ id: string }> {
+    return this.createTaskForCarePlan(
+      {
+        basedOnReference: taskConfig.taskReference,
+        title: taskConfig.taskLabel,
+        description: taskConfig.description,
+        priority: taskConfig.priority,
+        status: taskConfig.status,
+        authoredOn: taskConfig.authoredOn,
+        requesterPractitionerId: taskConfig.requesterPractitionerId,
+        ownerReference,
+        requestedPerformerPractitionerId: taskConfig.requestedPerformer?.practitionerId,
+        requestedPeriodStart: taskConfig.requestedPeriodStart,
+        requestedPeriodEnd: taskConfig.requestedPeriodEnd
+      },
+      patientReference
+    );
+  }
+
+  createTaskForCarePlan(input: CarePlanTaskCreateInput, patientReference: string): Observable<{ id: string }> {
+    const title = String(input.title || '').trim();
+    const description = String(input.description || '').trim();
+    const mergedDescription = [title, description].filter((part) => part.length > 0).join(' - ');
+
+    const payload = {
+      resourceType: 'Task',
+      identifier: [
+        {
+          system: 'urn:ietf:rfc:3986',
+          value: this.generateUuidUrn()
+        }
+      ],
+      status: input.status || 'ready',
+      intent: 'order',
+      priority: input.priority || 'routine',
+      description: mergedDescription || undefined,
+      for: {
+        reference: patientReference
+      },
+      basedOn: input.basedOnReference
+        ? [{ reference: input.basedOnReference }]
+        : undefined,
+      requester: input.requesterPractitionerId ? {
+        reference: `Practitioner/${input.requesterPractitionerId}`
+      } : undefined,
+      owner: input.ownerReference ? { reference: input.ownerReference } : undefined,
+      authoredOn: input.authoredOn || new Date().toISOString(),
+      ...(input.requestedPerformerPractitionerId && {
+        requestedPerformer: {
+          reference: `Practitioner/${input.requestedPerformerPractitionerId}`
+        }
+      }),
+      ...(input.requestedPeriodStart || input.requestedPeriodEnd ? {
+        restriction: {
+          repetitions: 1,
+          period: {
+            ...(input.requestedPeriodStart && { start: input.requestedPeriodStart }),
+            ...(input.requestedPeriodEnd && { end: input.requestedPeriodEnd })
+          }
+        }
+      } : {})
+    };
+
+    return this.apiService.post<any>(this.taskEndpoint, payload, { headers: this.fhirHeaders }).pipe(
+      map((resource) => {
+        const id = String(resource?.id || '').trim();
+        return { id };
+      })
+    );
+  }
+
+  createAppointmentForCarePlan(patientReference: string, title: string, description: string): Observable<{ id: string }> {
+    const payload = {
+      resourceType: 'Appointment',
+      status: 'proposed',
+      description: [String(title || '').trim(), String(description || '').trim()].filter(Boolean).join(' - ') || undefined,
+      participant: [
+        {
+          actor: { reference: patientReference },
+          status: 'needs-action'
+        }
+      ]
+    };
+
+    return this.apiService.post<any>(this.appointmentEndpoint, payload, { headers: this.fhirHeaders }).pipe(
+      map((resource) => ({ id: String(resource?.id || '').trim() }))
+    );
+  }
+
+  createCommunicationRequestForCarePlan(
+    patientReference: string,
+    message: string,
+    priority: string,
+    requesterPractitionerId?: string
+  ): Observable<{ id: string }> {
+    const payload = {
+      resourceType: 'CommunicationRequest',
+      status: 'active',
+      subject: { reference: patientReference },
+      priority: String(priority || 'routine').trim(),
+      requester: requesterPractitionerId ? { reference: `Practitioner/${requesterPractitionerId}` } : undefined,
+      payload: String(message || '').trim() ? [{ contentString: String(message || '').trim() }] : undefined
+    };
+
+    return this.apiService.post<any>(this.communicationRequestEndpoint, payload, { headers: this.fhirHeaders }).pipe(
+      map((resource) => ({ id: String(resource?.id || '').trim() }))
+    );
+  }
+
+  updateCarePlanWithActivities(carePlanId: string, activityReferences: string[]): Observable<{ id: string }> {
+    if (!carePlanId || activityReferences.length === 0) {
+      return of({ id: carePlanId });
+    }
+
+    return this.apiService.get<any>(`${this.carePlanEndpoint}/${carePlanId}`).pipe(
+      map((carePlan) => {
+        const existingActivities = Array.isArray(carePlan?.activity) ? carePlan.activity : [];
+        const existingRefs = new Set(
+          existingActivities
+            .map((a: any) => String(a?.reference?.reference || '').trim())
+            .filter((ref: string) => ref.length > 0)
+        );
+
+        const appendedActivities = [...existingActivities];
+        for (const ref of activityReferences) {
+          if (!existingRefs.has(ref)) {
+            appendedActivities.push({ reference: { reference: ref } });
+            existingRefs.add(ref);
+          }
+        }
+
+        return {
+          ...carePlan,
+          activity: appendedActivities
+        };
+      }),
+      switchMap((updatedCarePlan) =>
+        this.apiService.put<any>(`${this.carePlanEndpoint}/${carePlanId}`, updatedCarePlan, { headers: this.fhirHeaders })
+      ),
+      map((resource: any) => ({ id: String(resource?.id || carePlanId).trim() || carePlanId }))
     );
   }
 
@@ -153,8 +317,20 @@ export class FhirCarePlanService {
       categoryCode: String(resource?.category?.[0]?.coding?.[0]?.code || '').trim(),
       title: String(resource?.title || '').trim(),
       description: String(resource?.description || '').trim(),
-      note: String(resource?.note?.[0]?.text || '').trim()
+      note: String(resource?.note?.[0]?.text || '').trim(),
+      activityReferences: this.extractActivityReferences(resource?.activity),
+      lastUpdated: String(resource?.meta?.lastUpdated || '').trim()
     };
+  }
+
+  private extractActivityReferences(activity: any): string[] {
+    if (!Array.isArray(activity)) {
+      return [];
+    }
+
+    return activity
+      .map((item: any) => String(item?.reference?.reference || '').trim())
+      .filter((ref: string) => ref.length > 0);
   }
 
   private convertCategories(bundle: any): CarePlanCategoryOption[] {

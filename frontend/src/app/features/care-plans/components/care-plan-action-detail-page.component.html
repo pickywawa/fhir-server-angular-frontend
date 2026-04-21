@@ -1,0 +1,210 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <app-bubble-card [title]="isCreate ? ('carePlans.detail.newAction' | translate) : ('carePlans.detail.action' | translate)">
+    @if (!isCreate) {
+      <div bubbleActions>
+        @if (!editMode) {
+          <button type="button" class="btn btn-primary" (click)="enableEdit()">{{ 'common.edit' | translate }}</button>
+        }
+      </div>
+    }
+
+    @if (loading) {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading && error) {
+      <div class="state error">{{ error }}</div>
+    }
+
+    @if (!loading) {
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form-layout">
+        <div class="grid two">
+          <app-form-control-field
+            [label]="('carePlans.fields.title' | translate) + ' *'"
+            forId="careaction-title"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="title"></app-form-control-field>
+
+          <app-form-control-field
+            [label]="'carePlans.fields.code' | translate"
+            forId="careaction-code"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="code"></app-form-control-field>
+        </div>
+
+        <app-form-control-field
+          [label]="'carePlans.fields.description' | translate"
+          forId="careaction-description"
+          kind="textarea"
+          [rows]="3"
+          [uiDisabled]="!(editMode || isCreate)"
+          formControlName="description"></app-form-control-field>
+
+        <div class="grid three">
+          <app-form-control-field
+            [label]="'carePlans.fields.definition' | translate"
+            forId="careaction-definition"
+            kind="select"
+            [options]="definitionOptions"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="definition"></app-form-control-field>
+
+          <app-form-control-field
+            [label]="'carePlans.fields.priority' | translate"
+            forId="careaction-priority"
+            kind="select"
+            [options]="priorityOptions"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="priority"></app-form-control-field>
+
+          <app-form-control-field
+            [label]="'carePlans.fields.status' | translate"
+            forId="careaction-status"
+            kind="select"
+            [options]="statusOptions"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="status"></app-form-control-field>
+        </div>
+
+        <div class="grid two">
+          <app-form-control-field
+            [label]="'carePlans.fields.timing' | translate"
+            forId="careaction-timing"
+            kind="select"
+            [options]="timingOptions"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="timing"></app-form-control-field>
+
+          <app-form-control-field
+            [label]="'carePlans.fields.participantType' | translate"
+            forId="careaction-participant-type"
+            kind="select"
+            [options]="participantTypeOptions"
+            [uiDisabled]="!(editMode || isCreate)"
+            formControlName="participantType"></app-form-control-field>
+        </div>
+
+        <app-form-control-field
+          [label]="'carePlans.fields.participantRole' | translate"
+          forId="careaction-participant-role"
+          kind="select"
+          [options]="participantRoleOptions"
+          [uiDisabled]="!(editMode || isCreate)"
+          formControlName="participantRole"></app-form-control-field>
+
+        <label class="toggle">
+          <input type="checkbox" formControlName="required" [disabled]="!(editMode || isCreate)" />
+          <span>{{ 'carePlans.fields.required' | translate }}</span>
+        </label>
+
+        <div class="conditions">
+          <div class="conditions-head">
+            <strong>{{ 'carePlans.fields.conditions' | translate }}</strong>
+            @if (editMode || isCreate) {
+              <button type="button" class="btn btn-neutral" (click)="addCondition()">{{ 'carePlans.fields.addCondition' | translate }}</button>
+            }
+          </div>
+
+          <div formArrayName="conditions" class="conditions-list">
+            @for (conditionCtrl of conditionsArray.controls; track $index; let i = $index) {
+              <div class="condition-row">
+                <app-form-control-field
+                  [forId]="'condition-' + i"
+                  [uiDisabled]="!(editMode || isCreate)"
+                  [formControlName]="i"></app-form-control-field>
+                @if (editMode || isCreate) {
+                  <button type="button" class="btn icon danger" (click)="removeCondition(i)">✕</button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="picker-block">
+          <label>
+            <span>{{ 'carePlans.fields.goalId' | translate }}</span>
+            <input
+              type="text"
+              [value]="goalQuery"
+              [disabled]="!(editMode || isCreate)"
+              [placeholder]="'carePlans.search.goalPlaceholder' | translate"
+              (input)="searchGoals(($any($event.target)).value)"
+            />
+          </label>
+
+          @if ((editMode || isCreate) && goalResults.length > 0) {
+            <div class="results">
+              @for (item of goalResults; track item.reference) {
+                <button type="button" (click)="addGoal(item)">{{ item.label }}</button>
+              }
+            </div>
+          }
+
+          @if (selectedGoals.length > 0) {
+            <div class="ordered-list">
+              @for (item of selectedGoals; track item.reference; let i = $index) {
+                <div class="ordered-row">
+                  <span>{{ item.label }}</span>
+                  @if (editMode || isCreate) {
+                    <div class="ordered-actions">
+                      <button type="button" class="btn btn-neutral" (click)="moveGoal(i, -1)">↑</button>
+                      <button type="button" class="btn btn-neutral" (click)="moveGoal(i, 1)">↓</button>
+                      <button type="button" class="btn icon danger" (click)="removeGoal(i)">✕</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="picker-block">
+          <label>
+            <span>{{ 'carePlans.fields.relatedActions' | translate }}</span>
+            <input
+              type="text"
+              [value]="relatedActionQuery"
+              [disabled]="!(editMode || isCreate)"
+              [placeholder]="'carePlans.search.actionPlaceholder' | translate"
+              (input)="searchRelatedActions(($any($event.target)).value)"
+            />
+          </label>
+
+          @if ((editMode || isCreate) && relatedActionResults.length > 0) {
+            <div class="results">
+              @for (item of relatedActionResults; track item.reference) {
+                <button type="button" (click)="addRelatedAction(item)">{{ item.label }}</button>
+              }
+            </div>
+          }
+
+          @if (selectedRelatedActions.length > 0) {
+            <div class="ordered-list">
+              @for (item of selectedRelatedActions; track item.reference; let i = $index) {
+                <div class="ordered-row">
+                  <span>{{ item.label }}</span>
+                  @if (editMode || isCreate) {
+                    <div class="ordered-actions">
+                      <button type="button" class="btn btn-neutral" (click)="moveRelatedAction(i, -1)">↑</button>
+                      <button type="button" class="btn btn-neutral" (click)="moveRelatedAction(i, 1)">↓</button>
+                      <button type="button" class="btn icon danger" (click)="removeRelatedAction(i)">✕</button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (editMode || isCreate) {
+          <div class="actions">
+            <button type="button" class="btn btn-neutral" (click)="cancelEdit()">{{ 'common.cancel' | translate }}</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+              {{ saving ? ('common.saving' | translate) : ('common.save' | translate) }}
+            </button>
+          </div>
+        }
+      </form>
+    }
+  </app-bubble-card>
+</app-module-shell>

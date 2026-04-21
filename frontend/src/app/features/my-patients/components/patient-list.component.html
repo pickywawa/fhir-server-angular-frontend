@@ -1,6 +1,17 @@
 <app-module-shell [breadcrumbs]="breadcrumbs">
   <div class="patient-list-page">
-    <app-bubble-card [title]="'patients.search.titleSingle' | translate">
+    <app-bubble-card class="search-card" [class.search-collapsed]="!isSearchExpanded" [title]="'patients.search.titleSingle' | translate">
+      <button
+        bubbleActions
+        type="button"
+        class="btn-collapse"
+        [attr.aria-expanded]="isSearchExpanded"
+        (click)="toggleSearchExpanded()"
+      >
+        <span class="collapse-icon" [class.expanded]="isSearchExpanded" aria-hidden="true"></span>
+      </button>
+
+      @if (isSearchExpanded) {
       <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="search-form">
         <div class="search-grid">
           <div class="search-field">
@@ -44,10 +55,11 @@
           <button type="button" class="btn btn-neutral" (click)="onResetSearch()">{{ 'patients.search.reset' | translate }}</button>
         </div>
       </form>
+      }
     </app-bubble-card>
 
     <app-bubble-card [title]="'patients.worklist.title' | translate">
-      <button bubbleActions type="button" class="btn btn-primary btn-add-careplan" (click)="openCreateCarePlanModal()">
+      <button bubbleActions type="button" class="btn btn-primary btn-add-careplan" (click)="navigateToCreateCarePlan()">
         Ajouter
       </button>
 
@@ -118,88 +130,4 @@
   </div>
 </app-module-shell>
 
-@if (showCreateCarePlanModal) {
-  <app-modal title="Ajouter un CarePlan" (close)="closeCreateCarePlanModal()">
-    <form class="careplan-create-form" [formGroup]="createCarePlanForm" (ngSubmit)="submitCreateCarePlan()">
-      <div class="field span-2">
-        <label for="cp-patient-search">Patient</label>
-        <input
-          id="cp-patient-search"
-          type="text"
-          [value]="patientQuery"
-          placeholder="Rechercher un patient"
-          (input)="onCreatePatientQueryChanged(($any($event.target)).value)"
-        />
-        @if (patientSearchResults.length) {
-          <div class="results">
-            @for (option of patientSearchResults; track option.reference) {
-              <button type="button" (click)="selectCreatePatient(option)">{{ option.label }}</button>
-            }
-          </div>
-        }
-        @if (selectedPatient) {
-          <div class="chips">
-            <button type="button" class="chip" (click)="clearSelectedCreatePatient()">
-              {{ selectedPatient.label }} ×
-            </button>
-          </div>
-        }
-      </div>
 
-      <div class="field">
-        <label for="cp-category">Catégorie</label>
-        <select id="cp-category" formControlName="categoryCode">
-          @for (option of createCategoryOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="cp-status">Etat</label>
-        <select id="cp-status" formControlName="status">
-          @for (option of createStatusOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="cp-intent">Intent</label>
-        <select id="cp-intent" formControlName="intent">
-          @for (option of createIntentOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="field span-2">
-        <label for="cp-title">Titre</label>
-        <input id="cp-title" type="text" formControlName="title" />
-      </div>
-
-      <div class="field span-2">
-        <label for="cp-description">Description</label>
-        <textarea id="cp-description" rows="3" formControlName="description"></textarea>
-      </div>
-
-      <div class="field span-2">
-        <label for="cp-note">Commentaire</label>
-        <textarea id="cp-note" rows="3" formControlName="note"></textarea>
-      </div>
-
-      @if (createCarePlanError) {
-        <p class="state-message error">{{ createCarePlanError }}</p>
-      }
-
-      <div class="create-actions">
-        <button type="button" class="btn btn-neutral" (click)="closeCreateCarePlanModal()" [disabled]="creatingCarePlan">
-          Annuler
-        </button>
-        <button type="submit" class="btn btn-primary" [disabled]="creatingCarePlan">
-          {{ creatingCarePlan ? 'Ajout...' : 'Ajouter' }}
-        </button>
-      </div>
-    </form>
-  </app-modal>
-}

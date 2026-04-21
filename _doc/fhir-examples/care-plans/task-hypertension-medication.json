@@ -1,0 +1,17 @@
+{
+  "resourceType": "Task",
+  "id": "task-hypertension-medication",
+  "status": "requested",
+  "intent": "order",
+  "code": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/task-code",
+        "code": "fulfill",
+        "display": "Fulfill"
+      }
+    ]
+  },
+  "description": "Prendre le Lisinopril 10mg une fois par jour chaque matin",
+  "priority": "routine"
+}

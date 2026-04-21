@@ -8,73 +8,457 @@
         </div>
         <span class="tag">{{ 'settings.hero.badge' | translate }}</span>
       </div>
+
+      <nav class="settings-tabs" role="tablist" [attr.aria-label]="'settings.tabs.title' | translate">
+        <button
+          type="button"
+          role="tab"
+          class="settings-tab"
+          [class.active]="activeTab === 'general'"
+          [attr.aria-selected]="activeTab === 'general'"
+          (click)="setActiveTab('general')"
+        >
+          {{ 'settings.tabs.general' | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="settings-tab"
+          [class.active]="activeTab === 'notifications'"
+          [attr.aria-selected]="activeTab === 'notifications'"
+          (click)="setActiveTab('notifications')"
+        >
+          {{ 'settings.tabs.notifications' | translate }}
+        </button>
+      </nav>
     </app-bubble-card>
 
-    <div class="settings-grid">
-      <app-bubble-card [title]="'settings.theme.title' | translate">
-        <div class="theme-picker">
-          <button
-            type="button"
-            class="theme-card light"
-            [class.active]="theme === 'light'"
-            (click)="setTheme('light')"
-          >
-            <span class="dot"></span>
-            <strong>{{ 'settings.theme.light' | translate }}</strong>
-            <small>{{ 'settings.theme.lightDesc' | translate }}</small>
-          </button>
+    @if (activeTab === 'general') {
 
-          <button
-            type="button"
-            class="theme-card dark"
-            [class.active]="theme === 'dark'"
-            (click)="setTheme('dark')"
-          >
-            <span class="dot"></span>
-            <strong>{{ 'settings.theme.dark' | translate }}</strong>
-            <small>{{ 'settings.theme.darkDesc' | translate }}</small>
-          </button>
+        <app-bubble-card [title]="'settings.language.title' | translate">
+          <div class="language-picker">
+            <button type="button" class="lang" [class.active]="language === 'fr'" (click)="setLanguage('fr')">
+              <span>FR</span>
+              <small>{{ 'settings.language.fr' | translate }}</small>
+            </button>
 
+            <button type="button" class="lang" [class.active]="language === 'en'" (click)="setLanguage('en')">
+              <span>EN</span>
+              <small>{{ 'settings.language.en' | translate }}</small>
+            </button>
+
+            <button type="button" class="lang" [class.active]="language === 'it'" (click)="setLanguage('it')">
+              <span>IT</span>
+              <small>{{ 'settings.language.it' | translate }}</small>
+            </button>
+
+            <button type="button" class="lang" [class.active]="language === 'de'" (click)="setLanguage('de')">
+              <span>DE</span>
+              <small>{{ 'settings.language.de' | translate }}</small>
+            </button>
+          </div>
+
+          <p class="hint">
+            {{ 'settings.language.hint' | translate }}
+          </p>
+        </app-bubble-card>
+
+
+
+        <app-bubble-card [title]="'settings.accessibility.title' | translate">
+          <div class="accessibility-panel">
+            <div class="accessibility-group">
+              <div>
+                <strong>{{ 'settings.accessibility.contrast' | translate }}</strong>
+                <p>{{ 'settings.accessibility.contrastDesc' | translate }}</p>
+              </div>
+              <div class="segmented-control">
+                <button
+                  type="button"
+                  class="segmented-control__option"
+                  [class.active]="accessibility.contrast === 'normal'"
+                  (click)="setContrast('normal')"
+                >
+                  {{ 'settings.accessibility.contrastNormal' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="segmented-control__option"
+                  [class.active]="accessibility.contrast === 'high'"
+                  (click)="setContrast('high')"
+                >
+                  {{ 'settings.accessibility.contrastHigh' | translate }}
+                </button>
+              </div>
+            </div>
+
+            <div class="accessibility-group">
+              <div>
+                <strong>{{ 'settings.accessibility.colorMode' | translate }}</strong>
+                <p>{{ 'settings.accessibility.colorModeDesc' | translate }}</p>
+              </div>
+              <div class="segmented-control segmented-control--wrap">
+                <button
+                  type="button"
+                  class="segmented-control__option"
+                  [class.active]="accessibility.colorMode === 'none'"
+                  (click)="setColorMode('none')"
+                >
+                  {{ 'settings.accessibility.colorModeNone' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="segmented-control__option"
+                  [class.active]="accessibility.colorMode === 'daltonian-friendly'"
+                  (click)="setColorMode('daltonian-friendly')"
+                >
+                  {{ 'settings.accessibility.colorModeDaltonian' | translate }}
+                </button>
+              </div>
+            </div>
+
+            <div class="accessibility-group">
+              <div>
+                <strong>{{ 'settings.accessibility.textSize' | translate }}</strong>
+                <p>{{ 'settings.accessibility.textSizeDesc' | translate }}</p>
+              </div>
+              <div class="text-scale-options">
+                @for (scale of textScaleOptions; track scale) {
+                  <button
+                    type="button"
+                    class="text-scale-chip"
+                    [class.active]="accessibility.textScale === scale"
+                    (click)="setTextScale(scale)"
+                  >
+                    {{ scale }}%
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="accessibility-group">
+              <div>
+                <strong>{{ 'settings.accessibility.lineHeight' | translate }}</strong>
+                <p>{{ 'settings.accessibility.lineHeightDesc' | translate }}</p>
+              </div>
+              <div class="text-scale-options">
+                @for (scale of lineHeightScaleOptions; track scale) {
+                  <button
+                    type="button"
+                    class="text-scale-chip"
+                    [class.active]="accessibility.lineHeightScale === scale"
+                    (click)="setLineHeightScale(scale)"
+                  >
+                    {{ scale }}%
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="accessibility-group accessibility-group--toggle">
+              <div>
+                <strong>{{ 'settings.accessibility.reduceMotion' | translate }}</strong>
+                <p>{{ 'settings.accessibility.reduceMotionDesc' | translate }}</p>
+              </div>
+              <button
+                type="button"
+                class="toggle"
+                [class.active]="accessibility.reduceMotion"
+                [attr.aria-pressed]="accessibility.reduceMotion"
+                (click)="toggleReduceMotion(!accessibility.reduceMotion)"
+              >
+                <span class="toggle__thumb"></span>
+              </button>
+            </div>
+          </div>
+
+          <p class="hint">
+            {{ 'settings.accessibility.hint' | translate }}
+          </p>
+        </app-bubble-card>
+
+        <app-bubble-card [title]="'settings.theme.title' | translate">
+          <div class="theme-picker">
+            <button
+              type="button"
+              class="theme-card light"
+              [class.active]="theme === 'light'"
+              (click)="setTheme('light')"
+            >
+              <span class="dot"></span>
+              <strong>{{ 'settings.theme.light' | translate }}</strong>
+              <small>{{ 'settings.theme.lightDesc' | translate }}</small>
+            </button>
+
+            <button
+              type="button"
+              class="theme-card dark"
+              [class.active]="theme === 'dark'"
+              (click)="setTheme('dark')"
+            >
+              <span class="dot"></span>
+              <strong>{{ 'settings.theme.dark' | translate }}</strong>
+              <small>{{ 'settings.theme.darkDesc' | translate }}</small>
+            </button>
+
+            <button
+              type="button"
+              class="theme-card purple"
+              [class.active]="theme === 'purple'"
+              (click)="setTheme('purple')"
+            >
+              <span class="dot"></span>
+              <strong>{{ 'settings.theme.purple' | translate }}</strong>
+              <small>{{ 'settings.theme.purpleDesc' | translate }}</small>
+            </button>
+
+            <button
+              type="button"
+              class="theme-card midnight"
+              [class.active]="theme === 'midnight'"
+              (click)="setTheme('midnight')"
+            >
+              <span class="dot"></span>
+              <strong>{{ 'settings.theme.midnight' | translate }}</strong>
+              <small>{{ 'settings.theme.midnightDesc' | translate }}</small>
+            </button>
+
+            <button
+              type="button"
+              class="theme-card forest"
+              [class.active]="theme === 'forest'"
+              (click)="setTheme('forest')"
+            >
+              <span class="dot"></span>
+              <strong>{{ 'settings.theme.forest' | translate }}</strong>
+              <small>{{ 'settings.theme.forestDesc' | translate }}</small>
+            </button>
+
+            <button
+              type="button"
+              class="theme-card sunrise"
+              [class.active]="theme === 'sunrise'"
+              (click)="setTheme('sunrise')"
+            >
+              <span class="dot"></span>
+              <strong>{{ 'settings.theme.sunrise' | translate }}</strong>
+              <small>{{ 'settings.theme.sunriseDesc' | translate }}</small>
+            </button>
+          </div>
+        </app-bubble-card>
+    }
+
+    @if (activeTab === 'notifications') {
+    <app-bubble-card [title]="'settings.notifications.title' | translate" role="tabpanel">
+        <div class="notif-browser-block">
+          <div class="notif-row">
+            <div class="notif-row__info">
+              <span class="notif-row__label">{{ 'settings.notifications.pushBrowser' | translate }}</span>
+              <span class="notif-row__desc">
+                {{ pushEnabled
+                  ? ('settings.notifications.pushBrowserDesc' | translate)
+                  : ('settings.notifications.pushBrowserDescDefault' | translate) }}
+              </span>
+            </div>
+
+            <div class="notif-row__actions">
+              <button
+                type="button"
+                class="btn btn-neutral"
+                (click)="sendPushTest()"
+                [disabled]="isSendingPushTest || !pushTargetUserId"
+              >
+                @if (isSendingPushTest) {
+                  {{ 'settings.notifications.pushTesting' | translate }}
+                } @else {
+                  {{ 'settings.notifications.pushTest' | translate }}
+                }
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-neutral"
+                (click)="sendPushScenarioTests()"
+                [disabled]="isSendingPushScenarioTests || !pushTargetUserId"
+              >
+                @if (isSendingPushScenarioTests) {
+                  {{ 'settings.notifications.pushScenarioTesting' | translate }}
+                } @else {
+                  {{ 'settings.notifications.pushScenarioTest' | translate }}
+                }
+              </button>
+
+              <button
+                type="button"
+                class="toggle"
+                [class.active]="pushEnabled"
+                [disabled]="!pushSupported"
+                [attr.aria-pressed]="pushEnabled"
+                (click)="togglePush(!pushEnabled)"
+              >
+                <span class="toggle__thumb"></span>
+              </button>
+            </div>
+          </div>
+
+          @if (pushTestFeedbackKey) {
+            <p class="save-feedback" [class.save-feedback--error]="pushTestFeedbackTone === 'error'">
+              {{ pushTestFeedbackKey | translate }}
+            </p>
+          }
+
+          @if (!pushSupported) {
+            <p class="hint hint--warning">{{ 'settings.notifications.pushNotSupported' | translate }}</p>
+          } @else if (pushPermissionDenied) {
+            <p class="hint hint--warning">{{ 'settings.notifications.pushDenied' | translate }}</p>
+          } @else if (pushUnsubscribed) {
+            <p class="hint">{{ 'settings.notifications.pushUnsubscribed' | translate }}</p>
+          }
+        </div>
+
+      <div class="notif-preferences-block">
+        <div class="notif-preferences-block__header">
+          <div>
+            <h3>{{ 'settings.notifications.preferencesTitle' | translate }}</h3>
+            <p>{{ 'settings.notifications.preferencesSubtitle' | translate }}</p>
+          </div>
           <button
             type="button"
-            class="theme-card purple"
-            [class.active]="theme === 'purple'"
-            (click)="setTheme('purple')"
+            class="btn btn-primary"
+            (click)="saveNotificationPreferences()"
+            [disabled]="isLoadingPreferences || isSavingPreferences || notificationPreferencesForm.pristine"
           >
-            <span class="dot"></span>
-            <strong>{{ 'settings.theme.purple' | translate }}</strong>
-            <small>{{ 'settings.theme.purpleDesc' | translate }}</small>
+            @if (isSavingPreferences) {
+              {{ 'settings.notifications.saving' | translate }}
+            } @else {
+              {{ 'settings.notifications.save' | translate }}
+            }
           </button>
         </div>
-      </app-bubble-card>
 
-      <app-bubble-card [title]="'settings.language.title' | translate">
-        <div class="language-picker">
-          <button type="button" class="lang" [class.active]="language === 'fr'" (click)="setLanguage('fr')">
-            <span>FR</span>
-            <small>{{ 'settings.language.fr' | translate }}</small>
-          </button>
+        @if (saveFeedbackKey) {
+          <p class="save-feedback" [class.save-feedback--error]="saveFeedbackTone === 'error'">
+            {{ saveFeedbackKey | translate }}
+          </p>
+        }
 
-          <button type="button" class="lang" [class.active]="language === 'en'" (click)="setLanguage('en')">
-            <span>EN</span>
-            <small>{{ 'settings.language.en' | translate }}</small>
-          </button>
+        @if (isLoadingPreferences) {
+          <p class="hint">{{ 'settings.notifications.loadingPreferences' | translate }}</p>
+        } @else if (notificationCategories.length === 0) {
+          <p class="hint">{{ 'settings.notifications.noPreferencesAvailable' | translate }}</p>
+        } @else {
+          <form class="notif-pref-form" [formGroup]="notificationPreferencesForm">
 
-          <button type="button" class="lang" [class.active]="language === 'it'" (click)="setLanguage('it')">
-            <span>IT</span>
-            <small>{{ 'settings.language.it' | translate }}</small>
-          </button>
+            <div class="notif-category-tabs" role="tablist" [attr.aria-label]="'settings.notifications.preferencesTitle' | translate">
+              @for (category of notificationCategories; track category.key) {
+                <button
+                  type="button"
+                  role="tab"
+                  class="notif-category-tab"
+                  [class.active]="category.key === activeNotificationCategoryKey"
+                  [attr.aria-selected]="category.key === activeNotificationCategoryKey"
+                  (click)="selectNotificationCategory(category.key)"
+                >
+                  {{ category.title }}
+                </button>
+              }
+            </div>
 
-          <button type="button" class="lang" [class.active]="language === 'de'" (click)="setLanguage('de')">
-            <span>DE</span>
-            <small>{{ 'settings.language.de' | translate }}</small>
-          </button>
-        </div>
+            <div formArrayName="categories" class="pref-categories">
+              @if (selectedNotificationCategoryIndex >= 0) {
+                @let categoryIndex = selectedNotificationCategoryIndex;
+                @let category = notificationCategories[categoryIndex];
+                <section class="pref-category" [formGroupName]="categoryIndex" role="tabpanel">
+                  <header class="pref-category__header">
+                    <div>
+                      <h4>{{ category.title }}</h4>
+                      <p>{{ category.description }}</p>
+                    </div>
+                    @if (category.customized) {
+                      <span class="pref-badge pref-badge--custom">{{ 'settings.notifications.customized' | translate }}</span>
+                    } @else {
+                      <span class="pref-badge">{{ 'settings.notifications.default' | translate }}</span>
+                    }
+                  </header>
 
-        <p class="hint">
-          {{ 'settings.language.hint' | translate }}
-        </p>
-      </app-bubble-card>
-    </div>
+                  <div class="pref-row pref-row--category" formGroupName="preference">
+                    <div class="pref-row__meta">
+                      <span class="pref-row__title">{{ 'settings.notifications.categoryRule' | translate }}</span>
+                      <small>{{ 'settings.notifications.categoryRuleDesc' | translate }}</small>
+                    </div>
+                    <label class="pref-switch">
+                      <input type="checkbox" formControlName="enabled">
+                      <span>{{ 'settings.notifications.enabledLabel' | translate }}</span>
+                    </label>
+                    <label class="pref-select">
+                      <span class="visually-hidden">{{ 'settings.notifications.columns.priority' | translate }}</span>
+                      <select formControlName="priority">
+                        @for (priority of priorityOptions; track priority.value) {
+                          <option [value]="priority.value">{{ priority.labelKey | translate }}</option>
+                        }
+                      </select>
+                    </label>
+                    <div class="pref-channels" formGroupName="channels">
+                      <label class="channel-chip">
+                        <input type="checkbox" formControlName="push">
+                        <span>{{ 'settings.notifications.channels.push' | translate }}</span>
+                      </label>
+                      <label class="channel-chip">
+                        <input type="checkbox" formControlName="email">
+                        <span>{{ 'settings.notifications.channels.email' | translate }}</span>
+                      </label>
+                      <label class="channel-chip">
+                        <input type="checkbox" formControlName="sms">
+                        <span>{{ 'settings.notifications.channels.sms' | translate }}</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="pref-subcategories" formArrayName="subcategories">
+                    @for (subcategory of category.subcategories; track subcategory.key; let subcategoryIndex = $index) {
+                      <div class="pref-row" [formGroupName]="subcategoryIndex">
+                        <div class="pref-row__meta">
+                          <span class="pref-row__title">{{ subcategory.title }}</span>
+                          <small>{{ subcategory.description }}</small>
+                        </div>
+                        <div class="pref-row__controls" formGroupName="preference">
+                          <label class="pref-switch">
+                            <input type="checkbox" formControlName="enabled">
+                            <span>{{ 'settings.notifications.enabledLabel' | translate }}</span>
+                          </label>
+                          <label class="pref-select">
+                            <span class="visually-hidden">{{ 'settings.notifications.columns.priority' | translate }}</span>
+                            <select formControlName="priority">
+                              @for (priority of priorityOptions; track priority.value) {
+                                <option [value]="priority.value">{{ priority.labelKey | translate }}</option>
+                              }
+                            </select>
+                          </label>
+                          <div class="pref-channels" formGroupName="channels">
+                            <label class="channel-chip">
+                              <input type="checkbox" formControlName="push">
+                              <span>{{ 'settings.notifications.channels.push' | translate }}</span>
+                            </label>
+                            <label class="channel-chip">
+                              <input type="checkbox" formControlName="email">
+                              <span>{{ 'settings.notifications.channels.email' | translate }}</span>
+                            </label>
+                            <label class="channel-chip">
+                              <input type="checkbox" formControlName="sms">
+                              <span>{{ 'settings.notifications.channels.sms' | translate }}</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </section>
+              }
+            </div>
+          </form>
+        }
+      </div>
+    </app-bubble-card>
+    }
   </section>
 </app-module-shell>
