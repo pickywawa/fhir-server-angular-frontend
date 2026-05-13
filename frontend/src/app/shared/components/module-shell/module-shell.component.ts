@@ -6,10 +6,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { MenuStateService } from '../../../core/services/menu-state.service';
-import { ChatAssistantStateService } from '../../../core/services/chat-assistant-state.service';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 import { FhirSearchService } from '../../../features/search/services/fhir-search.service';
 import { SearchResultItem, SearchResultType } from '../../../features/search/models/search-result.model';
+import { AppPreferencesService, AppTheme } from '../../../core/services/app-preferences.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 export interface ModuleBreadcrumb {
   label: string;
@@ -37,8 +38,6 @@ export class ModuleShellComponent {
   private readonly destroy$ = new Subject<void>();
   private readonly searchInput$ = new Subject<string>();
 
-  readonly chatState = inject(ChatAssistantStateService);
-
   @Input() breadcrumbs: ModuleBreadcrumb[] = [];
   @Input() lockBodyScroll = false;
 
@@ -48,6 +47,23 @@ export class ModuleShellComponent {
   mobileSearchExpanded = false;
   isMobileViewport = window.innerWidth <= 900;
   groupedResults: SearchResultGroup[] = [];
+  themePickerOpen = false;
+
+  readonly availableThemes: AppTheme[] = ['light', 'dark', 'purple', 'midnight', 'forest', 'sunrise', 'white-and-black'];
+
+  get currentTheme(): AppTheme {
+    return this.preferences.currentTheme;
+  }
+
+  get userFullName(): string {
+    return this.auth.getUserInfo().fullName;
+  }
+
+  get userInitials(): string {
+    return this.auth.getUserInfo().avatarInitials;
+  }
+  private readonly preferences = inject(AppPreferencesService);
+  private readonly auth = inject(AuthService);
 
   private readonly typePriority: SearchResultType[] = ['patient', 'practitioner', 'appointment', 'document'];
 
@@ -115,10 +131,6 @@ export class ModuleShellComponent {
     this.router.navigate(['/']);
   }
 
-  openChat(): void {
-    this.chatState.open();
-  }
-
   onSearchInput(value: string): void {
     this.searchQuery = value;
     this.searchInput$.next(value);
@@ -156,6 +168,7 @@ export class ModuleShellComponent {
   onSearchKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       this.searchOpen = false;
+      this.themePickerOpen = false;
     }
   }
 
@@ -175,7 +188,7 @@ export class ModuleShellComponent {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.searchOpen && !this.mobileSearchExpanded) {
+    if (!this.searchOpen && !this.mobileSearchExpanded && !this.themePickerOpen) {
       return;
     }
 
@@ -194,6 +207,12 @@ export class ModuleShellComponent {
       return;
     }
 
+    const themePicker = this.host.nativeElement.querySelector('.theme-picker-wrap');
+    if (themePicker?.contains(target)) {
+      return;
+    }
+
+    this.themePickerOpen = false;
     this.searchOpen = false;
     this.mobileSearchExpanded = false;
   }
@@ -201,6 +220,41 @@ export class ModuleShellComponent {
   @HostListener('window:resize')
   onWindowResize(): void {
     this.isMobileViewport = window.innerWidth <= 900;
+  }
+
+  toggleThemePicker(event: Event): void {
+    event.stopPropagation();
+    this.themePickerOpen = !this.themePickerOpen;
+  }
+
+  selectTheme(theme: AppTheme): void {
+    this.preferences.setTheme(theme);
+    this.themePickerOpen = false;
+  }
+
+  themeLabel(theme: AppTheme): string {
+    const labels: Record<AppTheme, string> = {
+      'light': 'Clair',
+      'dark': 'Sombre',
+      'purple': 'Violet',
+      'midnight': 'Minuit',
+      'forest': 'Forêt',
+      'sunrise': 'Aurore',
+      'white-and-black': 'Blanc & Noir'
+    };
+    return labels[theme] ?? theme;
+  }
+
+  navigateToSettings(): void {
+    this.router.navigate(['/parametres']);
+  }
+
+  navigateToSupport(): void {
+    this.router.navigate(['/support']);
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/profile']);
   }
 
   private groupByPriority(items: SearchResultItem[]): SearchResultGroup[] {

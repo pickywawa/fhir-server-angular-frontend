@@ -1,0 +1,407 @@
+@if (embedded) {
+  <div class="obs-embedded-shell">
+    @if (loading) {
+      <div class="state-msg">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading) {
+      <form [formGroup]="form" class="obs-form obs-form-embedded" (ngSubmit)="save()">
+        <!-- Catégorie -->
+        <div class="form-field">
+          <label class="field-label" for="obs-category">{{ 'myPatients.observations.fields.category' | translate }} *</label>
+          <select id="obs-category" class="field-select" formControlName="categoryCode">
+            <option value="">-- {{ 'myPatients.observations.fields.selectCategory' | translate }} --</option>
+            @for (cat of categories; track cat.code) {
+              <option [value]="cat.code">{{ cat.display }}</option>
+            }
+          </select>
+          @if (form.get('categoryCode')?.invalid && form.get('categoryCode')?.touched) {
+            <span class="field-error">{{ 'myPatients.observations.errors.categoryRequired' | translate }}</span>
+          }
+        </div>
+
+        <!-- Ce qu'on mesure -->
+        <fieldset class="form-fieldset">
+          <legend class="fieldset-legend">{{ 'myPatients.observations.fields.what' | translate }} *</legend>
+
+          <!-- Recherche LOINC -->
+          <div class="form-field loinc-search-wrap">
+            <label class="field-label" for="obs-loinc-search">{{ 'myPatients.observations.fields.loincSearch' | translate }}</label>
+            <div class="loinc-input-wrap">
+              <input
+                id="obs-loinc-search"
+                class="field-input"
+                type="text"
+                [value]="form.get('codeDisplay')?.value || ''"
+                [placeholder]="'myPatients.observations.fields.loincSearchPlaceholder' | translate"
+                (input)="onCodeSearchInput($event)"
+                (blur)="clearLoincSuggestions()"
+                autocomplete="off"
+              />
+              @if (loincSearching) {
+                <span class="loinc-spinner" aria-label="Recherche..."></span>
+              }
+              @if (loincSuggestions.length > 0) {
+                <div class="loinc-suggestions" role="listbox">
+                  @for (suggestion of loincSuggestions; track suggestion.code) {
+                    <button
+                      type="button"
+                      class="loinc-suggestion"
+                      role="option"
+                      (click)="selectLoincCode(suggestion)"
+                    >
+                      <span class="loinc-code">{{ suggestion.code }}</span>
+                      <span class="loinc-name">{{ suggestion.display }}</span>
+                      @if (suggestion.component) {
+                        <span class="loinc-component">{{ suggestion.component }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Champs remplis automatiquement après sélection -->
+          <div class="form-row loinc-fields-row">
+            <div class="form-field flex-1">
+              <label class="field-label" for="obs-code-display">{{ 'myPatients.observations.fields.codeDisplay' | translate }}</label>
+              <input id="obs-code-display" class="field-input" type="text" formControlName="codeDisplay"
+                     [placeholder]="'myPatients.observations.fields.codeDisplayPlaceholder' | translate" />
+              @if (form.get('codeDisplay')?.invalid && form.get('codeDisplay')?.touched) {
+                <span class="field-error">{{ 'myPatients.observations.errors.codeDisplayRequired' | translate }}</span>
+              }
+            </div>
+            <div class="form-field w-28">
+              <label class="field-label" for="obs-code-code">{{ 'myPatients.observations.fields.codeCode' | translate }}</label>
+              <input id="obs-code-code" class="field-input" type="text" formControlName="codeCode"
+                     placeholder="8302-2" />
+              @if (form.get('codeCode')?.invalid && form.get('codeCode')?.touched) {
+                <span class="field-error">{{ 'myPatients.observations.errors.codeRequired' | translate }}</span>
+              }
+            </div>
+            <div class="form-field w-40">
+              <label class="field-label" for="obs-code-system">{{ 'myPatients.observations.fields.codeSystem' | translate }}</label>
+              <input id="obs-code-system" class="field-input" type="text" formControlName="codeSystem"
+                     placeholder="http://loinc.org" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Type de valeur + valeur -->
+        <div class="form-row">
+          <div class="form-field w-40">
+            <label class="field-label" for="obs-value-type">{{ 'myPatients.observations.fields.valueType' | translate }} *</label>
+            <select id="obs-value-type" class="field-select" formControlName="valueType">
+              @for (vt of valueTypes; track vt.type) {
+                <option [value]="vt.type">{{ vt.display }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field flex-1">
+            <label class="field-label" for="obs-value">{{ 'myPatients.observations.fields.value' | translate }} *</label>
+            @switch (currentValueType) {
+              @case ('string') {
+                <input id="obs-value" class="field-input" type="text" formControlName="valueString"
+                       [placeholder]="'myPatients.observations.fields.valuePlaceholder' | translate" />
+              }
+              @case ('integer') {
+                <input id="obs-value" class="field-input" type="number" formControlName="valueInteger"
+                       [placeholder]="'myPatients.observations.fields.valuePlaceholder' | translate" />
+              }
+              @case ('date') {
+                <input id="obs-value" class="field-input" type="date" formControlName="valueDate" />
+              }
+              @case ('boolean') {
+                <div class="bool-toggle-group">
+                  <label class="bool-option" [class.selected]="form.get('valueBoolean')?.value === true">
+                    <input type="radio" formControlName="valueBoolean" [value]="true" />
+                    <span>Oui</span>
+                  </label>
+                  <label class="bool-option" [class.selected]="form.get('valueBoolean')?.value === false">
+                    <input type="radio" formControlName="valueBoolean" [value]="false" />
+                    <span>Non</span>
+                  </label>
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Date effective -->
+        <div class="form-field w-56">
+          <label class="field-label" for="obs-date">{{ 'myPatients.observations.fields.effectiveDate' | translate }}</label>
+          <input id="obs-date" class="field-input" type="datetime-local" formControlName="effectiveDateTime" />
+        </div>
+
+        <!-- Interprétation -->
+        <div class="form-field w-56">
+          <label class="field-label" for="obs-interp">{{ 'myPatients.observations.fields.interpretation' | translate }}</label>
+          <select id="obs-interp" class="field-select" formControlName="interpretationCode">
+            <option value="">— {{ 'myPatients.observations.fields.noInterpretation' | translate }} —</option>
+            @for (interp of interpretations; track interp.code) {
+              <option [value]="interp.code">{{ interp.display }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Note -->
+        <div class="form-field">
+          <label class="field-label" for="obs-note">{{ 'myPatients.observations.fields.note' | translate }}</label>
+          <textarea id="obs-note" class="field-textarea" formControlName="note" rows="3"
+                    [placeholder]="'myPatients.observations.fields.notePlaceholder' | translate"></textarea>
+        </div>
+
+        <!-- Auteur (lecture seule) -->
+        <div class="performer-info">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <circle cx="10" cy="7" r="3"/>
+            <path d="M3.5 17c0-2.8 2.9-5 6.5-5s6.5 2.2 6.5 5"/>
+          </svg>
+          <span>{{ 'myPatients.observations.fields.performerInfo' | translate }}</span>
+        </div>
+
+        <!-- Footer -->
+        <div class="form-footer">
+          @if (error) {
+            <p class="footer-error">{{ error }}</p>
+          }
+          @if (savedSuccess) {
+            <p class="footer-success">{{ 'myPatients.observations.savedSuccess' | translate }}</p>
+          }
+          <div class="footer-actions">
+            <button type="button" class="btn btn-neutral" (click)="goBack()">
+              {{ 'common.back' | translate }}
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+              @if (saving) {
+                {{ 'common.saving' | translate }}
+              } @else {
+                {{ 'myPatients.observations.save' | translate }}
+              }
+            </button>
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+} @else {
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="obs-page">
+
+    @if (loading) {
+      <div class="state-msg">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading) {
+      <div class="obs-card">
+
+        <!-- Header -->
+        <div class="obs-card-header">
+          <div class="header-title-block">
+            <div class="header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-4"/>
+                <path d="M16 3l5 5-9.5 9.5L7 19l1.5-4.5L16 3z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="header-title">
+                @if (isEditMode) {
+                  {{ 'myPatients.observations.editTitle' | translate }}
+                } @else {
+                  {{ 'myPatients.observations.newTitle' | translate }}
+                }
+              </h2>
+              <p class="header-subtitle">{{ 'myPatients.observations.subtitle' | translate }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="form" class="obs-form" (ngSubmit)="save()">
+
+          <!-- Catégorie -->
+          <div class="form-field">
+            <label class="field-label" for="obs-category">{{ 'myPatients.observations.fields.category' | translate }} *</label>
+            <select id="obs-category" class="field-select" formControlName="categoryCode">
+              <option value="">-- {{ 'myPatients.observations.fields.selectCategory' | translate }} --</option>
+              @for (cat of categories; track cat.code) {
+                <option [value]="cat.code">{{ cat.display }}</option>
+              }
+            </select>
+            @if (form.get('categoryCode')?.invalid && form.get('categoryCode')?.touched) {
+              <span class="field-error">{{ 'myPatients.observations.errors.categoryRequired' | translate }}</span>
+            }
+          </div>
+
+          <!-- Ce qu'on mesure -->
+          <fieldset class="form-fieldset">
+            <legend class="fieldset-legend">{{ 'myPatients.observations.fields.what' | translate }} *</legend>
+
+            <!-- Recherche LOINC -->
+            <div class="form-field loinc-search-wrap">
+              <label class="field-label" for="obs-loinc-search">{{ 'myPatients.observations.fields.loincSearch' | translate }}</label>
+              <div class="loinc-input-wrap">
+                <input
+                  id="obs-loinc-search"
+                  class="field-input"
+                  type="text"
+                  [value]="form.get('codeDisplay')?.value || ''"
+                  [placeholder]="'myPatients.observations.fields.loincSearchPlaceholder' | translate"
+                  (input)="onCodeSearchInput($event)"
+                  (blur)="clearLoincSuggestions()"
+                  autocomplete="off"
+                />
+                @if (loincSearching) {
+                  <span class="loinc-spinner" aria-label="Recherche..."></span>
+                }
+                @if (loincSuggestions.length > 0) {
+                  <div class="loinc-suggestions" role="listbox">
+                    @for (suggestion of loincSuggestions; track suggestion.code) {
+                      <button
+                        type="button"
+                        class="loinc-suggestion"
+                        role="option"
+                        (click)="selectLoincCode(suggestion)"
+                      >
+                        <span class="loinc-code">{{ suggestion.code }}</span>
+                        <span class="loinc-name">{{ suggestion.display }}</span>
+                        @if (suggestion.component) {
+                          <span class="loinc-component">{{ suggestion.component }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Champs remplis automatiquement après sélection -->
+            <div class="form-row loinc-fields-row">
+              <div class="form-field flex-1">
+                <label class="field-label" for="obs-code-display">{{ 'myPatients.observations.fields.codeDisplay' | translate }}</label>
+                <input id="obs-code-display" class="field-input" type="text" formControlName="codeDisplay"
+                       [placeholder]="'myPatients.observations.fields.codeDisplayPlaceholder' | translate" />
+                @if (form.get('codeDisplay')?.invalid && form.get('codeDisplay')?.touched) {
+                  <span class="field-error">{{ 'myPatients.observations.errors.codeDisplayRequired' | translate }}</span>
+                }
+              </div>
+              <div class="form-field w-28">
+                <label class="field-label" for="obs-code-code">{{ 'myPatients.observations.fields.codeCode' | translate }}</label>
+                <input id="obs-code-code" class="field-input" type="text" formControlName="codeCode"
+                       placeholder="8302-2" />
+                @if (form.get('codeCode')?.invalid && form.get('codeCode')?.touched) {
+                  <span class="field-error">{{ 'myPatients.observations.errors.codeRequired' | translate }}</span>
+                }
+              </div>
+              <div class="form-field w-40">
+                <label class="field-label" for="obs-code-system">{{ 'myPatients.observations.fields.codeSystem' | translate }}</label>
+                <input id="obs-code-system" class="field-input" type="text" formControlName="codeSystem"
+                       placeholder="http://loinc.org" />
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Type de valeur + valeur -->
+          <div class="form-row">
+            <div class="form-field w-40">
+              <label class="field-label" for="obs-value-type">{{ 'myPatients.observations.fields.valueType' | translate }} *</label>
+              <select id="obs-value-type" class="field-select" formControlName="valueType">
+                @for (vt of valueTypes; track vt.type) {
+                  <option [value]="vt.type">{{ vt.display }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field flex-1">
+              <label class="field-label" for="obs-value">{{ 'myPatients.observations.fields.value' | translate }} *</label>
+              @switch (currentValueType) {
+                @case ('string') {
+                  <input id="obs-value" class="field-input" type="text" formControlName="valueString"
+                         [placeholder]="'myPatients.observations.fields.valuePlaceholder' | translate" />
+                }
+                @case ('integer') {
+                  <input id="obs-value" class="field-input" type="number" formControlName="valueInteger"
+                         [placeholder]="'myPatients.observations.fields.valuePlaceholder' | translate" />
+                }
+                @case ('date') {
+                  <input id="obs-value" class="field-input" type="date" formControlName="valueDate" />
+                }
+                @case ('boolean') {
+                  <div class="bool-toggle-group">
+                    <label class="bool-option" [class.selected]="form.get('valueBoolean')?.value === true">
+                      <input type="radio" formControlName="valueBoolean" [value]="true" />
+                      <span>Oui</span>
+                    </label>
+                    <label class="bool-option" [class.selected]="form.get('valueBoolean')?.value === false">
+                      <input type="radio" formControlName="valueBoolean" [value]="false" />
+                      <span>Non</span>
+                    </label>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Date effective -->
+          <div class="form-field w-56">
+            <label class="field-label" for="obs-date">{{ 'myPatients.observations.fields.effectiveDate' | translate }}</label>
+            <input id="obs-date" class="field-input" type="datetime-local" formControlName="effectiveDateTime" />
+          </div>
+
+          <!-- Interprétation -->
+          <div class="form-field w-56">
+            <label class="field-label" for="obs-interp">{{ 'myPatients.observations.fields.interpretation' | translate }}</label>
+            <select id="obs-interp" class="field-select" formControlName="interpretationCode">
+              <option value="">— {{ 'myPatients.observations.fields.noInterpretation' | translate }} —</option>
+              @for (interp of interpretations; track interp.code) {
+                <option [value]="interp.code">{{ interp.display }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Note -->
+          <div class="form-field">
+            <label class="field-label" for="obs-note">{{ 'myPatients.observations.fields.note' | translate }}</label>
+            <textarea id="obs-note" class="field-textarea" formControlName="note" rows="3"
+                      [placeholder]="'myPatients.observations.fields.notePlaceholder' | translate"></textarea>
+          </div>
+
+          <!-- Auteur (lecture seule) -->
+          <div class="performer-info">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <circle cx="10" cy="7" r="3"/>
+              <path d="M3.5 17c0-2.8 2.9-5 6.5-5s6.5 2.2 6.5 5"/>
+            </svg>
+            <span>{{ 'myPatients.observations.fields.performerInfo' | translate }}</span>
+          </div>
+
+          <!-- Footer -->
+          <div class="form-footer">
+            @if (error) {
+              <p class="footer-error">{{ error }}</p>
+            }
+            @if (savedSuccess) {
+              <p class="footer-success">{{ 'myPatients.observations.savedSuccess' | translate }}</p>
+            }
+            <div class="footer-actions">
+              <button type="button" class="btn btn-neutral" (click)="goBack()">
+                {{ 'common.back' | translate }}
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+                @if (saving) {
+                  {{ 'common.saving' | translate }}
+                } @else {
+                  {{ 'myPatients.observations.save' | translate }}
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    }
+
+  </div>
+</app-module-shell>
+}

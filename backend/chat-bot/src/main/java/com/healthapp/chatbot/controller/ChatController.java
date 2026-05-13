@@ -47,7 +47,8 @@ public class ChatController {
                 sessionId,
                 request.practitionerId(),
                 request.patientId(),
-                request.fromUrl()
+            request.fromUrl(),
+            request.contextFiles()
         );
 
         ChatResponse chatResponse = new ChatResponse(sessionId, response, Instant.now());
@@ -70,7 +71,8 @@ public class ChatController {
                 sessionId,
                 request.practitionerId(),
                 request.patientId(),
-                request.fromUrl()
+            request.fromUrl(),
+            request.contextFiles()
             )
             .doOnError(ex -> logger.warn("[stream][error] sessionId={}, message={}", sessionId, ex.getMessage()));
     }

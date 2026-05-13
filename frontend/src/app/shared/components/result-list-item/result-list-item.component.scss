@@ -26,8 +26,8 @@ button.result-item:hover:not(:disabled) {
 }
 
 .result-item.active {
-  border-color: var(--focus-ring, #3b82f6);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--focus-ring, #3b82f6) 20%, transparent);
+  border-color: var(--focus-ring, #1c808d);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--focus-ring, #1c808d) 20%, transparent);
 }
 
 .result-item:disabled {

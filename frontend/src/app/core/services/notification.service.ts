@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, interval, Observable, Subject } from 'rxjs';
-import { map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, interval, Observable, of, Subject } from 'rxjs';
+import { catchError, distinctUntilChanged, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface Notification {
@@ -141,6 +141,36 @@ export class NotificationService {
     );
   }
 
+  getUnreadDiscussionCount(): Observable<number> {
+    return this.state$.asObservable().pipe(
+      map((state) => state.notifications.filter((notification) => !notification.acknowledged && this.isDiscussionNotification(notification)).length),
+      distinctUntilChanged()
+    );
+  }
+
+  acknowledgeUnreadDiscussions(userId: string): Observable<number> {
+    if (!userId) {
+      return of(0);
+    }
+
+    return this.http.get<Notification[]>(`${this.notificationsApiBase}/${userId}?limit=50&onlyUnread=true`).pipe(
+      map((notifications) => notifications.filter((notification) => this.isDiscussionNotification(notification))),
+      switchMap((notifications) => {
+        if (!notifications.length) {
+          return of(0);
+        }
+
+        const acknowledgements = notifications.map((notification) =>
+          this.acknowledge(notification.id, notification.userId || userId).pipe(
+            catchError(() => of(void 0))
+          )
+        );
+
+        return forkJoin(acknowledgements).pipe(map(() => notifications.length));
+      })
+    );
+  }
+
   sendPushTest(userId: string): Observable<{ status: string }> {
     return this.http.post<{ status: string }>(`${this.notificationsApiBase}/${userId}/test-push`, {});
   }
@@ -186,5 +216,34 @@ export class NotificationService {
       unreadCount,
       isLoading: false
     });
+  }
+
+  private isDiscussionNotification(notification: Notification): boolean {
+    const metadata = this.parseMetadata(notification.metadataJson);
+    const category = String(metadata['category'] || '').toLowerCase();
+    const subcategory = String(metadata['subcategory'] || '').toLowerCase();
+    const type = String(notification.type || '').toLowerCase();
+
+    if (category === 'chat' || category === 'discussions' || category === 'discussion') {
+      return true;
+    }
+
+    if (subcategory.includes('discussion') || subcategory.includes('chat') || subcategory.includes('message')) {
+      return true;
+    }
+
+    return type.includes('discussion') || type.includes('chat') || type.includes('message');
+  }
+
+  private parseMetadata(metadataJson?: string): Record<string, unknown> {
+    if (!metadataJson) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(metadataJson);
+    } catch {
+      return {};
+    }
   }
 }

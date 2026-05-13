@@ -24,7 +24,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
       border: 1px solid var(--btn-primary-bg, #0f172a);
       border-radius: 6px;
       font-size: 0.85rem;
-      font-weight: 600;
+      font-weight: 400;
       cursor: pointer;
       transition: all 0.2s ease;
       white-space: nowrap;

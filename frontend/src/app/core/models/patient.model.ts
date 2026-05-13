@@ -2,6 +2,9 @@ export interface Patient {
   id?: string;
   firstName: string;
   lastName: string;
+  ins?: string;
+  identityStatus?: string;
+  attendingPhysician?: string;
   dateOfBirth: string;
   gender: 'male' | 'female' | 'other';
   email?: string;

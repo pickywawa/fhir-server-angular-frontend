@@ -36,8 +36,8 @@
 .form-field select:focus,
 .form-field textarea:focus {
   outline: none;
-  border-color: var(--focus-ring, #3b82f6);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 22%, transparent);
+  border-color: var(--focus-ring, #1c808d);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #1c808d) 22%, transparent);
 }
 
 .form-field input:disabled,

@@ -1,0 +1,470 @@
+@if (!embedded) {
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="proc-page">
+
+    @if (loading) {
+      <div class="state-msg">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading) {
+      <div class="proc-card">
+        <form [formGroup]="form" class="proc-form" (ngSubmit)="save()">
+          <div class="proc-top-actions">
+            <button type="button" class="btn btn-neutral" (click)="goBack()">Retour patient</button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+              @if (saving) {
+                {{ 'common.saving' | translate }}
+              } @else {
+                {{ saveButtonLabel | translate }}
+              }
+            </button>
+          </div>
+
+          <div class="proc-tabs" role="tablist" aria-label="Procédure">
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'details'" (click)="selectTab('details')">Détails</button>
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'measures'" (click)="selectTab('measures')">Mesures</button>
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'report'" (click)="selectTab('report')">Rapport</button>
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'interventions'" (click)="selectTab('interventions')">Interventions</button>
+          </div>
+
+          @if (activeTab === 'details') {
+
+            <div class="form-field w-48">
+              <label class="field-label" for="proc-status">{{ 'myPatients.procedures.fields.status' | translate }} *</label>
+              <select id="proc-status" class="field-select" formControlName="status">
+                @for (s of statuses; track s.code) {
+                  <option [value]="s.code">{{ s.display }}</option>
+                }
+              </select>
+            </div>
+
+            <fieldset class="form-fieldset">
+              <legend class="fieldset-legend">{{ 'myPatients.procedures.fields.what' | translate }} *</legend>
+
+              <div class="form-field snomed-search-wrap">
+                <label class="field-label" for="proc-snomed-search">{{ 'myPatients.procedures.fields.snomedSearch' | translate }}</label>
+                <div class="snomed-input-wrap">
+                  <input
+                    id="proc-snomed-search"
+                    class="field-input"
+                    type="text"
+                    [value]="form.get('codeDisplay')?.value || ''"
+                    [placeholder]="'myPatients.procedures.fields.snomedSearchPlaceholder' | translate"
+                    (input)="onCodeSearchInput($event)"
+                    (blur)="clearSnomedSuggestions()"
+                    autocomplete="off"
+                  />
+                  @if (snomedSearching) {
+                    <span class="search-spinner" aria-label="Recherche..."></span>
+                  }
+                  @if (snomedSuggestions.length > 0) {
+                    <div class="snomed-suggestions" role="listbox">
+                      @for (suggestion of snomedSuggestions; track suggestion.code) {
+                        <button
+                          type="button"
+                          class="snomed-suggestion"
+                          role="option"
+                          (click)="selectSnomedCode(suggestion)"
+                        >
+                          <span class="snomed-code">{{ suggestion.code }}</span>
+                          <span class="snomed-name">{{ suggestion.display }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="form-row snomed-fields-row">
+                <div class="form-field flex-1">
+                  <label class="field-label" for="proc-code-display">{{ 'myPatients.procedures.fields.codeDisplay' | translate }}</label>
+                  <input id="proc-code-display" class="field-input" type="text" formControlName="codeDisplay"
+                         [placeholder]="'myPatients.procedures.fields.codeDisplayPlaceholder' | translate" />
+                  @if (form.get('codeDisplay')?.invalid && form.get('codeDisplay')?.touched) {
+                    <span class="field-error">{{ 'myPatients.procedures.errors.codeDisplayRequired' | translate }}</span>
+                  }
+                </div>
+                <div class="form-field w-28">
+                  <label class="field-label" for="proc-code-code">{{ 'myPatients.procedures.fields.codeCode' | translate }}</label>
+                  <input id="proc-code-code" class="field-input" type="text" formControlName="codeCode" placeholder="SNOMED CT" />
+                  @if (form.get('codeCode')?.invalid && form.get('codeCode')?.touched) {
+                    <span class="field-error">{{ 'myPatients.procedures.errors.codeRequired' | translate }}</span>
+                  }
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="form-row">
+              <div class="form-field flex-1">
+                <label class="field-label" for="proc-start">{{ 'myPatients.procedures.fields.occurrenceStart' | translate }} *</label>
+                <input id="proc-start" class="field-input" type="datetime-local" formControlName="occurrenceStart" />
+                @if (form.get('occurrenceStart')?.invalid && form.get('occurrenceStart')?.touched) {
+                  <span class="field-error">{{ 'myPatients.procedures.errors.startRequired' | translate }}</span>
+                }
+              </div>
+              <div class="form-field flex-1">
+                <label class="field-label" for="proc-end">{{ 'myPatients.procedures.fields.occurrenceEnd' | translate }}</label>
+                <input id="proc-end" class="field-input" type="datetime-local" formControlName="occurrenceEnd" />
+              </div>
+            </div>
+
+            <div class="form-field w-56">
+              <label class="field-label" for="proc-recorded">{{ 'myPatients.procedures.fields.recorded' | translate }}</label>
+              <input id="proc-recorded" class="field-input" type="datetime-local" formControlName="recorded" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">{{ 'myPatients.procedures.fields.performers' | translate }}</label>
+
+              @if (selectedPerformers.length > 0) {
+                <div class="performers-list">
+                  @for (performer of selectedPerformers; track performer.reference) {
+                    <div class="performer-tag">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <circle cx="10" cy="7" r="3"/>
+                        <path d="M3.5 17c0-2.8 2.9-5 6.5-5s6.5 2.2 6.5 5"/>
+                      </svg>
+                      <span>{{ performer.label }}</span>
+                      <button type="button" class="performer-remove" (click)="removePerformer(performer)" title="Retirer">×</button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="performer-search-wrap">
+                <input
+                  class="field-input"
+                  type="text"
+                  formControlName="performerSearch"
+                  [placeholder]="'myPatients.procedures.fields.performerSearchPlaceholder' | translate"
+                  (input)="onPerformerSearchInput($event)"
+                  (blur)="clearPerformerSuggestions()"
+                  autocomplete="off"
+                />
+                @if (performerSearching) {
+                  <span class="search-spinner small" aria-label="Recherche..."></span>
+                }
+                @if (performerSearchResults.length > 0) {
+                  <div class="performer-suggestions" role="listbox">
+                    @for (option of performerSearchResults; track option.reference) {
+                      <button
+                        type="button"
+                        class="performer-suggestion"
+                        role="option"
+                        (click)="selectPerformer(option)"
+                      >
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                          <circle cx="10" cy="7" r="3"/>
+                          <path d="M3.5 17c0-2.8 2.9-5 6.5-5s6.5 2.2 6.5 5"/>
+                        </svg>
+                        {{ option.label }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label" for="proc-location">{{ 'myPatients.procedures.fields.location' | translate }}</label>
+              <input id="proc-location" class="field-input" type="text" formControlName="location"
+                     [placeholder]="'myPatients.procedures.fields.locationPlaceholder' | translate" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label" for="proc-note">{{ 'myPatients.procedures.fields.note' | translate }}</label>
+              <textarea id="proc-note" class="field-textarea" formControlName="note" rows="3"
+                        [placeholder]="'myPatients.procedures.fields.notePlaceholder' | translate"></textarea>
+            </div>
+          }
+
+          @if (activeTab === 'measures') {
+            <div class="tab-panel">
+              <app-patient-observations
+                [patientId]="patientId"
+                [startDate]="occurrenceStartFilter"
+                [endDate]="occurrenceEndFilter"
+                [showAddButton]="true"
+                [refreshToken]="measuresRefreshToken"
+                [dockReturnView]="'procedure'"
+              ></app-patient-observations>
+            </div>
+          }
+
+          @if (activeTab === 'report') {
+            <div class="form-fieldset report-section">
+              @if (!hasReportText) {
+                <p class="state-msg inline">Aucun rapport diagnostique pour cet acte.</p>
+              }
+              <div class="form-field">
+                <label class="field-label" for="proc-report-conclusion">{{ 'myPatients.procedures.fields.reportConclusion' | translate }}</label>
+                <textarea
+                  id="proc-report-conclusion"
+                  class="field-textarea"
+                  formControlName="diagnosticReportConclusion"
+                  rows="6"
+                  [placeholder]="'myPatients.procedures.fields.reportConclusionPlaceholder' | translate"
+                ></textarea>
+              </div>
+            </div>
+          }
+
+          @if (activeTab === 'interventions') {
+            <div class="tab-panel">
+              <app-patient-timeline
+                [patientId]="patientId"
+                [startDate]="occurrenceStartFilter"
+                [endDate]="occurrenceEndFilter"
+                [refreshToken]="interventionsRefreshToken"
+              ></app-patient-timeline>
+            </div>
+          }
+
+          <div class="form-footer">
+            @if (error) {
+              <p class="footer-error">{{ error }}</p>
+            }
+            @if (savedSuccess) {
+              <p class="footer-success">{{ 'myPatients.procedures.savedSuccess' | translate }}</p>
+            }
+          </div>
+
+        </form>
+      </div>
+    }
+
+  </div>
+</app-module-shell>
+} @else {
+  <div class="proc-page embedded">
+
+    @if (loading) {
+      <div class="state-msg">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading) {
+      <div class="proc-card">
+        <form [formGroup]="form" class="proc-form embedded-form" (ngSubmit)="save()">
+          <div class="form-footer embedded-top-actions">
+            @if (error) {
+              <p class="footer-error">{{ error }}</p>
+            }
+            @if (savedSuccess) {
+              <p class="footer-success">{{ 'myPatients.procedures.savedSuccess' | translate }}</p>
+            }
+            <div class="footer-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid">
+                @if (saving) {
+                  {{ 'common.saving' | translate }}
+                } @else {
+                  {{ saveButtonLabel | translate }}
+                }
+              </button>
+            </div>
+          </div>
+
+          <div class="proc-tabs" role="tablist" aria-label="Procédure">
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'details'" (click)="selectTab('details')">Détails</button>
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'measures'" (click)="selectTab('measures')">Mesures</button>
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'report'" (click)="selectTab('report')">Rapport</button>
+            <button type="button" class="proc-tab" [class.active]="activeTab === 'interventions'" (click)="selectTab('interventions')">Interventions</button>
+          </div>
+
+          <div class="embedded-scroll-content">
+          @if (activeTab === 'details') {
+
+            <div class="form-field w-48">
+              <label class="field-label" for="proc-status-embedded">{{ 'myPatients.procedures.fields.status' | translate }} *</label>
+              <select id="proc-status-embedded" class="field-select" formControlName="status">
+                @for (s of statuses; track s.code) {
+                  <option [value]="s.code">{{ s.display }}</option>
+                }
+              </select>
+            </div>
+
+            <fieldset class="form-fieldset">
+              <legend class="fieldset-legend">{{ 'myPatients.procedures.fields.what' | translate }} *</legend>
+
+              <div class="form-field snomed-search-wrap">
+                <label class="field-label" for="proc-snomed-search-embedded">{{ 'myPatients.procedures.fields.snomedSearch' | translate }}</label>
+                <div class="snomed-input-wrap">
+                  <input
+                    id="proc-snomed-search-embedded"
+                    class="field-input"
+                    type="text"
+                    [value]="form.get('codeDisplay')?.value || ''"
+                    [placeholder]="'myPatients.procedures.fields.snomedSearchPlaceholder' | translate"
+                    (input)="onCodeSearchInput($event)"
+                    (blur)="clearSnomedSuggestions()"
+                    autocomplete="off"
+                  />
+                  @if (snomedSearching) {
+                    <span class="search-spinner" aria-label="Recherche..."></span>
+                  }
+                  @if (snomedSuggestions.length > 0) {
+                    <div class="snomed-suggestions" role="listbox">
+                      @for (suggestion of snomedSuggestions; track suggestion.code) {
+                        <button
+                          type="button"
+                          class="snomed-suggestion"
+                          role="option"
+                          (click)="selectSnomedCode(suggestion)"
+                        >
+                          <span class="snomed-code">{{ suggestion.code }}</span>
+                          <span class="snomed-name">{{ suggestion.display }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="form-row snomed-fields-row">
+                <div class="form-field flex-1">
+                  <label class="field-label" for="proc-code-display-embedded">{{ 'myPatients.procedures.fields.codeDisplay' | translate }}</label>
+                  <input id="proc-code-display-embedded" class="field-input" type="text" formControlName="codeDisplay"
+                         [placeholder]="'myPatients.procedures.fields.codeDisplayPlaceholder' | translate" />
+                  @if (form.get('codeDisplay')?.invalid && form.get('codeDisplay')?.touched) {
+                    <span class="field-error">{{ 'myPatients.procedures.errors.codeDisplayRequired' | translate }}</span>
+                  }
+                </div>
+                <div class="form-field w-28">
+                  <label class="field-label" for="proc-code-code-embedded">{{ 'myPatients.procedures.fields.codeCode' | translate }}</label>
+                  <input id="proc-code-code-embedded" class="field-input" type="text" formControlName="codeCode" placeholder="SNOMED CT" />
+                  @if (form.get('codeCode')?.invalid && form.get('codeCode')?.touched) {
+                    <span class="field-error">{{ 'myPatients.procedures.errors.codeRequired' | translate }}</span>
+                  }
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="form-row">
+              <div class="form-field flex-1">
+                <label class="field-label" for="proc-start-embedded">{{ 'myPatients.procedures.fields.occurrenceStart' | translate }} *</label>
+                <input id="proc-start-embedded" class="field-input" type="datetime-local" formControlName="occurrenceStart" />
+                @if (form.get('occurrenceStart')?.invalid && form.get('occurrenceStart')?.touched) {
+                  <span class="field-error">{{ 'myPatients.procedures.errors.startRequired' | translate }}</span>
+                }
+              </div>
+              <div class="form-field flex-1">
+                <label class="field-label" for="proc-end-embedded">{{ 'myPatients.procedures.fields.occurrenceEnd' | translate }}</label>
+                <input id="proc-end-embedded" class="field-input" type="datetime-local" formControlName="occurrenceEnd" />
+              </div>
+            </div>
+
+            <div class="form-field w-56">
+              <label class="field-label" for="proc-recorded-embedded">{{ 'myPatients.procedures.fields.recorded' | translate }}</label>
+              <input id="proc-recorded-embedded" class="field-input" type="datetime-local" formControlName="recorded" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">{{ 'myPatients.procedures.fields.performers' | translate }}</label>
+
+              @if (selectedPerformers.length > 0) {
+                <div class="performers-list">
+                  @for (performer of selectedPerformers; track performer.reference) {
+                    <div class="performer-tag">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <circle cx="10" cy="7" r="3"/>
+                        <path d="M3.5 17c0-2.8 2.9-5 6.5-5s6.5 2.2 6.5 5"/>
+                      </svg>
+                      <span>{{ performer.label }}</span>
+                      <button type="button" class="performer-remove" (click)="removePerformer(performer)" title="Retirer">×</button>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="performer-search-wrap">
+                <input
+                  class="field-input"
+                  type="text"
+                  formControlName="performerSearch"
+                  [placeholder]="'myPatients.procedures.fields.performerSearchPlaceholder' | translate"
+                  (input)="onPerformerSearchInput($event)"
+                  (blur)="clearPerformerSuggestions()"
+                  autocomplete="off"
+                />
+                @if (performerSearching) {
+                  <span class="search-spinner small" aria-label="Recherche..."></span>
+                }
+                @if (performerSearchResults.length > 0) {
+                  <div class="performer-suggestions" role="listbox">
+                    @for (option of performerSearchResults; track option.reference) {
+                      <button
+                        type="button"
+                        class="performer-suggestion"
+                        role="option"
+                        (click)="selectPerformer(option)"
+                      >
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                          <circle cx="10" cy="7" r="3"/>
+                          <path d="M3.5 17c0-2.8 2.9-5 6.5-5s6.5 2.2 6.5 5"/>
+                        </svg>
+                        {{ option.label }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label" for="proc-location-embedded">{{ 'myPatients.procedures.fields.location' | translate }}</label>
+              <input id="proc-location-embedded" class="field-input" type="text" formControlName="location"
+                     [placeholder]="'myPatients.procedures.fields.locationPlaceholder' | translate" />
+            </div>
+
+            <div class="form-field">
+              <label class="field-label" for="proc-note-embedded">{{ 'myPatients.procedures.fields.note' | translate }}</label>
+              <textarea id="proc-note-embedded" class="field-textarea" formControlName="note" rows="3"
+                        [placeholder]="'myPatients.procedures.fields.notePlaceholder' | translate"></textarea>
+            </div>
+          }
+
+          @if (activeTab === 'measures') {
+            <div class="tab-panel">
+              <app-patient-observations
+                [patientId]="patientId"
+                [startDate]="occurrenceStartFilter"
+                [endDate]="occurrenceEndFilter"
+                [showAddButton]="true"
+              ></app-patient-observations>
+            </div>
+          }
+
+          @if (activeTab === 'report') {
+            <div class="form-fieldset report-section">
+              @if (!hasReportText) {
+                <p class="state-msg inline">Aucun rapport diagnostique pour cet acte.</p>
+              }
+              <div class="form-field">
+                <label class="field-label" for="proc-report-conclusion-embedded">{{ 'myPatients.procedures.fields.reportConclusion' | translate }}</label>
+                <textarea
+                  id="proc-report-conclusion-embedded"
+                  class="field-textarea"
+                  formControlName="diagnosticReportConclusion"
+                  rows="6"
+                  [placeholder]="'myPatients.procedures.fields.reportConclusionPlaceholder' | translate"
+                ></textarea>
+              </div>
+            </div>
+          }
+
+          @if (activeTab === 'interventions') {
+            <div class="tab-panel">
+              <app-patient-timeline
+                [patientId]="patientId"
+                [startDate]="occurrenceStartFilter"
+                [endDate]="occurrenceEndFilter"
+              ></app-patient-timeline>
+            </div>
+          }
+          </div>
+
+        </form>
+      </div>
+    }
+
+  </div>
+}

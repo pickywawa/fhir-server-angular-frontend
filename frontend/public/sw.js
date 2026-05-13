@@ -1,10 +1,34 @@
-const CACHE_NAME = 'healthapp-v3';
+const CACHE_NAME = 'doctocare-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/styles.scss',
-  '/manifest.json'
+  '/manifest.json',
+  '/doctocare-icon.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/icons/apple-touch-icon-180.png'
 ];
+
+function applyAppBadge(unreadCount) {
+  if (!self.registration || (typeof self.registration.setAppBadge !== 'function' && typeof self.registration.clearAppBadge !== 'function')) {
+    return Promise.resolve();
+  }
+
+  if (typeof unreadCount === 'number' && unreadCount > 0 && typeof self.registration.setAppBadge === 'function') {
+    return self.registration.setAppBadge(Math.min(unreadCount, 99)).catch(() => {});
+  }
+
+  if (typeof unreadCount === 'number' && unreadCount <= 0 && typeof self.registration.clearAppBadge === 'function') {
+    return self.registration.clearAppBadge().catch(() => {});
+  }
+
+  if (typeof self.registration.setAppBadge === 'function') {
+    return self.registration.setAppBadge().catch(() => {});
+  }
+
+  return Promise.resolve();
+}
 
 // ─── Push Notifications ───────────────────────────────────────────────────────
 
@@ -21,11 +45,11 @@ self.addEventListener('push', (event) => {
   console.debug('[SW:push]', { data });
     console.log('[SW:push] ▶ Push event received, notificationId:', data.notificationId, 'userId:', data.userId, 'priority:', data.priority);
 
-  const title = data.title || 'HealthApp';
+  const title = data.title || 'Doctocare';
   const options = {
     body: data.body || data.message || '',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
+    icon: '/doctocare-icon.png',
+    badge: '/doctocare-icon.png',
     tag: data.notificationId || `push-${Date.now()}`,
     data: {
       notificationId: data.notificationId,
@@ -38,6 +62,7 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(applyAppBadge());
 
   // Notify all open clients so they can display the in-app toast
   event.waitUntil(
@@ -62,6 +87,13 @@ self.addEventListener('push', (event) => {
       });
     })
   );
+});
+
+self.addEventListener('message', (event) => {
+  const data = event.data || {};
+  if (data.type === 'SYNC_BADGE') {
+    event.waitUntil(applyAppBadge(data.unreadCount));
+  }
 });
 
 self.addEventListener('notificationclick', (event) => {

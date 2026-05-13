@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewChecked, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, HostBinding, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
@@ -24,7 +24,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 })
 export class PatientDiscussionsComponent implements OnChanges, OnInit, OnDestroy, AfterViewChecked {
   @Input() patientId?: string;
+  @Input() bare = false;
+  @Input() embedded = false;
   @ViewChild('messagesList') private messagesList?: ElementRef<HTMLDivElement>;
+
+  @HostBinding('class.embedded-mode')
+  get embeddedMode(): boolean {
+    return this.embedded;
+  }
+
+  isNarrow = false;
+  private resizeObserver?: ResizeObserver;
+  private readonly el = inject(ElementRef);
 
   readonly messageForm: FormGroup;
   readonly isTtsSupported: boolean;
@@ -70,10 +81,16 @@ export class PatientDiscussionsComponent implements OnChanges, OnInit, OnDestroy
 
   ngOnInit(): void {
     this.loadData();
+    this.resizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? this.el.nativeElement.offsetWidth;
+      this.isNarrow = width < 560;
+    });
+    this.resizeObserver.observe(this.el.nativeElement);
   }
 
   ngOnDestroy(): void {
     this.stopDictation();
+    this.resizeObserver?.disconnect();
   }
 
   ngAfterViewChecked(): void {

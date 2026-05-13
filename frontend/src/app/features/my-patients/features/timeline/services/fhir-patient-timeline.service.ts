@@ -181,7 +181,7 @@ export class FhirPatientTimelineService {
 
   private fetchAppointmentEvents(patientId: string): Observable<PatientTimelineEvent[]> {
     const params = new HttpParams()
-      .set('participant', `Patient/${patientId}`)
+      .set('actor', `Patient/${patientId}`)
       .set('_sort', '-date')
       .set('_count', '100');
 

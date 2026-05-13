@@ -1,0 +1,166 @@
+<app-module-shell [breadcrumbs]="breadcrumbs">
+  <div class="consents-page">
+
+    @if (loading) {
+      <div class="state-msg">Chargement du consentement…</div>
+    }
+
+    @if (!loading) {
+      <div class="consent-card">
+
+        <!-- Header -->
+        <div class="consent-card-header">
+          <div class="header-title-block">
+            <div class="header-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="header-title">Consentement du patient</h2>
+              <p class="header-subtitle">
+                @if (isEditMode) {
+                  Modifiez le consentement enregistré pour ce patient.
+                } @else {
+                  Aucun consentement enregistré. Remplissez le formulaire ci-dessous.
+                }
+              </p>
+            </div>
+          </div>
+
+          @if (isEditMode) {
+            <span class="consent-status-badge" [class.granted]="consentForm.get('granted')?.value === true" [class.denied]="consentForm.get('granted')?.value === false">
+              @if (consentForm.get('granted')?.value === true) {
+                <svg class="badge-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M4 10l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Accord donné
+              } @else {
+                <svg class="badge-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M5 5l10 10M15 5L5 15" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Refus
+              }
+            </span>
+          }
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="consentForm" class="consent-form">
+
+          <!-- Accord patient -->
+          <div class="consent-field">
+            <span class="field-label">Accord du patient / de la famille *</span>
+            <div class="consent-toggle-group">
+              <label class="consent-toggle-option" [class.selected]="consentForm.get('granted')?.value === true">
+                <input type="radio" formControlName="granted" [value]="true" />
+                <svg class="toggle-svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                  <path d="M4 10l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Accord donné</span>
+              </label>
+              <label class="consent-toggle-option refus-option" [class.selected]="consentForm.get('granted')?.value === false">
+                <input type="radio" formControlName="granted" [value]="false" />
+                <svg class="toggle-svg refus" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                  <path d="M5 5l10 10M15 5L5 15" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Refus</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Actions autorisées -->
+          <div class="consent-field" formGroupName="actions">
+            <span class="field-label">Actions couvertes</span>
+            <p class="consent-hint">Toutes les actions sont sélectionnées par défaut. Décochez celles qui ne s'appliquent pas.</p>
+            <div class="consent-actions-grid">
+              @for (action of consentActionOptions; track action.code) {
+                <label class="consent-action-item">
+                  <input type="checkbox" [formControlName]="action.code" />
+                  <span>{{ action.display }}</span>
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Confidentialité -->
+          <div class="consent-field">
+            <span class="field-label">Niveau de confidentialité</span>
+            <div class="consent-toggle-group">
+              <label class="consent-toggle-option" [class.selected]="consentForm.get('confidentiality')?.value === 'N'">
+                <input type="radio" formControlName="confidentiality" value="N" />
+                <svg class="toggle-svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="10" cy="10" r="7"/>
+                  <path d="M10 7v3l2 2" stroke-linecap="round"/>
+                </svg>
+                <span>Normal</span>
+              </label>
+              <label class="consent-toggle-option restricted-option" [class.selected]="consentForm.get('confidentiality')?.value === 'R'">
+                <input type="radio" formControlName="confidentiality" value="R" />
+                <svg class="toggle-svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="5" y="9" width="10" height="7" rx="1.5"/>
+                  <path d="M8 9V7a2 2 0 014 0v2" stroke-linecap="round"/>
+                </svg>
+                <span>Restreint</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Période -->
+          <div class="consent-field">
+            <span class="field-label">Période de validité <em class="optional-label">(facultatif)</em></span>
+            <div class="consent-period-grid">
+              <div class="period-field">
+                <label class="period-sublabel" for="cp-period-start">Début</label>
+                <input id="cp-period-start" type="date" class="field-input" formControlName="periodStart" />
+              </div>
+              <div class="period-field">
+                <label class="period-sublabel" for="cp-period-end">Fin</label>
+                <input id="cp-period-end" type="date" class="field-input" formControlName="periodEnd" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Commentaire -->
+          <div class="consent-field">
+            <label class="field-label" for="cp-note">Commentaire <em class="optional-label">(facultatif)</em></label>
+            <textarea
+              id="cp-note"
+              class="field-input consent-textarea"
+              rows="4"
+              placeholder="Informations complémentaires sur le recueil du consentement..."
+              formControlName="note"
+            ></textarea>
+          </div>
+
+        </form>
+
+        <!-- Footer -->
+        <div class="consent-form-footer">
+          @if (error) {
+            <span class="error-msg">{{ error }}</span>
+          }
+          @if (savedSuccess) {
+            <span class="success-msg">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" style="width:14px;height:14px;vertical-align:middle;">
+                <path d="M4 10l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Consentement sauvegardé.
+            </span>
+          }
+          <div class="footer-actions">
+            <button type="button" class="btn btn-neutral" (click)="goBack()">
+              Retour au patient
+            </button>
+            <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving">
+              {{ saving ? 'Enregistrement…' : (isEditMode ? 'Sauvegarder' : 'Créer le consentement') }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</app-module-shell>

@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject, forkJoin, of } from 'rxjs';
+import { Observable, Subject, BehaviorSubject, combineLatest, forkJoin, of } from 'rxjs';
 import { takeUntil, map, switchMap, catchError } from 'rxjs/operators';
 import { VisioFloatingService } from '../../../core/services/visio-floating.service';
 import { ApiService } from '../../../core/services/api.service';
@@ -16,12 +16,17 @@ import { PatientDocumentsComponent } from '../features/documents/components/pati
 import { PatientDiscussionsComponent } from '../features/discussions/components/patient-discussions.component';
 import { PatientOverviewComponent } from '../features/overview/components/patient-overview.component';
 import { PatientQuestionnairesComponent } from '../features/questionnaires/components/patient-questionnaires.component';
+import { PatientObservationsComponent } from '../features/observations/components/patient-observations.component';
+import { PatientProceduresComponent } from '../features/procedures/components/patient-procedures.component';
 import { RelatedPersonComponent } from '../features/related-person/components/related-person.component';
 import { PatientCarePlanComponent } from '../features/careplan/components/patient-careplan.component';
 import { FhirCarePlanService } from '../features/careplan/services/fhir-care-plan.service';
-import { PatientVisioComponent } from '../features/visio/components/patient-visio.component';
 import { TabBarComponent, TabItem } from '../../../core/components/tab-bar/tab-bar.component';
+import { ModalComponent } from '../../../core/components/modal/modal.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FhirPatientConsentService } from '../features/consents/services/fhir-patient-consent.service';
+import { PatientConsentSummary } from '../features/consents/models/patient-consent.model';
+import { ChatAssistantStateService } from '../../../core/services/chat-assistant-state.service';
 
 interface CarePlanSummaryStep {
   title: string;
@@ -32,13 +37,25 @@ interface CarePlanSummaryStep {
   actionLabel: string;
   actionTab?: string;
   actionRoute?: string;
+  rawResource?: any;
+  questionnaireRef?: string;
 }
 
 interface CarePlanSummaryStepper {
+  carePlanId: string;
   carePlanTitle: string;
   steps: CarePlanSummaryStep[];
   currentIndex: number;
 }
+
+interface CarePlanRiskSummary {
+  carePlanId: string;
+  riskLevel: 'low' | 'moderate' | 'high' | 'critical';
+  riskScore: number;
+  confidence: number;
+}
+
+type WorkflowConfirmAction = 'advance' | 'regress';
 
 @Component({
   selector: 'app-patient-detail',
@@ -50,11 +67,13 @@ interface CarePlanSummaryStepper {
     PatientIdentityCardComponent,
     CareTeamComponent,
     PatientCarePlanComponent,
-    PatientVisioComponent,
     PatientDocumentsComponent,
     PatientDiscussionsComponent,
     PatientQuestionnairesComponent,
+    PatientObservationsComponent,
+    PatientProceduresComponent,
     TabBarComponent,
+    ModalComponent,
     TranslateModule
   ],
   templateUrl: './patient-detail.component.html',
@@ -69,14 +88,28 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     { key: 'careplan', label: 'myPatients.detail.tabs.careplan' },
     { key: 'related-person', label: 'myPatients.detail.tabs.relatedPerson' },
     { key: 'questionnaires', label: 'myPatients.detail.tabs.questionnaires' },
+    { key: 'observations', label: 'myPatients.detail.tabs.observations' },
+    { key: 'procedures', label: 'myPatients.detail.tabs.procedures' },
     { key: 'discussions', label: 'myPatients.detail.tabs.discussions' },
-    { key: 'patient-identity', label: 'myPatients.detail.tabs.identity' },
-    { key: 'documents', label: 'myPatients.detail.tabs.documents' },
-    { key: 'visio', label: 'myPatients.detail.tabs.visio' }
+    { key: 'documents', label: 'myPatients.detail.tabs.documents' }
   ];
 
   activeTab = 'overview';
   mobileMoreOpen = false;
+  summaryActionsExpanded = true;
+  advancingWorkflow = false;
+  regressingWorkflow = false;
+  workflowConfirmOpen = false;
+  workflowConfirmTitle = '';
+  workflowConfirmMessage = '';
+  actionsCompact = false;
+
+  private pendingWorkflowAction: WorkflowConfirmAction | null = null;
+  private pendingWorkflowStepper: CarePlanSummaryStepper | null = null;
+
+  toggleSummaryActions(): void {
+    this.summaryActionsExpanded = !this.summaryActionsExpanded;
+  }
 
   breadcrumbs: ModuleBreadcrumb[] = [
     { label: 'menu.myPatients', route: '/my-patients' },
@@ -88,8 +121,21 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
   readonly error$: Observable<unknown>;
   readonly floatingVisio = inject(VisioFloatingService);
   readonly carePlanStepper$: Observable<CarePlanSummaryStepper | null>;
+  readonly carePlanRiskSummary$: Observable<CarePlanRiskSummary | null>;
+  patientConsent$: Observable<PatientConsentSummary | null> = of(null);
+  @ViewChild('actionsContainer')
+  set actionsContainerRef(value: ElementRef<HTMLDivElement> | undefined) {
+    this.actionsContainer = value;
+    this.setupActionsObserver();
+  }
 
   private readonly destroy$ = new Subject<void>();
+  private readonly carePlanVersion$ = new BehaviorSubject<number>(0);
+  private actionsContainer?: ElementRef<HTMLDivElement>;
+  private actionsResizeObserver?: ResizeObserver;
+  private observedActionsEl?: HTMLDivElement;
+  private observedSummaryBarEl?: HTMLElement;
+  private updateCompactRafId: number | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -97,18 +143,40 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     private readonly store: Store,
     private readonly apiService: ApiService,
     private readonly carePlanService: FhirCarePlanService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly consentService: FhirPatientConsentService,
+    private readonly utilityDockState: ChatAssistantStateService
   ) {
     this.patient$ = this.store.select(PatientSelectors.selectSelectedPatient);
     this.loading$ = this.store.select(PatientSelectors.selectPatientLoading);
     this.error$ = this.store.select(PatientSelectors.selectPatientError);
-    this.carePlanStepper$ = this.patient$.pipe(
-      switchMap((patient) => {
+    this.carePlanStepper$ = combineLatest([this.patient$, this.carePlanVersion$]).pipe(
+      switchMap(([patient]) => {
         const patientId = String(patient?.id || '').trim();
         if (!patientId) {
           return of(null);
         }
         return this.buildCarePlanStepper(patientId);
+      }),
+      catchError(() => of(null))
+    );
+
+    this.carePlanRiskSummary$ = combineLatest([this.patient$, this.carePlanVersion$]).pipe(
+      switchMap(([patient]) => {
+        const patientId = String(patient?.id || '').trim();
+        if (!patientId) {
+          return of(null);
+        }
+        return this.loadRiskSummaryForSelectedCarePlan(patientId);
+      }),
+      catchError(() => of(null))
+    );
+
+    this.patientConsent$ = this.patient$.pipe(
+      switchMap((patient) => {
+        const patientId = String(patient?.id || '').trim();
+        if (!patientId) return of(null);
+        return this.consentService.getFirstConsentForPatient(patientId);
       }),
       catchError(() => of(null))
     );
@@ -128,7 +196,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((queryParams) => {
         const tab = queryParams.get('tab');
-        if (tab && this.tabs.some((entry) => entry.key === tab)) {
+        if (tab && (this.tabs.some((entry) => entry.key === tab) || tab === 'patient-identity')) {
           this.activeTab = tab;
         } else {
           this.activeTab = 'overview';
@@ -137,8 +205,74 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.actionsResizeObserver?.disconnect();
+    if (this.updateCompactRafId !== null) {
+      cancelAnimationFrame(this.updateCompactRafId);
+      this.updateCompactRafId = null;
+    }
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private setupActionsObserver(): void {
+    const actionsEl = this.actionsContainer?.nativeElement;
+    if (!actionsEl) {
+      this.actionsResizeObserver?.disconnect();
+      this.observedActionsEl = undefined;
+      this.observedSummaryBarEl = undefined;
+      this.actionsCompact = false;
+      return;
+    }
+
+    const summaryBarEl = actionsEl.closest('.summary-bar') as HTMLElement | null;
+
+    const sameTargets = this.observedActionsEl === actionsEl && this.observedSummaryBarEl === summaryBarEl;
+    if (sameTargets) {
+      this.scheduleUpdateActionsCompact();
+      return;
+    }
+
+    if (!this.actionsResizeObserver) {
+      this.actionsResizeObserver = new ResizeObserver(() => {
+        this.scheduleUpdateActionsCompact();
+      });
+    }
+
+    this.actionsResizeObserver.disconnect();
+    if (summaryBarEl) {
+      this.actionsResizeObserver.observe(summaryBarEl);
+    } else {
+      this.actionsResizeObserver.observe(actionsEl);
+    }
+
+    this.observedActionsEl = actionsEl;
+    this.observedSummaryBarEl = summaryBarEl ?? undefined;
+    this.scheduleUpdateActionsCompact();
+  }
+
+  private scheduleUpdateActionsCompact(): void {
+    if (this.updateCompactRafId !== null) {
+      cancelAnimationFrame(this.updateCompactRafId);
+    }
+
+    this.updateCompactRafId = requestAnimationFrame(() => {
+      this.updateCompactRafId = null;
+      this.updateActionsCompact();
+    });
+  }
+
+  private updateActionsCompact(): void {
+    const el = this.actionsContainer?.nativeElement;
+    if (!el) {
+      this.actionsCompact = false;
+      return;
+    }
+
+    const summaryBarWidth = this.observedSummaryBarEl?.clientWidth ?? el.closest('.summary-bar')?.clientWidth ?? el.clientWidth;
+    const requiresCompact = summaryBarWidth < 1000;
+    if (this.actionsCompact !== requiresCompact) {
+      this.actionsCompact = requiresCompact;
+    }
   }
 
   onTabChange(key: string): void {
@@ -215,15 +349,225 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  navigateToStepAction(step: CarePlanSummaryStep): void {
-    if (step.actionRoute) {
-      this.router.navigate([step.actionRoute]);
+  navigateToConsents(patientId: string | undefined): void {
+    if (!patientId) return;
+    this.router.navigate(['/my-patients', patientId, 'consents']);
+  }
+
+  navigateToIdentity(): void {
+    this.activeTab = 'patient-identity';
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: 'patient-identity' },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  openProcedureInRightView(patientId: string | undefined): void {
+    const id = String(patientId || '').trim();
+    if (!id) {
       return;
     }
 
-    if (step.actionTab) {
-      this.onTabChange(step.actionTab);
+    this.utilityDockState.startProcedureDraft(id);
+  }
+
+  openPatientAnalysisInRightView(patientId: string | undefined): void {
+    const id = String(patientId || '').trim();
+    if (!id) {
+      return;
     }
+
+    this.utilityDockState.startPatientAnalysis(id);
+  }
+
+  openPatientRiskAssessmentInRightView(patientId: string | undefined, carePlanId: string | undefined): void {
+    const id = String(patientId || '').trim();
+    const cpId = String(carePlanId || '').trim();
+    if (!id || !cpId) {
+      return;
+    }
+
+    this.utilityDockState.startPatientRiskAssessment(id, cpId);
+  }
+
+  riskBadgeClass(level: string): string {
+    const normalized = String(level || '').toLowerCase();
+    if (normalized === 'low') {
+      return 'risk-low';
+    }
+    if (normalized === 'high') {
+      return 'risk-high';
+    }
+    if (normalized === 'critical') {
+      return 'risk-critical';
+    }
+    return 'risk-moderate';
+  }
+
+  translatedGender(gender: string | undefined): string {
+    const normalized = String(gender || '').trim().toLowerCase();
+    if (normalized === 'male' || normalized === 'female' || normalized === 'other' || normalized === 'unknown') {
+      return this.translateService.instant(`patients.form.gender.${normalized}`);
+    }
+    return this.translateService.instant('patients.detailPage.unknownGender');
+  }
+
+  patientAgeLabel(dateOfBirth: string | undefined): string {
+    const birthDate = String(dateOfBirth || '').trim();
+    if (!birthDate) {
+      return '';
+    }
+
+    const parsedBirthDate = new Date(birthDate);
+    if (Number.isNaN(parsedBirthDate.getTime())) {
+      return '';
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - parsedBirthDate.getFullYear();
+    const monthDelta = today.getMonth() - parsedBirthDate.getMonth();
+    const dayDelta = today.getDate() - parsedBirthDate.getDate();
+
+    if (monthDelta < 0 || (monthDelta === 0 && dayDelta < 0)) {
+      age -= 1;
+    }
+
+    return age >= 0 ? `${age} ans` : '';
+  }
+
+  openQuestionnaireStep(patientId: string | undefined, step: CarePlanSummaryStep): void {
+    if (!patientId) return;
+    const path = ['/my-patients', patientId, 'questionnaires', 'new'];
+    const queryParams = step.questionnaireRef ? { questionnaire: step.questionnaireRef } : {};
+    this.router.navigate(path, { queryParams });
+  }
+
+  openAppointmentStep(): void {
+    this.router.navigate(['/agenda']);
+  }
+
+  openCommunicationStep(patientId: string | undefined): void {
+    this.onTabChange('discussions');
+  }
+
+  requestRegressWorkflow(stepper: CarePlanSummaryStepper): void {
+    const currentIndex = stepper.currentIndex;
+    const prevStep = stepper.steps[currentIndex - 1];
+    if (!prevStep || currentIndex === 0 || this.regressingWorkflow || this.advancingWorkflow) {
+      return;
+    }
+
+    this.pendingWorkflowAction = 'regress';
+    this.pendingWorkflowStepper = stepper;
+    this.workflowConfirmTitle = 'Revenir a l etape precedente';
+    this.workflowConfirmMessage = `Revenir a "${prevStep.title}" ?`;
+    this.workflowConfirmOpen = true;
+  }
+
+  requestAdvanceWorkflow(stepper: CarePlanSummaryStepper): void {
+    const currentIndex = stepper.currentIndex;
+    const currentStep = stepper.steps[currentIndex];
+    const nextStep = stepper.steps[currentIndex + 1];
+    if (!currentStep || currentStep.done || !nextStep || this.regressingWorkflow || this.advancingWorkflow) {
+      return;
+    }
+
+    this.pendingWorkflowAction = 'advance';
+    this.pendingWorkflowStepper = stepper;
+    this.workflowConfirmTitle = 'Passer a l etape suivante';
+    this.workflowConfirmMessage = `Terminer "${currentStep.title}" et passer a "${nextStep.title}" ?`;
+    this.workflowConfirmOpen = true;
+  }
+
+  closeWorkflowConfirm(): void {
+    this.workflowConfirmOpen = false;
+    this.pendingWorkflowAction = null;
+    this.pendingWorkflowStepper = null;
+    this.workflowConfirmTitle = '';
+    this.workflowConfirmMessage = '';
+  }
+
+  confirmWorkflowChange(): void {
+    const stepper = this.pendingWorkflowStepper;
+    const action = this.pendingWorkflowAction;
+
+    this.closeWorkflowConfirm();
+
+    if (!stepper || !action) {
+      return;
+    }
+
+    if (action === 'regress') {
+      this.executeRegressWorkflow(stepper);
+      return;
+    }
+
+    this.executeAdvanceWorkflow(stepper);
+  }
+
+  private executeRegressWorkflow(stepper: CarePlanSummaryStepper): void {
+    const currentIndex = stepper.currentIndex;
+    const currentStep = stepper.steps[currentIndex];
+    const prevStep = stepper.steps[currentIndex - 1];
+    if (!currentStep || currentIndex === 0 || !prevStep) return;
+
+    this.regressingWorkflow = true;
+    const [currentType, currentId] = currentStep.reference.split('/');
+    const [prevType, prevId] = prevStep.reference.split('/');
+
+    const readyStatus = (type: string) =>
+      type === 'Task' ? 'ready' : type === 'Appointment' ? 'proposed' : 'active';
+    const inProgressStatus = (type: string) =>
+      type === 'Task' ? 'in-progress' : type === 'Appointment' ? 'booked' : 'active';
+
+    const revertCurrent$ = currentStep.rawResource
+      ? this.carePlanService.patchResourceStatus(currentType, currentId, currentStep.rawResource, readyStatus(currentType))
+      : of(null);
+    const revertPrev$ = prevStep.rawResource
+      ? this.carePlanService.patchResourceStatus(prevType, prevId, prevStep.rawResource, inProgressStatus(prevType))
+      : of(null);
+
+    forkJoin([revertCurrent$, revertPrev$]).subscribe({
+      next: () => {
+        this.regressingWorkflow = false;
+        this.carePlanVersion$.next(this.carePlanVersion$.value + 1);
+      },
+      error: () => { this.regressingWorkflow = false; }
+    });
+  }
+
+  private executeAdvanceWorkflow(stepper: CarePlanSummaryStepper): void {
+    const currentIndex = stepper.currentIndex;
+    const currentStep = stepper.steps[currentIndex];
+    const nextStep = stepper.steps[currentIndex + 1];
+    if (!currentStep || currentStep.done || !nextStep) return;
+
+    this.advancingWorkflow = true;
+    const [currentType, currentId] = currentStep.reference.split('/');
+    const doneStatus = currentType === 'Appointment' ? 'fulfilled' : 'completed';
+
+    const complete$ = currentStep.rawResource
+      ? this.carePlanService.patchResourceStatus(currentType, currentId, currentStep.rawResource, doneStatus)
+      : of(null);
+
+    const activate$ = nextStep.rawResource
+      ? (() => {
+          const [nextType, nextId] = nextStep.reference.split('/');
+          const inProgressStatus = nextType === 'Task' ? 'in-progress' : (nextType === 'Appointment' ? 'booked' : 'active');
+          return this.carePlanService.patchResourceStatus(nextType, nextId, nextStep.rawResource!, inProgressStatus);
+        })()
+      : of(null);
+
+    forkJoin([complete$, activate$]).subscribe({
+      next: () => {
+        this.advancingWorkflow = false;
+        this.carePlanVersion$.next(this.carePlanVersion$.value + 1);
+      },
+      error: () => {
+        this.advancingWorkflow = false;
+      }
+    });
   }
 
   private buildCarePlanStepper(patientId: string): Observable<CarePlanSummaryStepper | null> {
@@ -248,6 +592,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
         const activityRefs = Array.isArray(selectedPlan.activityReferences) ? selectedPlan.activityReferences : [];
         if (!activityRefs.length) {
           return of({
+            carePlanId: String(selectedPlan.id || '').trim(),
             carePlanTitle: selectedPlan.title || `CarePlan ${selectedPlan.id}`,
             steps: [],
             currentIndex: 0
@@ -260,6 +605,7 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
             const cleanedSteps = steps.filter((step): step is CarePlanSummaryStep => !!step);
             const currentIndex = Math.max(0, cleanedSteps.findIndex((step) => !step.done));
             return {
+              carePlanId: String(selectedPlan.id || '').trim(),
               carePlanTitle: selectedPlan.title || `CarePlan ${selectedPlan.id}`,
               steps: cleanedSteps,
               currentIndex: currentIndex >= 0 ? currentIndex : Math.max(0, cleanedSteps.length - 1)
@@ -268,6 +614,97 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
         );
       })
     );
+  }
+
+  private loadRiskSummaryForSelectedCarePlan(patientId: string): Observable<CarePlanRiskSummary | null> {
+    return this.carePlanService.getCarePlansForPatient(patientId).pipe(
+      switchMap(({ carePlans }) => {
+        if (!carePlans.length) {
+          return of(null);
+        }
+
+        const selectedPlan = [...carePlans].sort((left, right) => {
+          const leftActive = left.status === 'active' ? 1 : 0;
+          const rightActive = right.status === 'active' ? 1 : 0;
+          if (leftActive !== rightActive) {
+            return rightActive - leftActive;
+          }
+          const leftDate = Date.parse(String(left.lastUpdated || '')) || 0;
+          const rightDate = Date.parse(String(right.lastUpdated || '')) || 0;
+          return rightDate - leftDate;
+        })[0];
+
+        const carePlanId = String(selectedPlan?.id || '').trim();
+        if (!carePlanId) {
+          return of(null);
+        }
+
+        return this.apiService.get<any>(`/CarePlan/${carePlanId}`).pipe(
+          switchMap((carePlan) => {
+            const supportingInfo = Array.isArray(carePlan?.supportingInfo) ? carePlan.supportingInfo : [];
+            const riskReference = supportingInfo
+              .map((item: any) => String(item?.reference || '').trim())
+              .find((ref: string) => ref.startsWith('RiskAssessment/'));
+
+            const riskId = this.extractIdFromReference(riskReference, 'RiskAssessment');
+            if (!riskId) {
+              return of(null);
+            }
+
+            return this.apiService.get<any>(`/RiskAssessment/${riskId}`).pipe(
+              map((riskAssessment) => {
+                const prediction = riskAssessment?.prediction?.[0] || {};
+                const levelRaw = String(
+                  prediction?.qualitativeRisk?.text
+                  || prediction?.qualitativeRisk?.coding?.[0]?.code
+                  || 'moderate'
+                ).toLowerCase();
+                const riskLevel = (levelRaw === 'low' || levelRaw === 'high' || levelRaw === 'critical')
+                  ? levelRaw
+                  : 'moderate';
+
+                const riskScore = Math.round((Number(prediction?.probabilityDecimal || 0) || 0) * 100);
+                const confidence = this.extractConfidenceFromRiskAssessment(riskAssessment?.extension);
+
+                return {
+                  carePlanId,
+                  riskLevel: riskLevel as 'low' | 'moderate' | 'high' | 'critical',
+                  riskScore,
+                  confidence
+                };
+              }),
+              catchError(() => of(null))
+            );
+          }),
+          catchError(() => of(null))
+        );
+      }),
+      catchError(() => of(null))
+    );
+  }
+
+  private extractIdFromReference(reference: string | undefined, resourceType: string): string {
+    const value = String(reference || '').trim();
+    if (!value) {
+      return '';
+    }
+
+    const marker = `${resourceType}/`;
+    const index = value.lastIndexOf(marker);
+    if (index < 0) {
+      return '';
+    }
+
+    return value.slice(index + marker.length).trim();
+  }
+
+  private extractConfidenceFromRiskAssessment(extensions: any[]): number {
+    const items = Array.isArray(extensions) ? extensions : [];
+    const found = items.find(
+      (item: any) => String(item?.url || '').trim() === 'https://healthapp.local/fhir/StructureDefinition/riskassessment-confidence'
+    );
+    const value = Number(found?.valueDecimal);
+    return Number.isFinite(value) ? value : 0;
   }
 
   private resolveStepFromReference(reference: string): Observable<CarePlanSummaryStep | null> {
@@ -296,7 +733,9 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
             reference: normalized,
             done: doneStatuses.has(status),
             actionLabel: questionnaireBased ? 'Remplir questionnaire' : 'Voir tâche',
-            actionTab: questionnaireBased ? 'questionnaires' : 'careplan'
+            actionTab: questionnaireBased ? 'questionnaires' : 'careplan',
+            rawResource: task,
+            questionnaireRef: questionnaireBased ? basedOnRef.replace('Questionnaire/', '') : undefined
           } as CarePlanSummaryStep;
         }),
         catchError(() => of({
@@ -323,7 +762,8 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
             reference: normalized,
             done: doneStatuses.has(status),
             actionLabel: 'Créer / voir RDV',
-            actionRoute: '/agenda'
+            actionRoute: '/agenda',
+            rawResource: appointment
           } as CarePlanSummaryStep;
         }),
         catchError(() => of({
@@ -351,7 +791,8 @@ export class PatientDetailComponent implements OnInit, OnDestroy {
             reference: normalized,
             done: doneStatuses.has(status),
             actionLabel: 'Ouvrir discussions',
-            actionTab: 'discussions'
+            actionTab: 'discussions',
+            rawResource: request
           } as CarePlanSummaryStep;
         }),
         catchError(() => of({

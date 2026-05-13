@@ -9,12 +9,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   font-size: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--btn-neutral-bg-hover);
+  }
 
   .bell-icon {
+    color: var(--text-secondary);
+  }
+
+  &:hover .bell-icon {
     color: var(--text-primary);
   }
 }
@@ -196,7 +208,7 @@
 .notification-item.priority-critical { border-left-color: #ef4444; }
 .notification-item.priority-high    { border-left-color: #f97316; }
 .notification-item.priority-medium  { border-left-color: #eab308; }
-.notification-item.priority-low     { border-left-color: #3b82f6; }
+.notification-item.priority-low     { border-left-color: #1c808d; }
 
 .notification-icon {
   width: 2.5rem;

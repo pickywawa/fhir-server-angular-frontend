@@ -10,30 +10,34 @@
   gap: 1rem;
 }
 
-.overview-secondary-stack {
-  display: grid;
-  gap: 1rem;
-}
-
 .overview-right-column {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  > * {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.overview-identity-full {
+  grid-column: auto;
 }
 
 @media (min-width: 1180px) {
   .overview-priority-grid {
-    grid-template-columns: 1.25fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: start;
-  }
-
-  .overview-secondary-stack {
-    align-self: start;
   }
 
   .overview-right-column {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+
+  .overview-identity-full {
+    grid-column: 2 / 4;
   }
 }

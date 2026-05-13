@@ -26,6 +26,18 @@ export class PatientVisioComponent implements OnChanges {
     return `https://${this.jitsiDomain}`;
   }
 
+  openJitsiCertPage(): void {
+    const popup = window.open(
+      this.jitsiBaseUrl,
+      '_blank',
+      'popup=yes,width=980,height=760,resizable=yes,scrollbars=yes'
+    );
+
+    if (!popup) {
+      window.open(this.jitsiBaseUrl, '_blank');
+    }
+  }
+
   error = '';
 
   private readonly floatingVisio = inject(VisioFloatingService);

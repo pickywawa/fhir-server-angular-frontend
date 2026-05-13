@@ -1,14 +1,16 @@
 /* Styles globaux de l'application */
 
 :root {
-  --app-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+--app-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --app-text-scale: 1;
   --app-line-height-scale: 1;
   --app-bg: #ffffff;
-  --surface-bg: #ffffff;
+  --surface-bg: #f9fafc;
   --card-bg: #ffffff;
-  --card-bg-soft: #f8fafc;
-  --sidebar-bg: #f8fafc;
+  --card-bg-soft: #f5fbfb;
+  --bubble-header-bg: #d9efed;
+  --bubble-header-title: #1c808d;
+  --sidebar-bg: #ffffff;
   --text-primary: #183153;
   --text-secondary: #4c5d79;
   --border-color: #dbe3ea;
@@ -21,8 +23,8 @@
   --focus-ring: rgba(37, 99, 235, 0.15);
   --disabled-bg: #f1f5f9;
   --disabled-text: #64748b;
-  --btn-primary-bg: #0f172a;
-  --btn-primary-bg-hover: #1e293b;
+  --btn-primary-bg: #1c808d;
+  --btn-primary-bg-hover: #106e7a;
   --btn-primary-text: #ffffff;
   --btn-neutral-bg: #f8fafc;
   --btn-neutral-bg-hover: #eef2f7;
@@ -39,6 +41,8 @@
   --surface-bg: #0f172a;
   --card-bg: #111b31;
   --card-bg-soft: #16233f;
+  --bubble-header-bg: var(--card-bg);
+  --bubble-header-title: var(--text-primary);
   --sidebar-bg: #0d1629;
   --text-primary: #e5ecf8;
   --text-secondary: #9fb0cc;
@@ -52,7 +56,7 @@
   --focus-ring: rgba(96, 165, 250, 0.25);
   --disabled-bg: #1a2742;
   --disabled-text: #8ea2c3;
-  --btn-primary-bg: #60a5fa;
+  --btn-primary-bg: #a1ccff;
   --btn-primary-bg-hover: #7ab8ff;
   --btn-primary-text: #061326;
   --btn-neutral-bg: #1a2742;
@@ -70,6 +74,8 @@
   --surface-bg: #ece7f8;
   --card-bg: #f7f4fc;
   --card-bg-soft: #ede7f7;
+  --bubble-header-bg: var(--card-bg);
+  --bubble-header-title: var(--text-primary);
   --sidebar-bg: #f2ecfb;
   --text-primary: #2a2540;
   --text-secondary: #6a6187;
@@ -101,6 +107,8 @@
   --surface-bg: #141029;
   --card-bg: #1a1433;
   --card-bg-soft: #231b45;
+  --bubble-header-bg: var(--card-bg);
+  --bubble-header-title: var(--text-primary);
   --sidebar-bg: #120f25;
   --text-primary: #ece9ff;
   --text-secondary: #aca6d6;
@@ -114,8 +122,8 @@
   --focus-ring: rgba(0, 215, 255, 0.24);
   --disabled-bg: #221b3f;
   --disabled-text: #8f88b7;
-  --btn-primary-bg: #00d7ff;
-  --btn-primary-bg-hover: #35e0ff;
+  --btn-primary-bg: #c1c3fe;
+  --btn-primary-bg-hover: #a2a4e8;
   --btn-primary-text: #05111d;
   --btn-neutral-bg: #261f4a;
   --btn-neutral-bg-hover: #2f2759;
@@ -132,6 +140,8 @@
   --surface-bg: #ecf6ef;
   --card-bg: #fbfefc;
   --card-bg-soft: #e8f3eb;
+  --bubble-header-bg: var(--card-bg);
+  --bubble-header-title: var(--text-primary);
   --sidebar-bg: #eaf5ed;
   --text-primary: #193a2f;
   --text-secondary: #4c6a5f;
@@ -163,6 +173,8 @@
   --surface-bg: #ffefde;
   --card-bg: #fffdfa;
   --card-bg-soft: #ffe9d6;
+  --bubble-header-bg: var(--card-bg);
+  --bubble-header-title: var(--text-primary);
   --sidebar-bg: #ffeddb;
   --text-primary: #4a2c1d;
   --text-secondary: #7a5745;
@@ -186,6 +198,41 @@
   --scrollbar-track: var(--card-bg-soft);
   --scrollbar-thumb: color-mix(in srgb, var(--border-color) 66%, transparent);
   --scrollbar-thumb-hover: color-mix(in srgb, var(--text-secondary) 32%, transparent);
+}
+
+:root[data-theme='white-and-black'] {
+  --app-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --app-text-scale: 1;
+  --app-line-height-scale: 1;
+  --app-bg: #ffffff;
+  --surface-bg: #ffffff;
+  --card-bg: #ffffff;
+  --card-bg-soft: #f8fafc;
+  --bubble-header-bg: var(--card-bg);
+  --bubble-header-title: var(--text-primary);
+  --sidebar-bg: #f8fafc;
+  --text-primary: #183153;
+  --text-secondary: #4c5d79;
+  --border-color: #dbe3ea;
+  --input-bg: #ffffff;
+  --input-text: #0f172a;
+  --input-border: #cbd5e1;
+  --chip-bg: #f1f5f9;
+  --chip-text: #334155;
+  --overlay-bg: rgba(15, 23, 42, 0.5);
+  --focus-ring: rgba(37, 99, 235, 0.15);
+  --disabled-bg: #f1f5f9;
+  --disabled-text: #64748b;
+  --btn-primary-bg: #0f172a;
+  --btn-primary-bg-hover: #1e293b;
+  --btn-primary-text: #ffffff;
+  --btn-neutral-bg: #f8fafc;
+  --btn-neutral-bg-hover: #eef2f7;
+  --btn-neutral-border: #dbe3ea;
+  --btn-neutral-text: #334155;
+  --scrollbar-track: var(--card-bg-soft);
+  --scrollbar-thumb: color-mix(in srgb, var(--border-color) 62%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-secondary) 28%, transparent);
 }
 
 * {
@@ -226,6 +273,7 @@ button {
   background: var(--btn-primary-bg);
   color: var(--btn-primary-text);
   border-color: var(--btn-primary-bg);
+  font-weight: 400 !important;
 }
 
 .btn.btn-primary:hover:not(:disabled),
@@ -241,6 +289,16 @@ button {
   background: var(--btn-neutral-bg);
   color: var(--btn-neutral-text);
   border-color: var(--btn-neutral-border);
+  font-weight: 400 !important;
+}
+
+.btn.btn-primary .btn-label,
+.btn-primary .btn-label,
+.btn.btn-neutral .btn-label,
+.btn-neutral .btn-label,
+.btn.btn-secondary .btn-label,
+.btn-secondary .btn-label {
+  font-weight: 400 !important;
 }
 
 .btn.btn-neutral:hover:not(:disabled),
@@ -449,25 +507,11 @@ button {
   --btn-neutral-text: #24334d;
 }
 
-:root[data-color-mode='daltonian-friendly'] .tag-green,
-:root[data-color-mode='daltonian-friendly'] .result-icon.type-practitioner {
-  background: #dbeafe;
-  color: #1d4ed8;
-  border-color: #93c5fd;
-}
-
 :root[data-color-mode='daltonian-friendly'] .tag-red,
 :root[data-color-mode='daltonian-friendly'] .result-icon.type-document {
   background: #fef3c7;
   color: #92400e;
   border-color: #f59e0b;
-}
-
-:root[data-color-mode='daltonian-friendly'] .tag-amber,
-:root[data-color-mode='daltonian-friendly'] .result-icon.type-appointment {
-  background: #ede9fe;
-  color: #6d28d9;
-  border-color: #a78bfa;
 }
 
 :root[data-color-mode='daltonian-friendly'] .tag-blue,

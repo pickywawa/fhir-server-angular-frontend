@@ -10,6 +10,17 @@ export interface PatientDocumentItem {
   authorLabel: string;
   patientReference: string;
   sizeBytes: number;
+  aiSummaryDescription?: string;
+}
+
+export interface PatientDocumentHistoryItem {
+  versionId: string;
+  lastUpdated: string;
+  title: string;
+  authorReference: string;
+  authorLabel: string;
+  contentType: string;
+  binaryUrl: string;
 }
 
 export interface DocumentCodeOption {

@@ -293,6 +293,11 @@ export class FhirCarePlanService {
     );
   }
 
+  patchResourceStatus(resourceType: string, resourceId: string, rawResource: any, newStatus: string): Observable<any> {
+    const updated = { ...rawResource, status: newStatus };
+    return this.apiService.put<any>(`/${resourceType}/${resourceId}`, updated, { headers: this.fhirHeaders });
+  }
+
   private convertCarePlans(bundle: any): PatientCarePlanFormValue[] {
     const entries = Array.isArray(bundle?.entry) ? bundle.entry : [];
 

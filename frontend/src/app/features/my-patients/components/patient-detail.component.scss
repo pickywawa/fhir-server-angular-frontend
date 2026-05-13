@@ -9,7 +9,7 @@
 /* ─── Summary Bar (Action Bar) ──────────────────────────────── */
 .summary-bar {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: stretch;
   gap: 1rem;
   padding: 1.2rem;
@@ -19,11 +19,21 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+.summary-bar-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .summary-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  container-type: inline-size;
+  container-name: summary-top;
 }
 
 .patient-info {
@@ -39,6 +49,13 @@
   flex: 1;
 }
 
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
 .info-text h1 {
   margin: 0;
   color: var(--text-primary);
@@ -47,6 +64,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .info-text p {
@@ -57,6 +75,107 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.demographics-row {
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  p {
+    margin: 0;
+  }
+}
+
+.risk-summary-badge {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg-soft);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 0.16rem 0.5rem;
+  font-size: 0.73rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.risk-summary-badge.risk-low {
+  color: #1f8a46;
+  border-color: color-mix(in oklab, #1f8a46 45%, var(--border-color));
+  background: color-mix(in oklab, #1f8a46 14%, var(--card-bg));
+}
+
+.risk-summary-badge.risk-moderate {
+  color: #a56b00;
+  border-color: color-mix(in oklab, #a56b00 45%, var(--border-color));
+  background: color-mix(in oklab, #a56b00 14%, var(--card-bg));
+}
+
+.risk-summary-badge.risk-high,
+.risk-summary-badge.risk-critical {
+  color: #b42318;
+  border-color: color-mix(in oklab, #b42318 45%, var(--border-color));
+  background: color-mix(in oklab, #b42318 14%, var(--card-bg));
+}
+
+/* ─── Consent badge ────────────────────────────────────── */
+
+.consent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid;
+  background: transparent;
+  transition: opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  &.granted {
+    color: #15803d;
+    border-color: #86efac;
+    background: #dcfce7;
+  }
+
+  &.denied {
+    color: #b91c1c;
+    border-color: #fecaca;
+    background: #fee2e2;
+  }
+
+  &.none {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    background: var(--card-bg-soft, #f3f4f6);
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--btn-primary-bg, #1c808d);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 600px) {
+    .consent-badge-label {
+      display: none;
+    }
+  }
+}
+
+/* ─── Avatar ─────────────────────────────────────────── */
 
 .avatar {
   width: 48px;
@@ -100,7 +219,8 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: nowrap;
-  overflow-x: auto;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: hidden;
   padding-right: 0;
   
@@ -117,22 +237,47 @@
   }
 }
 
+.actions.compact {
+  .btn-action {
+    min-width: 42px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 999px;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .btn-label {
+    display: none !important;
+  }
+
+  .status-indicator {
+    display: none;
+  }
+
+  .btn-icon {
+    width: 19px;
+    height: 19px;
+  }
+}
+
 /* ─── Action Buttons ─────────────────────────────────────────── */
 .btn-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  font-size: 0.95rem;
+  padding: 0.45rem 0.72rem;
+  font-size: 0.86rem;
   white-space: nowrap;
   flex-shrink: 0;
   position: relative;
 }
 
 .btn-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .btn-label {
@@ -148,11 +293,72 @@
   margin-left: 0.25rem;
 }
 
+/* ─── Summary collapse toggle ──────────────────────────── */
+
+.summary-collapse-row {
+  display: flex;
+  justify-content: center;
+  margin: -0.55rem 0 -0.4rem;
+  padding: 0;
+}
+
+.summary-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  padding: 0;
+  transition: color 0.15s, background 0.1s;
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--card-bg-soft, #f3f4f6);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--btn-primary-bg, #1c808d);
+    outline-offset: 2px;
+  }
+}
+
+.collapse-chevron {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+
+  &.collapsed {
+    transform: rotate(-180deg);
+  }
+}
+
+/* ─── Careplan stepper ─────────────────────────────────── */
+
 .careplan-stepper-compact {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1rem;
   padding-top: 0.2rem;
+}
+
+.stepper-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stepper-line-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .stepper-line {
@@ -160,6 +366,7 @@
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
+  flex: 1;
   overflow-x: auto;
   padding-bottom: 0.2rem;
 }
@@ -170,6 +377,40 @@
   gap: 0.45rem;
   min-width: 0;
   flex-shrink: 0;
+}
+
+button.stepper-node {
+  background: none;
+  border: none;
+  padding: 0.15rem 0.4rem;
+  margin: 0 -0.4rem;
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button.stepper-node:not([disabled]):hover {
+  background: var(--card-bg-soft);
+}
+
+button.stepper-node:focus-visible {
+  outline: 2px solid var(--btn-primary-bg, #1c808d);
+  outline-offset: 2px;
+}
+
+button.stepper-node[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.stepper-node.next:not([disabled]) .step-bullet {
+  border-color: color-mix(in oklab, var(--btn-primary-bg, #1c808d) 55%, var(--border-color));
+  color: var(--btn-primary-bg, #1c808d);
+}
+
+button.stepper-node.next:not([disabled]) .step-title {
+  color: var(--text-primary);
 }
 
 .step-bullet {
@@ -195,19 +436,26 @@
   white-space: nowrap;
 }
 
+.stepper-node.active {
+  border: 1px solid var(--btn-primary-bg, #1c808d);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--btn-primary-bg, #1c808d) 12%, var(--card-bg));
+  padding: 0.18rem 0.42rem;
+}
+
 .stepper-node.active .step-bullet {
-  border-color: var(--btn-primary-bg, #2563eb);
-  color: var(--btn-primary-bg, #2563eb);
+  border-color: var(--btn-primary-bg, #1c808d);
+  color: var(--btn-primary-bg, #1c808d);
 }
 
 .stepper-node.active .step-title {
-  color: var(--text-primary);
+  color: var(--btn-primary-bg, #1c808d);
   font-weight: 600;
 }
 
 .stepper-node.done .step-bullet {
-  background: var(--btn-primary-bg, #2563eb);
-  border-color: var(--btn-primary-bg, #2563eb);
+  background: var(--btn-primary-bg, #1c808d);
+  border-color: var(--btn-primary-bg, #1c808d);
   color: var(--btn-primary-text, #fff);
 }
 
@@ -219,43 +467,67 @@
 }
 
 .stepper-separator.done {
-  background: var(--btn-primary-bg, #2563eb);
+  background: var(--btn-primary-bg, #1c808d);
 }
 
-.current-step-detail {
+.step-all-done {
+  font-size: 0.82rem;
+  color: var(--btn-primary-bg, #1c808d);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.current-step-inline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background: var(--card-bg-soft);
-}
-
-.current-step-main {
+  gap: 0.6rem;
+  padding: 0.42rem 0.62rem;
+  border: 1px solid color-mix(in srgb, var(--btn-primary-bg, #1c808d) 55%, var(--border-color));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--btn-primary-bg, #1c808d) 10%, var(--card-bg));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--btn-primary-bg, #1c808d) 10%, transparent);
+  flex-shrink: 0;
   min-width: 0;
+  max-width: 360px;
+
+  strong {
+    display: block;
+    color: var(--btn-primary-bg, #1c808d);
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
-.current-step-main strong {
-  display: block;
-  color: var(--text-primary);
-  font-size: 0.86rem;
-}
-
-.current-step-main p {
-  margin: 0.15rem 0 0;
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.step-right-inline {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .btn-step-link {
   flex-shrink: 0;
-  padding: 0.35rem 0.55rem;
-  font-size: 0.78rem;
+  padding: 0.22rem 0.45rem;
+  font-size: 0.74rem;
+}
+
+.workflow-confirm-content {
+  p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+}
+
+.workflow-confirm-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
 }
 
 .state-message {
@@ -289,6 +561,7 @@
 /* ─── Tablet Responsive (768px) ─────────────────────────────── */
 @media (max-width: 768px) {
   .summary-bar {
+    flex-direction: column;
     gap: 0.6rem;
     padding: 0.7rem 0.85rem;
   }
@@ -356,9 +629,22 @@
     display: none;
   }
 
-  .current-step-detail {
+  .careplan-stepper-compact {
     flex-direction: column;
-    align-items: stretch;
+  }
+
+  .summary-bar {
+    flex-direction: column;
+  }
+
+  .summary-bar-left {
+    gap: 0.6rem;
+  }
+
+  .current-step-inline {
+    width: auto;
+    max-width: 100%;
+    margin-left: auto;
   }
 
   .btn-step-link {
@@ -401,8 +687,8 @@
   }
 
   .mobile-tab-item.active {
-    color: var(--btn-primary-bg, #3b82f6);
-    background: color-mix(in oklab, var(--btn-primary-bg, #3b82f6) 18%, transparent);
+    color: var(--btn-primary-bg, #1c808d);
+    background: color-mix(in oklab, var(--btn-primary-bg, #1c808d) 18%, transparent);
   }
 
   .mobile-tab-icon {
@@ -488,8 +774,8 @@
   }
 
   .mobile-more-item.active {
-    border-color: var(--btn-primary-bg, #3b82f6);
-    color: var(--btn-primary-bg, #3b82f6);
+    border-color: var(--btn-primary-bg, #1c808d);
+    color: var(--btn-primary-bg, #1c808d);
   }
 }
 

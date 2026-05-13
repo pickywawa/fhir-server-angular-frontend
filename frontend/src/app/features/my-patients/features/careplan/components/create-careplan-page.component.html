@@ -299,6 +299,108 @@
           </div>
         }
 
+        <!-- STEP 5: Consentement -->
+        @if (currentStep === 5) {
+          <div class="step-panel">
+            <div class="consent-section">
+              <div class="consent-header">
+                <h3 class="consent-title">Consentement du patient</h3>
+                <p class="consent-explanation">
+                  Saisissez le consentement recueilli auprès du patient ou de sa famille.
+                  Ce consentement sera enregistré comme ressource FHIR Consent liée à ce parcours de soin.
+                </p>
+              </div>
+
+              <form [formGroup]="consentForm" class="consent-form">
+
+                <!-- Accord patient -->
+                <div class="consent-field">
+                  <span class="field-label">Accord du patient / de la famille *</span>
+                  <div class="consent-toggle-group">
+                    <label class="consent-toggle-option" [class.selected]="consentForm.get('granted')?.value === true">
+                      <input type="radio" formControlName="granted" [value]="true" />
+                      <span class="toggle-icon accord">&#10003;</span>
+                      <span>Accord donné</span>
+                    </label>
+                    <label class="consent-toggle-option" [class.selected]="consentForm.get('granted')?.value === false">
+                      <input type="radio" formControlName="granted" [value]="false" />
+                      <span class="toggle-icon refus">&times;</span>
+                      <span>Refus</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Actions autorisées -->
+                <div class="consent-field" formGroupName="actions">
+                  <span class="field-label">Actions couvertes</span>
+                  <p class="consent-hint">Toutes les actions sont sélectionnées par défaut. Décochez celles qui ne s'appliquent pas.</p>
+                  <div class="consent-actions-grid">
+                    @for (action of consentActionOptions; track action.code) {
+                      <label class="consent-action-item">
+                        <input type="checkbox" [formControlName]="action.code" />
+                        <span>{{ action.display }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <!-- Confidentialité -->
+                <div class="consent-field">
+                  <span class="field-label">Niveau de confidentialité</span>
+                  <div class="consent-toggle-group">
+                    <label class="consent-toggle-option" [class.selected]="consentForm.get('confidentiality')?.value === 'N'">
+                      <input type="radio" formControlName="confidentiality" value="N" />
+                      <span>Normal</span>
+                    </label>
+                    <label class="consent-toggle-option" [class.selected]="consentForm.get('confidentiality')?.value === 'R'">
+                      <input type="radio" formControlName="confidentiality" value="R" />
+                      <span>Restreint</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Période (facultatif) -->
+                <div class="consent-field">
+                  <span class="field-label">Période de validité <em class="optional-label">(facultatif)</em></span>
+                  <div class="consent-period-grid">
+                    <div class="period-field">
+                      <label class="period-sublabel" for="consent-period-start">Début</label>
+                      <input
+                        id="consent-period-start"
+                        type="date"
+                        class="picker-input"
+                        formControlName="periodStart"
+                      />
+                    </div>
+                    <div class="period-field">
+                      <label class="period-sublabel" for="consent-period-end">Fin</label>
+                      <input
+                        id="consent-period-end"
+                        type="date"
+                        class="picker-input"
+                        formControlName="periodEnd"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Commentaire -->
+                <div class="consent-field">
+                  <label class="field-label" for="consent-note">Commentaire <em class="optional-label">(facultatif)</em></label>
+                  <textarea
+                    id="consent-note"
+                    class="picker-input consent-textarea"
+                    rows="4"
+                    placeholder="Informations complémentaires sur le recueil du consentement..."
+                    formControlName="note"
+                  ></textarea>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        }
+
       }
     </div>
 
@@ -313,7 +415,7 @@
         } @else {
           <button type="button" class="btn btn-neutral" (click)="prevStep()">Précédent</button>
         }
-        @if (currentStep < 4) {
+        @if (currentStep < 5) {
           <button type="button" class="btn btn-primary" (click)="nextStep()">Suivant</button>
         } @else {
           <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="saving">

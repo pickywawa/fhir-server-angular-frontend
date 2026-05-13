@@ -25,7 +25,7 @@
 
 .tab-item.active {
   color: var(--text-primary);
-  border-bottom-color: #60a5fa;
+  border-bottom-color: var(--btn-primary-bg);
   background: var(--card-bg-soft, #f8fafc);
 }
 

@@ -1,0 +1,171 @@
+<section class="patient-analysis-shell">
+  <header class="analysis-header">
+    <h3>{{ 'myPatients.patientAnalysis.title' | translate }}</h3>
+    <p>{{ 'myPatients.patientAnalysis.subtitle' | translate }}</p>
+  </header>
+
+  @if (!hasStarted) {
+    <article class="analysis-launch">
+      <h4>{{ 'myPatients.patientAnalysis.launchTitle' | translate }}</h4>
+      <p>{{ 'myPatients.patientAnalysis.launchDescription' | translate }}</p>
+      <button type="button" class="btn btn-primary launch-btn" (click)="launchAnalysis()">
+        {{ 'myPatients.patientAnalysis.launchButton' | translate }}
+      </button>
+    </article>
+  } @else {
+
+  @if (!existingOnlyInput) {
+  <article class="analysis-card">
+    <h4>{{ 'myPatients.patientAnalysis.dataCollectionTitle' | translate }}</h4>
+    <ul class="step-list">
+      @for (step of dataSteps; track step.key) {
+        <li class="step-item bullet-item">
+          <span class="step-label bullet-label">
+            <strong class="step-title-text">{{ step.labelKey | translate }}</strong>
+            <small class="step-description-text">{{ step.descriptionKey | translate }}</small>
+          </span>
+          <span class="step-state" [class.loading]="step.status === 'loading'" [class.success]="step.status === 'success'" [class.error]="step.status === 'error'">
+            @if (step.status === 'loading') {
+              <span class="loader" aria-hidden="true"></span>
+              <span>{{ 'myPatients.patientAnalysis.status.loading' | translate }}</span>
+            } @else if (step.status === 'success') {
+              <span class="icon">✓</span>
+              <span>{{ 'myPatients.patientAnalysis.status.success' | translate }}</span>
+            } @else if (step.status === 'error') {
+              <span class="icon">!</span>
+              <span>{{ step.error || ('myPatients.patientAnalysis.status.error' | translate) }}</span>
+            } @else {
+              <span>{{ 'myPatients.patientAnalysis.status.pending' | translate }}</span>
+            }
+          </span>
+        </li>
+      }
+    </ul>
+  </article>
+
+  <article class="analysis-card">
+    <h4>{{ 'myPatients.patientAnalysis.documentsTitle' | translate }}</h4>
+    @if (!documentProgress.length) {
+      <p class="empty">{{ 'myPatients.patientAnalysis.documentsEmpty' | translate }}</p>
+    } @else {
+      <ul class="document-list">
+        @for (item of documentProgress; track item.documentId) {
+          <li class="document-item bullet-item">
+            <div class="document-row">
+              <div class="document-main">
+                <strong>{{ item.title }}</strong>
+              </div>
+              <span class="step-state step-state-right" [class.loading]="item.status === 'loading'" [class.success]="item.status === 'success'" [class.error]="item.status === 'error'">
+                @if (item.status === 'loading') {
+                  <span class="loader" aria-hidden="true"></span>
+                  <span>{{ 'myPatients.patientAnalysis.status.loading' | translate }}</span>
+                } @else if (item.status === 'success') {
+                  <span class="icon">✓</span>
+                  <span>{{ 'myPatients.patientAnalysis.status.success' | translate }}</span>
+                } @else if (item.status === 'error') {
+                  <span class="icon">!</span>
+                  <span>{{ item.error || ('myPatients.patientAnalysis.status.error' | translate) }}</span>
+                } @else {
+                  <span>{{ 'myPatients.patientAnalysis.status.pending' | translate }}</span>
+                }
+              </span>
+            </div>
+
+            @if (item.summary) {
+              <button type="button" class="summary-toggle" (click)="toggleSummary(item)">
+                {{ item.expanded ? ('myPatients.patientAnalysis.collapseSummary' | translate) : ('myPatients.patientAnalysis.expandSummary' | translate) }}
+              </button>
+              @if (item.expanded) {
+                <div class="summary-body">{{ item.summary }}</div>
+              }
+            }
+          </li>
+        }
+      </ul>
+    }
+  </article>
+  }
+
+  <article class="analysis-card">
+    <h4>{{ 'myPatients.patientAnalysis.resultTitle' | translate }}</h4>
+
+    @if (isProcessing) {
+      <div class="analysis-loading">
+        <span class="loader" aria-hidden="true"></span>
+        <span>{{ cancelRequested ? ('myPatients.patientAnalysis.cancelling' | translate) : ('myPatients.patientAnalysis.generating' | translate) }}</span>
+      </div>
+      <button type="button" class="btn btn-neutral" (click)="cancelAnalysis()" [disabled]="cancelRequested">
+        {{ 'myPatients.patientAnalysis.cancel' | translate }}
+      </button>
+    }
+
+    @if (analysisError) {
+      <p class="error-text">{{ analysisError }}</p>
+      <button type="button" class="btn btn-neutral" (click)="retry()">{{ 'myPatients.patientAnalysis.retry' | translate }}</button>
+    }
+
+    @if (analysisResponse; as response) {
+      <div class="result-grid">
+        <div class="meta-badges">
+          <span class="mini-badge" [class]="'mini-badge ' + riskBadgeClass(response.riskLevel)">
+            {{ 'myPatients.patientAnalysis.riskLevel' | translate }}: {{ response.riskLevel }}
+          </span>
+          <span class="mini-badge" [class]="'mini-badge ' + riskBadgeClass(response.riskLevel)">
+            {{ 'myPatients.patientAnalysis.riskScore' | translate }}: {{ response.riskScore }}
+          </span>
+          <span class="mini-badge badge-neutral">
+            {{ 'myPatients.patientAnalysis.confidence' | translate }}: {{ confidencePercent(response.metadata.confidence) }}%
+          </span>
+        </div>
+
+        <ul class="result-list">
+          <li>
+            <strong>{{ 'myPatients.patientAnalysis.clinicalSummary' | translate }}</strong>
+            <textarea
+              class="result-textarea"
+              [(ngModel)]="editableClinicalSummary"
+              rows="4"></textarea>
+          </li>
+          <li>
+            <strong>{{ 'myPatients.patientAnalysis.interventionsSummary' | translate }}</strong>
+            <textarea
+              class="result-textarea"
+              [(ngModel)]="editableInterventionsSummary"
+              rows="4"></textarea>
+          </li>
+          <li>
+            <strong>{{ 'myPatients.patientAnalysis.recommendations' | translate }}</strong>
+            <textarea
+              class="result-textarea"
+              [(ngModel)]="editableRecommendations"
+              rows="5"></textarea>
+          </li>
+          <li>
+            <strong>{{ 'myPatients.patientAnalysis.alerts' | translate }}</strong>
+            <textarea
+              class="result-textarea"
+              [(ngModel)]="editableAlerts"
+              rows="5"></textarea>
+          </li>
+        </ul>
+      </div>
+
+      <div class="validation-row">
+        <button type="button" class="btn btn-neutral" (click)="retry()" [disabled]="isProcessing">
+          {{ 'myPatients.patientAnalysis.retry' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="validateAnalysis(true)" [disabled]="isSavingRiskAssessment">
+          {{ 'myPatients.patientAnalysis.saveAnalysis' | translate }}
+        </button>
+      </div>
+
+      @if (validationStatus === 'accepted') {
+        <p class="validation-ok">{{ 'myPatients.patientAnalysis.validationAccepted' | translate }}</p>
+      }
+      @if (validationStatus === 'rejected') {
+        <p class="validation-ko">{{ 'myPatients.patientAnalysis.validationRejected' | translate }}</p>
+      }
+    }
+  </article>
+  }
+</section>

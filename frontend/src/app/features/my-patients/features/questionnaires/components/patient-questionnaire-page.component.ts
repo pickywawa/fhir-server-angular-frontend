@@ -82,7 +82,12 @@ export class PatientQuestionnairePageComponent implements OnInit {
       }
 
       if (this.createMode) {
-        this.loadModels();
+        const preloadId = this.route.snapshot.queryParamMap.get('questionnaire');
+        if (preloadId) {
+          this.loadAndSelectQuestionnaire(preloadId);
+        } else {
+          this.loadModels();
+        }
       } else {
         this.loadExistingResponse();
       }
@@ -158,6 +163,23 @@ export class PatientQuestionnairePageComponent implements OnInit {
       return this.selectedQuestionnaire.title;
     }
     return this.translateService.instant('myPatients.questionnaires.title');
+  }
+
+  private loadAndSelectQuestionnaire(id: string): void {
+    this.loading = true;
+    this.error = '';
+    this.questionnaireService.getQuestionnaire(id).subscribe({
+      next: (questionnaire) => {
+        this.selectedQuestionnaire = questionnaire;
+        this.answerSeed = {};
+        this.loading = false;
+      },
+      error: (error: unknown) => {
+        this.error = this.formatError(error);
+        this.loading = false;
+        this.loadModels();
+      }
+    });
   }
 
   private loadModels(): void {

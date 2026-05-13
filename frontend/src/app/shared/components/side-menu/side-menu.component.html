@@ -27,10 +27,14 @@
   }
   <div class="menu-top">
     <div class="brand-row">
-      <div class="brand-icon" aria-hidden="true">HF</div>
+      <img src="/doctocare-icon.png" alt="Doctocare" class="brand-logo">
       @if (!collapsed) {
         <div class="brand-text">
-          <strong>Health FHIR</strong>
+          <strong><span class="docto">DOCTO</span><span class="care">CARE</span></strong>
+        </div>
+      } @else {
+        <div class="brand-text">
+          <strong><span class="docto">DOCTO</span><span class="care">CARE</span></strong>
         </div>
       }
       <button type="button" class="collapse-btn" (click)="toggleCollapsed()" [attr.aria-label]="(collapsed ? 'menu.expand' : 'menu.collapse') | translate">
@@ -63,12 +67,6 @@
               @case ('search') {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.3-4.3"></path></svg>
               }
-              @case ('support') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12a10 10 0 1 1-10-10"></path><path d="M18 8a4 4 0 0 0-8 0v4"></path><rect x="4" y="12" width="4" height="7" rx="2"></rect><rect x="16" y="12" width="4" height="7" rx="2"></rect></svg>
-              }
-              @case ('settings') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.85l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 1-2 0 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.85.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 1 0-2 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.85l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 1 2 0 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.85-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.27.32.47.69.6 1a1.7 1.7 0 0 1 0 2c-.13.31-.33.68-.6 1z"></path></svg>
-              }
               @default {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
               }
@@ -76,13 +74,26 @@
           </span>
           @if (!collapsed) {
             <span class="label">{{ item.labelKey | translate }}</span>
+            @if (menuBadgeCount(item) > 0) {
+              <span class="menu-notif-badge">{{ menuBadgeCount(item) > 99 ? '99+' : menuBadgeCount(item) }}</span>
+            }
+          } @else {
+            @if (menuBadgeCount(item) > 0) {
+              <span class="menu-notif-badge menu-notif-badge--collapsed"></span>
+            }
           }
         </a>
       }
     </nav>
 
     <section class="menu-section">
-      <h3>{{ 'menu.administration' | translate }}</h3>
+      <h3>
+        @if (collapsed) {
+          Admin
+        } @else {
+          {{ 'menu.administration' | translate }}
+        }
+      </h3>
       @for (item of administrationMenuItems; track item.route) {
         <a
           [routerLink]="item.route"
@@ -124,46 +135,26 @@
     </section>
   </div>
 
-  <div class="menu-bottom">
-    <nav class="menu-list bottom-list">
-      @for (item of bottomMenuItems; track item.route) {
-        <a
-          [routerLink]="item.route"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: false }"
-          class="menu-item"
-          (click)="onMobileMenuClick()"
-          >
-          <span class="icon" aria-hidden="true">
-            @switch (item.icon) {
-              @case ('support') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12a10 10 0 1 1-10-10"></path><path d="M18 8a4 4 0 0 0-8 0v4"></path><rect x="4" y="12" width="4" height="7" rx="2"></rect><rect x="16" y="12" width="4" height="7" rx="2"></rect></svg>
-              }
-              @case ('settings') {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.85l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 1-2 0 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.85.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 1 0-2 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.85l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 1 2 0 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.85-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.27.32.47.69.6 1a1.7 1.7 0 0 1 0 2c-.13.31-.33.68-.6 1z"></path></svg>
-              }
-              @default {
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
-              }
+  @if (bottomMenuItems.length > 0) {
+    <div class="menu-bottom">
+      <nav class="menu-list bottom-list">
+        @for (item of bottomMenuItems; track item.route) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }"
+            class="menu-item"
+            (click)="onMobileMenuClick()"
+            >
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+            </span>
+            @if (!collapsed) {
+              <span class="label">{{ item.labelKey | translate }}</span>
             }
-          </span>
-          @if (!collapsed) {
-            <span class="label">{{ item.labelKey | translate }}</span>
-          }
-        </a>
-      }
-    </nav>
-
-    <a class="user-card" routerLink="/profile" routerLinkActive="user-card-active" (click)="onMobileMenuClick()">
-      <div class="avatar">
-        {{ user.avatarInitials }}
-      </div>
-      @if (!collapsed) {
-        <div class="user-info">
-          <strong>{{ user.fullName }}</strong>
-          <small>{{ user.email }}</small>
-        </div>
-      }
-    </a>
-  </div>
+          </a>
+        }
+      </nav>
+    </div>
+  }
 </aside>

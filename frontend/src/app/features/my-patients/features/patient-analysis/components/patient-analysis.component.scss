@@ -1,0 +1,304 @@
+.patient-analysis-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.95rem;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.analysis-header {
+  h3 {
+    margin: 0;
+    font-size: 1.02rem;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+  }
+}
+
+.analysis-launch {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 1rem;
+
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    max-width: 26rem;
+  }
+}
+
+.launch-btn {
+  min-width: 18rem;
+  min-height: 3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.analysis-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg-soft);
+  padding: 0.75rem;
+
+  h4 {
+    margin: 0 0 0.55rem;
+    font-size: 0.9rem;
+  }
+}
+
+.step-list,
+.document-list {
+  list-style: disc;
+  padding-left: 1.1rem;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.step-item,
+.document-item {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  padding: 0.55rem 0.65rem;
+}
+
+.bullet-item {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  margin-left: 0;
+  display: list-item;
+}
+
+.bullet-label {
+  font-size: 0.82rem;
+}
+
+.bullet-item .document-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.document-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.step-label,
+.document-main {
+  min-width: 0;
+}
+.step-title-text {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+.step-description-text {
+  display: block;
+  margin-top: 0.08rem;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.step-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+.step-state-right {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.step-state.success {
+  color: #1f8a46;
+}
+
+.step-state.error {
+  color: #b42318;
+}
+
+.icon {
+  font-weight: 700;
+}
+
+.loader {
+  width: 0.82rem;
+  height: 0.82rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in oklab, var(--btn-primary-bg, #1c808d) 30%, transparent);
+  border-top-color: var(--btn-primary-bg, #1c808d);
+  animation: patient-analysis-spin 0.8s linear infinite;
+}
+
+.summary-toggle {
+  margin-top: 0.45rem;
+  border: 0;
+  background: transparent;
+  color: var(--btn-primary-bg, #1c808d);
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+}
+
+.summary-body {
+  margin-top: 0.45rem;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 0.45rem;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  font-size: 0.82rem;
+}
+
+.analysis-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  color: var(--text-secondary);
+}
+
+.error-text,
+.validation-ko {
+  color: #b42318;
+}
+
+.validation-ok {
+  color: #1f8a46;
+}
+
+.meta-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.mini-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.badge-low {
+  background: color-mix(in oklab, #1f8a46 16%, var(--card-bg));
+  border-color: color-mix(in oklab, #1f8a46 50%, var(--border-color));
+  color: #1f8a46;
+}
+
+.badge-moderate {
+  background: color-mix(in oklab, #a56b00 14%, var(--card-bg));
+  border-color: color-mix(in oklab, #a56b00 45%, var(--border-color));
+  color: #a56b00;
+}
+
+.badge-high,
+.badge-critical {
+  background: color-mix(in oklab, #b42318 14%, var(--card-bg));
+  border-color: color-mix(in oklab, #b42318 45%, var(--border-color));
+  color: #b42318;
+}
+
+.badge-neutral {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.result-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+
+  > li {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  strong {
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+}
+
+.result-textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--input-border, var(--border-color));
+  border-radius: 8px;
+  background: var(--input-bg, var(--card-bg));
+  color: var(--input-text, var(--text-primary));
+  font-size: 0.82rem;
+  line-height: 1.35;
+  padding: 0.48rem 0.55rem;
+  min-height: 4.2rem;
+}
+
+.result-textarea[readonly] {
+  opacity: 0.95;
+}
+
+.result-textarea:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--btn-primary-bg, #1c808d) 65%, white);
+  outline-offset: 1px;
+}
+
+.validation-row {
+  gap: 0.5rem;
+}
+
+.empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+@keyframes patient-analysis-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -2,6 +2,9 @@ export interface PatientProfile {
   id: string;
   firstName: string;
   lastName: string;
+  ins?: string;
+  identityStatus?: string;
+  attendingPhysician?: string;
   birthDate?: string;
   gender?: 'male' | 'female' | 'other' | 'unknown';
   phoneNumber?: string;

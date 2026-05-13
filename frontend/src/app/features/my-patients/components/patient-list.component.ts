@@ -7,9 +7,19 @@ import { BubbleCardComponent } from '../../../shared/components/bubble-card/bubb
 import { TranslateModule } from '@ngx-translate/core';
 import { FhirCarePlanWorklistService } from '../services/fhir-care-plan-worklist.service';
 import { CarePlanWorklistItem } from '../models/care-plan-worklist.model';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
-type WorklistSortField = 'patient' | 'category' | 'status' | 'title';
+type WorklistSortField =
+  | 'civilStatus'
+  | 'ipp'
+  | 'ins'
+  | 'identityStatus'
+  | 'birthDate'
+  | 'gender'
+  | 'practitioner'
+  | 'pathwayStatus'
+  | 'category'
+  | 'lastChanged';
 type SortDirection = 'asc' | 'desc';
 
 @Component({
@@ -26,11 +36,11 @@ export class PatientListComponent implements OnInit, OnDestroy {
   filteredWorklist: CarePlanWorklistItem[] = [];
   statusFilterOptions: Array<{ value: string; label: string }> = [];
   categoryFilterOptions: Array<{ value: string; label: string }> = [];
-  sortField: WorklistSortField = 'patient';
+  sortField: WorklistSortField = 'lastChanged';
   sortDirection: SortDirection = 'asc';
   loading = false;
   error: any = null;
-  isSearchExpanded = true;
+  isSearchExpanded = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -40,6 +50,7 @@ export class PatientListComponent implements OnInit, OnDestroy {
     private router: Router
   ) {
     this.searchForm = this.fb.group({
+      quickSearch: [''],
       family: [''],
       given: [''],
       birthDate: [''],
@@ -49,8 +60,11 @@ export class PatientListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-      // Mobile by default has search collapsed
-      this.isSearchExpanded = window.innerWidth > 768;
+    this.searchForm
+      .get('quickSearch')
+      ?.valueChanges.pipe(debounceTime(180), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(() => this.applySearch());
+
     this.loadPatients();
   }
 
@@ -65,6 +79,7 @@ export class PatientListComponent implements OnInit, OnDestroy {
 
   onResetSearch(): void {
     this.searchForm.reset({
+      quickSearch: this.searchForm.get('quickSearch')?.value || '',
       family: '',
       given: '',
       birthDate: '',
@@ -111,50 +126,66 @@ export class PatientListComponent implements OnInit, OnDestroy {
 
   statusLabel(status: string): string {
     const labels: Record<string, string> = {
-      draft: 'Brouillon',
-      active: 'Actif',
+      draft: 'Provisoire',
+      active: 'Ouvert',
       'on-hold': 'En pause',
-      revoked: 'Révoqué',
-      completed: 'Terminé',
-      entered: 'Saisi',
+      revoked: 'Ferme',
+      completed: 'Ferme',
+      entered: 'Ouvert',
       unknown: 'Inconnu'
     };
     return labels[status] || status || '-';
   }
 
-  intentLabel(intent: string): string {
-    const labels: Record<string, string> = {
-      proposal: 'Proposition',
-      plan: 'Plan',
-      order: 'Ordre',
-      option: 'Option',
-      directive: 'Directive'
-    };
-    return labels[intent] || intent || '-';
-  }
-
   statusClass(status: string): string {
     const tone: Record<string, string> = {
-      draft: 'tag-slate',
-      active: 'tag-green',
-      'on-hold': 'tag-amber',
-      revoked: 'tag-red',
-      completed: 'tag-blue',
-      entered: 'tag-slate',
+      draft: 'tag-violet',
+      active: 'tag-blue',
+      'on-hold': 'tag-red',
+      revoked: 'tag-slate',
+      completed: 'tag-slate',
+      entered: 'tag-blue',
       unknown: 'tag-slate'
     };
     return tone[status] || 'tag-slate';
   }
 
-  intentClass(intent: string): string {
-    const tone: Record<string, string> = {
-      proposal: 'tag-violet',
-      plan: 'tag-cyan',
-      order: 'tag-indigo',
-      option: 'tag-zinc',
-      directive: 'tag-violet'
+  identityStatusLabel(status: CarePlanWorklistItem['identityStatus']): string {
+    return status === 'validated' ? 'Validee' : 'Provisoire';
+  }
+
+  identityStatusClass(status: CarePlanWorklistItem['identityStatus']): string {
+    return status === 'validated' ? 'tag-green' : 'tag-amber';
+  }
+
+  genderLabel(gender: string): string {
+    const labels: Record<string, string> = {
+      male: 'Homme',
+      female: 'Femme',
+      other: 'Autre',
+      unknown: 'Inconnu'
     };
-    return tone[intent] || 'tag-zinc';
+    return labels[gender] || labels['unknown'];
+  }
+
+  hasBirthName(item: CarePlanWorklistItem): boolean {
+    return !!item.patientBirthName && item.patientBirthName.toLowerCase() !== item.patientLastName.toLowerCase();
+  }
+
+  civilIdentity(item: CarePlanWorklistItem): string {
+    const family = (item.patientLastName || '').trim().toUpperCase();
+    const birthName = this.hasBirthName(item) ? ` (${item.patientBirthName.trim().toUpperCase()})` : '';
+    const given = (item.patientFirstName || '').trim();
+    return `${family}${birthName} ${given}`.trim() || '-';
+  }
+
+  doctorDisplay(item: CarePlanWorklistItem): string {
+    const display = (item.practitionerDisplay || '').trim();
+    if (!display || display === '-') {
+      return '-';
+    }
+
+    return display.toLowerCase().startsWith('dr.') ? display : `Dr. ${display}`;
   }
 
   toggleSort(field: WorklistSortField): void {
@@ -180,6 +211,7 @@ export class PatientListComponent implements OnInit, OnDestroy {
 
   private applySearch(): void {
     const raw = this.searchForm.value;
+    const quickSearch = String(raw.quickSearch || '').trim().toLowerCase();
     const family = String(raw.family || '').trim().toLowerCase();
     const given = String(raw.given || '').trim().toLowerCase();
     const birthDate = String(raw.birthDate || '').trim();
@@ -187,12 +219,26 @@ export class PatientListComponent implements OnInit, OnDestroy {
     const category = String(raw.category || '').trim();
 
     this.filteredWorklist = this.worklist.filter((item) => {
+      const quickSearchHaystack = [
+        item.patientLastName,
+        item.patientFirstName,
+        item.patientBirthName,
+        item.patientIpp,
+        item.patientIns,
+        item.carePlanId,
+        item.patientId
+      ]
+        .filter((value) => !!value)
+        .join(' ')
+        .toLowerCase();
+
+      const matchQuickSearch = !quickSearch || quickSearchHaystack.includes(quickSearch);
       const matchFamily = !family || item.patientLastName.toLowerCase().includes(family);
       const matchGiven = !given || item.patientFirstName.toLowerCase().includes(given);
       const matchBirthDate = !birthDate || item.patientBirthDate === birthDate;
       const matchStatus = !status || item.status === status;
       const matchCategory = !category || item.categoryCode === category;
-      return matchFamily && matchGiven && matchBirthDate && matchStatus && matchCategory;
+      return matchQuickSearch && matchFamily && matchGiven && matchBirthDate && matchStatus && matchCategory;
     });
 
     this.filteredWorklist.sort((a, b) => {
@@ -204,16 +250,34 @@ export class PatientListComponent implements OnInit, OnDestroy {
   }
 
   private sortValue(item: CarePlanWorklistItem, field: WorklistSortField): string {
-    if (field === 'patient') {
-      return `${item.patientLastName} ${item.patientFirstName}`.trim().toLowerCase();
+    if (field === 'civilStatus') {
+      return this.civilIdentity(item).toLowerCase();
+    }
+    if (field === 'ipp') {
+      return (item.patientIpp || '').toLowerCase();
+    }
+    if (field === 'ins') {
+      return (item.patientIns || '').toLowerCase();
+    }
+    if (field === 'identityStatus') {
+      return this.identityStatusLabel(item.identityStatus).toLowerCase();
+    }
+    if (field === 'birthDate') {
+      return (item.patientBirthDate || '').toLowerCase();
+    }
+    if (field === 'gender') {
+      return this.genderLabel(item.patientGender).toLowerCase();
+    }
+    if (field === 'practitioner') {
+      return this.doctorDisplay(item).toLowerCase();
+    }
+    if (field === 'pathwayStatus') {
+      return (this.statusLabel(item.status) || '').toLowerCase();
     }
     if (field === 'category') {
       return (item.categoryLabel || item.categoryCode || '').toLowerCase();
     }
-    if (field === 'status') {
-      return (this.statusLabel(item.status) || '').toLowerCase();
-    }
-    return (item.title || '').toLowerCase();
+    return (item.lastChanged || item.created || '').toLowerCase();
   }
 
   private buildFilterOptions(items: CarePlanWorklistItem[]): void {
@@ -237,7 +301,11 @@ export class PatientListComponent implements OnInit, OnDestroy {
       .sort((a, b) => a.label.localeCompare(b.label));
   }
 
-  toggleSearchExpanded(): void {
-    this.isSearchExpanded = !this.isSearchExpanded;
+  openAdvancedSearch(): void {
+    this.isSearchExpanded = true;
+  }
+
+  closeAdvancedSearch(): void {
+    this.isSearchExpanded = false;
   }
 }

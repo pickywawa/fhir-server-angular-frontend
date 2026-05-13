@@ -1,0 +1,73 @@
+<div class="proc-layout">
+  <app-bubble-card [title]="'myPatients.procedures.title' | translate">
+    <div bubbleActions>
+      <button type="button" class="btn btn-primary" (click)="addProcedure()">
+        {{ 'myPatients.procedures.add' | translate }}
+      </button>
+    </div>
+
+    <div class="proc-filters">
+      <select class="proc-filter-select" [(ngModel)]="filterCategory" (ngModelChange)="onFilterChange()">
+        <option value="">{{ 'myPatients.procedures.allCategories' | translate }}</option>
+        @for (cat of categories; track cat.code) {
+          <option [value]="cat.code">{{ cat.display }}</option>
+        }
+      </select>
+      <select class="proc-filter-select" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+        <option value="">{{ 'myPatients.procedures.allStatuses' | translate }}</option>
+        @for (s of statuses; track s.code) {
+          <option [value]="s.code">{{ s.display }}</option>
+        }
+      </select>
+    </div>
+
+    @if (loading) {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading && error) {
+      <div class="state error">{{ error }}</div>
+    }
+
+    @if (!loading && !error) {
+      <div class="proc-list">
+        @for (proc of filteredProcedures; track proc.id) {
+          <button type="button" class="proc-row" (click)="openProcedure(proc)">
+            <div class="proc-main">
+              <div class="proc-code">
+                <strong>{{ proc.codeDisplay || proc.codeCode }}</strong>
+                @if (proc.categoryDisplay) {
+                  <span class="proc-category-badge">{{ proc.categoryDisplay }}</span>
+                }
+                @if (proc.hasReport) {
+                  <span class="proc-report-badge">{{ 'myPatients.procedures.hasReport' | translate }}</span>
+                }
+              </div>
+              <div class="proc-meta">
+                @if (proc.occurrenceStart) {
+                  <span class="proc-date">{{ proc.occurrenceStart | date:'dd/MM/yyyy' }}</span>
+                }
+                @if (proc.location) {
+                  <span class="proc-location">{{ proc.location }}</span>
+                }
+                @if (proc.performerDisplays.length > 0) {
+                  <span class="proc-performers">{{ proc.performerDisplays.join(', ') }}</span>
+                }
+              </div>
+            </div>
+            <div class="proc-right">
+              <span class="proc-status" [attr.data-status]="proc.status">{{ statusDisplay(proc.status) }}</span>
+              <svg class="proc-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M7 10l5-5 5 5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 10 10)"/>
+              </svg>
+            </div>
+          </button>
+        }
+
+        @if (filteredProcedures.length === 0) {
+          <div class="state">{{ 'myPatients.procedures.empty' | translate }}</div>
+        }
+      </div>
+    }
+  </app-bubble-card>
+</div>

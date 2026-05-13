@@ -1,6 +1,6 @@
 {
-  "name": "HealthApp - Santé Connectée",
-  "short_name": "HealthApp",
+  "name": "Doctocare - Santé Connectée",
+  "short_name": "Doctocare",
   "description": "Application de gestion de santé et de patients en ligne",
   "start_url": "/",
   "scope": "/",
@@ -10,27 +10,33 @@
   "theme_color": "#667eea",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23667eea' width='192' height='192'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='96' font-weight='bold' fill='%23fff' font-family='system-ui'>H</text></svg>",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%23667eea' width='512' height='512'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='256' font-weight='bold' fill='%23fff' font-family='system-ui'>H</text></svg>",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23667eea' width='540' height='720'/><text x='270' y='360' dominant-baseline='middle' text-anchor='middle' font-size='128' font-weight='bold' fill='%23fff' font-family='system-ui'>HealthApp</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23667eea' width='540' height='720'/><text x='270' y='360' dominant-baseline='middle' text-anchor='middle' font-size='128' font-weight='bold' fill='%23fff' font-family='system-ui'>Doctocare</text></svg>",
       "sizes": "540x720",
       "type": "image/svg+xml",
       "form_factor": "narrow"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'><rect fill='%23667eea' width='1280' height='720'/><text x='640' y='360' dominant-baseline='middle' text-anchor='middle' font-size='128' font-weight='bold' fill='%23fff' font-family='system-us'>HealthApp</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'><rect fill='%23667eea' width='1280' height='720'/><text x='640' y='360' dominant-baseline='middle' text-anchor='middle' font-size='128' font-weight='bold' fill='%23fff' font-family='system-ui'>Doctocare</text></svg>",
       "sizes": "1280x720",
       "type": "image/svg+xml",
       "form_factor": "wide"

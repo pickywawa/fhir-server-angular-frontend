@@ -42,12 +42,28 @@ export class VisioExternalWindowComponent implements AfterViewInit, OnDestroy {
   readonly jitsiDomain = environment.jitsiDomain;
   readonly jitsiScriptUrl = environment.jitsiScriptUrl;
 
+  get jitsiBaseUrl(): string {
+    return `https://${this.jitsiDomain}`;
+  }
+
   loading = true;
   error = '';
   roomName = '';
 
   private api: JitsiApi | null = null;
   private scriptLoaded = false;
+
+  openJitsiCertPage(): void {
+    const popup = window.open(
+      this.jitsiBaseUrl,
+      '_blank',
+      'popup=yes,width=980,height=760,resizable=yes,scrollbars=yes'
+    );
+
+    if (!popup) {
+      window.open(this.jitsiBaseUrl, '_blank');
+    }
+  }
 
   ngAfterViewInit(): void {
     this.roomName = this.route.snapshot.paramMap.get('roomName') ?? '';

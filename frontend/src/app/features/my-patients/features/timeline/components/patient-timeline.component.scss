@@ -27,13 +27,23 @@ app-bubble-card {
   background: transparent;
   color: inherit;
   cursor: pointer;
-  padding: 0.6rem 0.15rem 0.9rem;
-  border-left: 2px solid color-mix(in oklab, var(--border-color) 80%, transparent);
+  padding: 0.6rem 0.15rem 0.9rem 1rem;
   margin-left: 0.45rem;
   position: relative;
 
   &:hover .timeline-type {
     color: var(--btn-primary-bg, #0f172a);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: color-mix(in oklab, var(--border-color) 80%, transparent);
+    pointer-events: none;
   }
 }
 
@@ -49,6 +59,8 @@ app-bubble-card {
   justify-content: center;
   margin-left: -12px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 
   svg {
     width: 18px;

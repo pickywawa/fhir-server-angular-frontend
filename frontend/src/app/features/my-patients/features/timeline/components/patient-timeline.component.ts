@@ -15,10 +15,14 @@ import { FhirPatientTimelineService } from '../services/fhir-patient-timeline.se
 })
 export class PatientTimelineComponent implements OnChanges {
   @Input() patientId?: string;
+  @Input() startDate?: string | null;
+  @Input() endDate?: string | null;
+  @Input() refreshToken = 0;
 
   loading = false;
   error = '';
   events: PatientTimelineEvent[] = [];
+  allEvents: PatientTimelineEvent[] = [];
 
   constructor(
     private readonly timelineService: FhirPatientTimelineService,
@@ -29,6 +33,16 @@ export class PatientTimelineComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['patientId']) {
       this.loadTimeline();
+      return;
+    }
+
+    if (changes['refreshToken']) {
+      this.loadTimeline();
+      return;
+    }
+
+    if (changes['startDate'] || changes['endDate']) {
+      this.applyDateRangeFilter();
     }
   }
 
@@ -77,7 +91,8 @@ export class PatientTimelineComponent implements OnChanges {
 
     this.timelineService.listPatientTimeline(this.patientId).subscribe({
       next: (events) => {
-        this.events = events;
+        this.allEvents = events;
+        this.applyDateRangeFilter();
         this.loading = false;
       },
       error: (error: unknown) => {
@@ -85,6 +100,28 @@ export class PatientTimelineComponent implements OnChanges {
         this.loading = false;
       }
     });
+  }
+
+  private applyDateRangeFilter(): void {
+    const startTs = this.toTimestamp(this.startDate);
+    const endTs = this.toTimestamp(this.endDate);
+
+    this.events = this.allEvents.filter((event) => {
+      const eventTs = this.toTimestamp(event.occurredAt);
+      const startMatch = startTs === null || (eventTs !== null && eventTs >= startTs);
+      const endMatch = endTs === null || (eventTs !== null && eventTs <= endTs);
+      return startMatch && endMatch;
+    });
+  }
+
+  private toTimestamp(value: string | null | undefined): number | null {
+    if (!value) {
+      return null;
+    }
+
+    const normalized = value.length === 16 ? `${value}:00` : value;
+    const ts = new Date(normalized).getTime();
+    return Number.isFinite(ts) ? ts : null;
   }
 
   private formatError(error: unknown): string {

@@ -1,0 +1,70 @@
+<div class="observations-layout">
+  <app-bubble-card [title]="'myPatients.observations.title' | translate">
+    <div bubbleActions>
+      @if (showAddButton) {
+      <button type="button" class="btn btn-primary" (click)="addObservation()">
+        {{ 'myPatients.observations.add' | translate }}
+      </button>
+      }
+    </div>
+
+    <!-- Filtres -->
+    <div class="obs-filters">
+      <select class="obs-filter-select" [(ngModel)]="filterCategory" (ngModelChange)="onFilterChange()">
+        <option value="">{{ 'myPatients.observations.allCategories' | translate }}</option>
+        @for (cat of categories; track cat.code) {
+          <option [value]="cat.code">{{ cat.display }}</option>
+        }
+      </select>
+      <input
+        class="obs-filter-input"
+        type="text"
+        [(ngModel)]="filterCode"
+        (ngModelChange)="onFilterChange()"
+        [placeholder]="'myPatients.observations.filterCode' | translate"
+      />
+    </div>
+
+    @if (loading) {
+      <div class="state">{{ 'common.loading' | translate }}</div>
+    }
+
+    @if (!loading && error) {
+      <div class="state error">{{ error }}</div>
+    }
+
+    @if (!loading && !error) {
+      <div class="obs-list">
+        @for (obs of filteredObservations; track obs.id) {
+          <button type="button" class="obs-row" (click)="openObservation(obs)">
+            <div class="obs-main">
+              <div class="obs-code">
+                <strong>{{ obs.codeDisplay || obs.codeCode }}</strong>
+                <span class="obs-category-badge">{{ obs.categoryDisplay || obs.categoryCode }}</span>
+              </div>
+              <div class="obs-meta">
+                <span class="obs-date">{{ obs.effectiveDateTime ? (obs.effectiveDateTime | date:'dd/MM/yyyy') : '—' }}</span>
+                @if (obs.performerDisplay) {
+                  <span class="obs-performer">{{ obs.performerDisplay }}</span>
+                }
+              </div>
+            </div>
+            <div class="obs-right">
+              <span class="obs-value">{{ formatValue(obs) }}</span>
+              @if (obs.interpretationCode) {
+                <span class="obs-interp" [attr.data-code]="obs.interpretationCode">{{ obs.interpretationCode }}</span>
+              }
+              <svg class="obs-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M7 10l5-5 5 5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 10 10)"/>
+              </svg>
+            </div>
+          </button>
+        }
+
+        @if (filteredObservations.length === 0) {
+          <div class="state">{{ 'myPatients.observations.empty' | translate }}</div>
+        }
+      </div>
+    }
+  </app-bubble-card>
+</div>

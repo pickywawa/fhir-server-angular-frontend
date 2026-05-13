@@ -27,6 +27,27 @@
         }
       </div>
       <div class="field">
+        <app-form-control-field
+          [label]="'patients.form.ins' | translate"
+          forId="ins"
+          formControlName="ins"
+        ></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field
+          [label]="'patients.form.identityStatus' | translate"
+          forId="identityStatus"
+          formControlName="identityStatus"
+        ></app-form-control-field>
+      </div>
+      <div class="field">
+        <app-form-control-field
+          [label]="'patients.form.attendingPhysician' | translate"
+          forId="attendingPhysician"
+          formControlName="attendingPhysician"
+        ></app-form-control-field>
+      </div>
+      <div class="field">
         <app-form-control-field [label]="'patients.form.birthDate' | translate" forId="birthDate" type="date" formControlName="birthDate"></app-form-control-field>
       </div>
       <div class="field">

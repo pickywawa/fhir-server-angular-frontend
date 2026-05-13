@@ -86,7 +86,7 @@
 
     &:focus {
       outline: none;
-      border-color: var(--focus-ring, #3b82f6);
+      border-color: var(--focus-ring, #1c808d);
       box-shadow: 0 0 0 3px var(--focus-ring-alpha, rgba(59, 130, 246, 0.15));
     }
   }
@@ -124,7 +124,7 @@
 
     &:focus {
       outline: none;
-      border-color: var(--focus-ring, #3b82f6);
+      border-color: var(--focus-ring, #1c808d);
       box-shadow: 0 0 0 3px var(--focus-ring-alpha, rgba(59, 130, 246, 0.15));
     }
   }

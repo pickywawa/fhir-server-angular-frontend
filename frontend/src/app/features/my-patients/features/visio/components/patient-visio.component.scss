@@ -26,7 +26,7 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: color-mix(in oklab, var(--btn-primary-bg, #3b82f6) 12%, var(--card-bg));
+  background: color-mix(in oklab, var(--btn-primary-bg, #1c808d) 12%, var(--card-bg));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,7 +34,7 @@
   svg {
     width: 36px;
     height: 36px;
-    stroke: var(--btn-primary-bg, #3b82f6);
+    stroke: var(--btn-primary-bg, #1c808d);
   }
 }
 
@@ -86,6 +86,30 @@
 
   &:hover {
     opacity: 0.8;
+  }
+}
+
+.cert-actions {
+  margin-top: 0.55rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.cert-btn {
+  border: 1px solid color-mix(in oklab, #b91c1c 35%, transparent);
+  background: #fff;
+  color: #991b1b;
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #fef2f2;
   }
 }
 }
@@ -245,8 +269,8 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: color-mix(in oklab, var(--btn-primary-bg, #3b82f6) 18%, var(--card-bg));
-  color: var(--btn-primary-bg, #3b82f6);
+  background: color-mix(in oklab, var(--btn-primary-bg, #1c808d) 18%, var(--card-bg));
+  color: var(--btn-primary-bg, #1c808d);
   display: flex;
   align-items: center;
   justify-content: center;

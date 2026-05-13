@@ -16,10 +16,14 @@
       <div class="error-banner">
         {{ error | translate }}
         @if (error === 'visio.error.sdkLoad') {
-          <br>
-          <a [href]="jitsiBaseUrl" target="_blank" rel="noopener" class="cert-link">
-            {{ 'visio.error.certHint' | translate }}
-          </a>
+          <div class="cert-actions">
+            <a [href]="jitsiBaseUrl" target="_blank" rel="noopener" class="cert-link">
+              {{ 'visio.error.certHint' | translate }}
+            </a>
+            <button type="button" class="cert-btn" (click)="openJitsiCertPage()">
+              {{ 'visio.error.certOpenPopup' | translate }}
+            </button>
+          </div>
         }
       </div>
     }

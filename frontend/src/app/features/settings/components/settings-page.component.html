@@ -244,6 +244,17 @@
               <strong>{{ 'settings.theme.sunrise' | translate }}</strong>
               <small>{{ 'settings.theme.sunriseDesc' | translate }}</small>
             </button>
+
+            <button
+              type="button"
+              class="theme-card white-and-black"
+              [class.active]="theme === 'white-and-black'"
+              (click)="setTheme('white-and-black')"
+            >
+              <span class="dot"></span>
+              <strong>{{ 'settings.theme.whiteAndBlack' | translate }}</strong>
+              <small>{{ 'settings.theme.whiteAndBlackDesc' | translate }}</small>
+            </button>
           </div>
         </app-bubble-card>
     }

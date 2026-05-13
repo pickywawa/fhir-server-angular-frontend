@@ -1,5 +1,13 @@
-<app-module-shell [breadcrumbs]="breadcrumbs" [lockBodyScroll]="true">
-  <section class="agenda-page">
+@if (!embedded) {
+  <app-module-shell [breadcrumbs]="breadcrumbs" [lockBodyScroll]="true">
+    <ng-container *ngTemplateOutlet="agendaContent"></ng-container>
+  </app-module-shell>
+} @else {
+  <ng-container *ngTemplateOutlet="agendaContent"></ng-container>
+}
+
+<ng-template #agendaContent>
+  <section class="agenda-page" [class.panel-compact]="compact">
     <div class="agenda-toolbar">
       <div class="agenda-toolbar__nav">
         <button type="button" class="nav-btn" (click)="previousRange()" aria-label="Periode precedente">‹</button>
@@ -10,14 +18,16 @@
       <div class="agenda-toolbar__title">{{ currentTitle }}</div>
 
       <div class="agenda-toolbar__actions">
-        <div class="view-switch" role="group" aria-label="Mode d affichage agenda">
-          @for (view of viewButtons; track view.mode) {
-            <button type="button" [class.active]="isActiveView(view.mode)" (click)="setViewMode(view.mode)">
-              {{ view.labelKey | translate }}
-            </button>
-          }
-        </div>
-        <button type="button" class="btn btn-primary btn-add" (click)="openCreateModal()">{{ 'agenda.add' | translate }}</button>
+        @if (!compact) {
+          <div class="view-switch" role="group" aria-label="Mode d affichage agenda">
+            @for (view of viewButtons; track view.mode) {
+              <button type="button" [class.active]="isActiveView(view.mode)" (click)="setViewMode(view.mode)">
+                {{ view.labelKey | translate }}
+              </button>
+            }
+          </div>
+          <button type="button" class="btn btn-primary btn-add" (click)="openCreateModal()">{{ 'agenda.add' | translate }}</button>
+        }
       </div>
     </div>
 
@@ -34,9 +44,11 @@
       </div>
     }
 
-    <button type="button" class="btn-add-mobile" (click)="openCreateModal()" aria-label="Ajouter un rendez-vous">+</button>
+    @if (!compact) {
+      <button type="button" class="btn-add-mobile" (click)="openCreateModal()" aria-label="Ajouter un rendez-vous">+</button>
+    }
   </section>
-</app-module-shell>
+</ng-template>
 
 @if (showCreateModal) {
   <app-modal [title]="appointmentModalTitle()" (close)="closeCreateModal()">

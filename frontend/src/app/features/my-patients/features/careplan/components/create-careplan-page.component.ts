@@ -15,6 +15,7 @@ import { AddCareTeamMemberDialogComponent } from '../../../../../shared/componen
 import { CareTeamMemberInput } from '../../../../../shared/components/add-care-team-member-dialog/add-care-team-member-dialog.model';
 import { FhirCareTeamService } from '../../care-team/services/fhir-care-team.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { FhirConsentService, CONSENT_ACTIONS, ConsentAction } from '../services/fhir-consent.service';
 
 @Component({
   selector: 'app-create-careplan-page',
@@ -39,8 +40,11 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
     { key: 1, label: 'Informations' },
     { key: 2, label: 'Intervenants' },
     { key: 3, label: 'Objectifs' },
-    { key: 4, label: 'Etapes' }
+    { key: 4, label: 'Etapes' },
+    { key: 5, label: 'Consentement' }
   ];
+
+  readonly consentActionOptions: ConsentAction[] = CONSENT_ACTIONS;
 
   readonly statusOptions = [
     { value: 'draft', label: 'Brouillon' },
@@ -66,6 +70,7 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
   error = '';
 
   form: FormGroup;
+  consentForm: FormGroup;
   categoryOptions: CarePlanCategoryOption[] = [];
 
   patientQuery = '';
@@ -100,6 +105,7 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
     private readonly adminService: FhirCarePlansAdminService,
     private readonly careTeamService: FhirCareTeamService,
     private readonly authService: AuthService,
+    private readonly consentService: FhirConsentService,
     private readonly router: Router
   ) {
     this.form = this.fb.group({
@@ -108,6 +114,19 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
       intent: ['plan', Validators.required],
       title: ['', Validators.required],
       description: [''],
+      note: ['']
+    });
+
+    const actionsGroup: Record<string, boolean> = {};
+    for (const action of CONSENT_ACTIONS) {
+      actionsGroup[action.code] = true;
+    }
+    this.consentForm = this.fb.group({
+      granted: [true, Validators.required],
+      actions: this.fb.group(actionsGroup),
+      confidentiality: ['N', Validators.required],
+      periodStart: [''],
+      periodEnd: [''],
       note: ['']
     });
   }
@@ -277,7 +296,7 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
       }
     }
     this.error = '';
-    if (this.currentStep < 4) {
+    if (this.currentStep < 5) {
       this.currentStep++;
     }
   }
@@ -291,6 +310,11 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
 
   cancel(): void {
     this.router.navigate(['/my-patients']);
+  }
+
+  get selectedConsentActions(): string[] {
+    const actionsGroup = this.consentForm.get('actions')?.value || {};
+    return Object.keys(actionsGroup).filter((k) => actionsGroup[k]);
   }
 
   submit(): void {
@@ -317,7 +341,6 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
       next: ({ id: carePlanId, patientId }) => {
         const resolvedPatientId = patientId || this.extractPatientId(this.selectedPatient?.reference || '');
 
-        // Create CareTeam members first, then tasks with owner CareTeam, then bind tasks to CarePlan.activity.
         this.createPendingMembers(resolvedPatientId).subscribe({
           next: () => {
             this.careTeamService.getOrCreateCareTeamReference(resolvedPatientId).subscribe({
@@ -327,12 +350,7 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
                   next: (activityReferences) => {
                     this.carePlanService.updateCarePlanWithActivities(carePlanId, activityReferences).subscribe({
                       next: () => {
-                        this.saving = false;
-                        if (resolvedPatientId) {
-                          this.router.navigate(['/my-patients', resolvedPatientId]);
-                        } else {
-                          this.router.navigate(['/my-patients']);
-                        }
+                        this.createConsentAfterCarePlan(carePlanId, patientRef, careTeamReference, resolvedPatientId);
                       },
                       error: (err) => {
                         this.saving = false;
@@ -361,6 +379,48 @@ export class CreateCarePlanPageComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.saving = false;
         this.error = err?.message || 'Impossible de créer le CarePlan.';
+      }
+    });
+  }
+
+  private createConsentAfterCarePlan(
+    carePlanId: string,
+    patientReference: string,
+    careTeamReference: string,
+    resolvedPatientId: string
+  ): void {
+    const cv = this.consentForm.value;
+    const now = new Date().toISOString();
+    const selectedActions = this.selectedConsentActions;
+
+    const consentInput = {
+      patientReference,
+      carePlanId,
+      granted: Boolean(cv.granted),
+      actions: selectedActions.length > 0 ? selectedActions : CONSENT_ACTIONS.map(a => a.code),
+      confidentiality: (cv.confidentiality === 'R' ? 'R' : 'N') as 'N' | 'R',
+      periodStart: cv.periodStart?.trim() || undefined,
+      periodEnd: cv.periodEnd?.trim() || undefined,
+      note: cv.note?.trim() || undefined,
+      dateTime: now,
+      verifiedWithReference: patientReference,
+      grantorReference: careTeamReference || undefined
+    };
+
+    this.consentService.createConsent(consentInput).subscribe({
+      next: () => {
+        this.saving = false;
+        if (resolvedPatientId) {
+          this.router.navigate(['/my-patients', resolvedPatientId]);
+        } else {
+          this.router.navigate(['/my-patients']);
+        }
+      },
+      error: (err) => {
+        // Consent failed — show warning but still navigate (CarePlan is created)
+        this.saving = false;
+        console.error('[CarePlan wizard] Consent creation failed:', err);
+        this.error = `CarePlan créé. Avertissement : le consentement n'a pas pu être enregistré (${err?.error?.issue?.[0]?.diagnostics || err?.message || 'erreur serveur'}). Vous pouvez le créer manuellement depuis la fiche patient.`;
       }
     });
   }

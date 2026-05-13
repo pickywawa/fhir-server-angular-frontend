@@ -1,1129 +1,575 @@
 package com.healthapp.chatbot.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.langchain4j.agent.tool.P;
+import dev.langchain4j.agent.tool.Tool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class FhirToolService {
 
     private static final Logger logger = LoggerFactory.getLogger(FhirToolService.class);
+    private static final Duration TOOL_TIMEOUT = Duration.ofSeconds(20);
+    private static final @NonNull ParameterizedTypeReference<Map<String, Object>> MAP_TYPE = new ParameterizedTypeReference<>() {};
+    private static final Pattern QUESTION_LINE_PATTERN = Pattern.compile("(?m)^(?:[-*]|\\d+[\\).])\\s*(.{6,220}\\?)$");
+
     private final WebClient fhirWebClient;
+    private final ObjectMapper objectMapper;
+    private final ToolEventPublisher toolEventPublisher;
+    private final ChatSessionContext chatSessionContext;
+    private final ContextFileSessionStore contextFileSessionStore;
 
-    public FhirToolService(WebClient fhirWebClient) {
-        this.fhirWebClient = fhirWebClient;
-    }
-
-    @Tool(description = "Search a patient by family name, given name, or identifier")
-    public String searchPatient(String familyName, String givenName, String identifier) {
-        logger.info("[searchPatient] Searching: family={}, given={}, identifier={}", familyName, givenName, identifier);
-        Map<String, String> params = new LinkedHashMap<>();
-        if (familyName != null && !familyName.isBlank()) {
-            params.put("family", familyName);
-        }
-        if (givenName != null && !givenName.isBlank()) {
-            params.put("given", givenName);
-        }
-        if (identifier != null && !identifier.isBlank()) {
-            params.put("identifier", identifier);
-        }
-
-        Map<String, Object> response = fhirWebClient.get()
-                .uri(uriBuilder -> {
-                    var b = uriBuilder.path("/Patient");
-                    params.forEach(b::queryParam);
-                    return b.build();
-                })
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = summarizeBundle(response, "Patient");
-        logger.info("[searchPatient] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "Create an appointment for a patient with practitioner and schedule")
-    public String createAppointment(
-            String patientId,
-            String startIsoDateTime,
-            String endIsoDateTime,
-            String practitionerId,
-            String description
+    public FhirToolService(
+            WebClient fhirWebClient,
+            ObjectMapper objectMapper,
+            ToolEventPublisher toolEventPublisher,
+            ChatSessionContext chatSessionContext,
+            ContextFileSessionStore contextFileSessionStore
     ) {
-        logger.info("[createAppointment] Creating: patientId={}, practitionerId={}, start={}, end={}",
-                patientId, practitionerId, startIsoDateTime, endIsoDateTime);
-        
-        Map<String, Object> appointment = new LinkedHashMap<>();
-        appointment.put("resourceType", "Appointment");
-        appointment.put("status", "booked");
-        appointment.put("description", description == null || description.isBlank() ? "Appointment created by chatbot" : description);
-        appointment.put("start", startIsoDateTime);
-        appointment.put("end", endIsoDateTime);
-
-        List<Map<String, Object>> participants = new ArrayList<>();
-        participants.add(Map.of(
-                "actor", Map.of("reference", "Patient/" + patientId),
-                "status", "accepted"
-        ));
-        if (practitionerId != null && !practitionerId.isBlank()) {
-            participants.add(Map.of(
-                    "actor", Map.of("reference", "Practitioner/" + practitionerId),
-                    "status", "accepted"
-            ));
-        }
-        appointment.put("participant", participants);
-
-        Map<String, Object> created = fhirWebClient.post()
-                .uri("/Appointment")
-                .bodyValue(appointment)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String appointmentId = created != null ? asString(created.get("id")) : "unknown";
-        String result = "Appointment created with id=" + appointmentId + ", url=/Appointment/" + appointmentId;
-        logger.info("[createAppointment] Response: {}", result);
-        return result;
+        this.fhirWebClient = fhirWebClient;
+        this.objectMapper = objectMapper;
+        this.toolEventPublisher = toolEventPublisher;
+        this.chatSessionContext = chatSessionContext;
+        this.contextFileSessionStore = contextFileSessionStore;
     }
 
-    @Tool(description = "Update patient identity fields like family name, given name, and phone")
-    public String updatePatientIdentity(String patientId, String familyName, String givenName, String phone) {
-        logger.info("[updatePatientIdentity] Updating: patientId={}, family={}, given={}, phone={}",
-                patientId, familyName, givenName, phone);
-        
-        Map<String, Object> patient = fhirWebClient.get()
-                .uri("/Patient/{id}", patientId)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+    @Tool("Searches relevant passages inside attached context files for the current chat session.")
+    public String searchInContextFile(
+            @P("Text query to search inside context files") String query,
+            @P("Optional file name filter, leave empty to search all attached files") String fileName
+    ) {
+        return executeTool(
+                "searchInContextFile",
+                Map.of("query", safe(query), "fileName", safe(fileName)),
+                () -> {
+                    String sessionId = safe(chatSessionContext.getCurrentSessionId());
+                    if (sessionId.isBlank()) {
+                        throw new IllegalStateException("No active chat session for context file search");
+                    }
 
-        if (patient == null || patient.isEmpty()) {
-            String msg = "Patient not found for id=" + patientId;
-            logger.warn("[updatePatientIdentity] Response: {}", msg);
-            return msg;
-        }
+                    String normalizedQuery = normalizeRequired(query, "query");
+                    String normalizedFileName = safe(fileName).trim();
 
-        if (familyName != null && !familyName.isBlank()) {
-            Map<String, Object> humanName = new LinkedHashMap<>();
-            humanName.put("family", familyName);
-            if (givenName != null && !givenName.isBlank()) {
-                humanName.put("given", List.of(givenName));
-            }
-            patient.put("name", List.of(humanName));
-        }
-
-        if (phone != null && !phone.isBlank()) {
-            patient.put("telecom", List.of(Map.of("system", "phone", "value", phone, "use", "mobile")));
-        }
-
-        Map<String, Object> updated = fhirWebClient.put()
-                .uri("/Patient/{id}", patientId)
-                .bodyValue(patient)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String updatedId = updated != null ? asString(updated.get("id")) : patientId;
-        String result = "Patient updated with id=" + updatedId + ", url=/Patient/" + updatedId;
-        logger.info("[updatePatientIdentity] Response: {}", result);
-        return result;
+                    String result = contextFileSessionStore.search(
+                            sessionId,
+                            normalizedQuery,
+                            normalizedFileName.isBlank() ? null : normalizedFileName
+                    );
+                    return result;
+                }
+        );
     }
 
-    @Tool(description = "Search for practitioners by name")
-    public String searchPractitioner(String familyName, String givenName) {
-        logger.info("[searchPractitioner] Searching: family={}, given={}", familyName, givenName);
-        Map<String, String> params = new LinkedHashMap<>();
-        if (familyName != null && !familyName.isBlank()) {
-            params.put("family", familyName);
-        }
-        if (givenName != null && !givenName.isBlank()) {
-            params.put("given", givenName);
-        }
-
-        Map<String, Object> response = fhirWebClient.get()
-                .uri(uriBuilder -> {
-                    var b = uriBuilder.path("/Practitioner");
-                    params.forEach(b::queryParam);
-                    return b.build();
-                })
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = summarizeBundle(response, "Practitioner");
-        logger.info("[searchPractitioner] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "Search for questionnaires by title or status")
-    public String searchQuestionnaire(String title, String status) {
-        logger.info("[searchQuestionnaire] Searching: title={}, status={}", title, status);
-        Map<String, String> params = new LinkedHashMap<>();
-        if (title != null && !title.isBlank()) {
-            params.put("title", title);
-        }
-        if (status != null && !status.isBlank()) {
-            params.put("status", status);
-        }
-
-        Map<String, Object> response = fhirWebClient.get()
-                .uri(uriBuilder -> {
-                    var b = uriBuilder.path("/Questionnaire");
-                    params.forEach(b::queryParam);
-                    b.queryParam("_count", "50");
-                    return b.build();
-                })
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = summarizeBundle(response, "Questionnaire");
-        logger.info("[searchQuestionnaire] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "Search for care plans by patient reference or status")
-    public String searchCarePlan(String patientId, String status) {
-        logger.info("[searchCarePlan] Searching: patientId={}, status={}", patientId, status);
-        Map<String, String> params = new LinkedHashMap<>();
-        if (patientId != null && !patientId.isBlank()) {
-            params.put("subject", "Patient/" + patientId);
-        }
-        if (status != null && !status.isBlank()) {
-            params.put("status", status);
-        }
-
-        Map<String, Object> response = fhirWebClient.get()
-                .uri(uriBuilder -> {
-                    var b = uriBuilder.path("/CarePlan");
-                    params.forEach(b::queryParam);
-                    b.queryParam("_count", "50");
-                    return b.build();
-                })
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = summarizeBundle(response, "CarePlan");
-        logger.info("[searchCarePlan] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "Search for organizations by name")
-    public String searchOrganization(String name) {
-        logger.info("[searchOrganization] Searching: name={}", name);
-        Map<String, String> params = new LinkedHashMap<>();
-        if (name != null && !name.isBlank()) {
-            params.put("name", name);
-        }
-
-        Map<String, Object> response = fhirWebClient.get()
-                .uri(uriBuilder -> {
-                    var b = uriBuilder.path("/Organization");
-                    params.forEach(b::queryParam);
-                    b.queryParam("_count", "50");
-                    return b.build();
-                })
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = summarizeBundle(response, "Organization");
-        logger.info("[searchOrganization] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "List all resources of a specific FHIR type (e.g., Patient, Practitioner, CarePlan)")
-    public String listResources(String resourceType, String count) {
-        logger.info("[listResources] Listing: resourceType={}, count={}", resourceType, count);
-        if (resourceType == null || resourceType.isBlank()) {
-            return "Resource type is required";
-        }
-
-        int pageSize = 50;
-        if (count != null && !count.isBlank()) {
-            try {
-                pageSize = Integer.parseInt(count);
-                pageSize = Math.min(pageSize, 500);
-            } catch (NumberFormatException e) {
-                pageSize = 50;
-            }
-        }
-        final int finalPageSize = pageSize;
-
-        Map<String, Object> response = fhirWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/" + resourceType)
-                        .queryParam("_count", finalPageSize)
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = summarizeBundle(response, resourceType);
-        logger.info("[listResources] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "Get a specific FHIR resource by type and ID")
-    public String getResource(String resourceType, String resourceId) {
-        logger.info("[getResource] Getting: resourceType={}, resourceId={}", resourceType, resourceId);
-        if (resourceType == null || resourceType.isBlank() || resourceId == null || resourceId.isBlank()) {
-            return "Resource type and ID are required";
-        }
-
-        Map<String, Object> response = fhirWebClient.get()
-                .uri("/" + resourceType + "/" + resourceId)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = formatResourceDetails(response);
-        logger.info("[getResource] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "Cancel an appointment by its ID")
-    public String cancelAppointment(String appointmentId) {
-        logger.info("[cancelAppointment] Cancelling: appointmentId={}", appointmentId);
-        
-        Map<String, Object> appointment = fhirWebClient.get()
-                .uri("/Appointment/{id}", appointmentId)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        if (appointment == null || appointment.isEmpty()) {
-            String msg = "Appointment not found for id=" + appointmentId;
-            logger.warn("[cancelAppointment] Response: {}", msg);
-            return msg;
-        }
-
-        appointment.put("status", "cancelled");
-        Map<String, Object> updated = fhirWebClient.put()
-                .uri("/Appointment/{id}", appointmentId)
-                .bodyValue(appointment)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        String result = "Appointment cancelled with id=" + appointmentId;
-        logger.info("[cancelAppointment] Response: {}", result);
-        return result;
-    }
-
-    @Tool(description = "Collect complete FHIR context for one patient in order to generate a synthesis summary")
-    public String buildPatientSynthesisContext(String patientId) {
-        logger.info("[buildPatientSynthesisContext] Collecting context for patientId={}", patientId);
-        if (patientId == null || patientId.isBlank()) {
-            return "patientId is required";
-        }
-
-        try {
-            String resolvedPatientId = resolvePatientId(patientId);
-            if (resolvedPatientId.isBlank()) {
-                return "Patient not found for input=" + patientId;
+    @Tool("Searches patients by free text (name or identifier).")
+    public String searchPatients(@P("Free text query") String query) {
+        return executeTool("searchPatients", Map.of("query", safe(query)), () -> {
+            String normalizedQuery = safe(query).trim();
+            if (normalizedQuery.isBlank()) {
+                return "query is required";
             }
 
-            Map<String, Object> patient = safeFetchResource("/Patient/{id}", resolvedPatientId);
+            String[] parts = normalizedQuery.split("\\s+");
+            if (parts.length >= 2) {
+                String family = parts[0];
+                String given = String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length));
 
-            if (patient == null || patient.isEmpty()) {
-                return "Patient not found for id=" + resolvedPatientId;
-            }
+                Map<String, Object> byFamilyGiven = searchPatientBundle(Map.of("family", family, "given", given));
+                if (hasEntries(byFamilyGiven)) {
+                    return summarizeBundle(byFamilyGiven, "Patient");
+                }
 
-            Map<String, Object> carePlansBundle = safeFetchBundle("/CarePlan", Map.of(
-                    "subject", "Patient/" + resolvedPatientId,
-                "_count", "100",
-                "_sort", "-_lastUpdated"
-            ));
-            Map<String, Object> careTeamsBundle = safeFetchBundle("/CareTeam", Map.of(
-                    "patient", resolvedPatientId,
-                "_include", "CareTeam:participant",
-                "_count", "100"
-            ));
-            Map<String, Object> appointmentsBundle = safeFetchBundle("/Appointment", Map.of(
-                    "actor", "Patient/" + resolvedPatientId,
-                "_count", "120",
-                "_sort", "-date"
-            ));
-            Map<String, Object> documentsBundle = safeFetchBundle("/DocumentReference", Map.of(
-                    "subject", "Patient/" + resolvedPatientId,
-                "_count", "100",
-                "_sort", "-date"
-            ));
-            Map<String, Object> communicationsBundle = safeFetchBundle("/Communication", Map.of(
-                    "subject", "Patient/" + resolvedPatientId,
-                "_count", "200",
-                "_sort", "-sent"
-            ));
-            Map<String, Object> relatedPersonsBundle = safeFetchBundle("/RelatedPerson", Map.of(
-                    "patient", resolvedPatientId,
-                "_count", "100",
-                "_sort", "-_lastUpdated"
-            ));
-            Map<String, Object> questionnaireResponsesBySubject = safeFetchBundle("/QuestionnaireResponse", Map.of(
-                    "subject", "Patient/" + resolvedPatientId,
-                "_count", "200",
-                "_sort", "-_lastUpdated"
-            ));
-            Map<String, Object> questionnaireResponsesByPatient = safeFetchBundle("/QuestionnaireResponse", Map.of(
-                    "patient", resolvedPatientId,
-                "_count", "200",
-                "_sort", "-_lastUpdated"
-            ));
-
-            List<Map<String, Object>> carePlans = extractBundleResources(carePlansBundle, "CarePlan");
-            List<Map<String, Object>> careTeams = extractBundleResources(careTeamsBundle, "CareTeam");
-            List<Map<String, Object>> appointments = extractBundleResources(appointmentsBundle, "Appointment");
-            List<Map<String, Object>> documents = extractBundleResources(documentsBundle, "DocumentReference");
-            List<Map<String, Object>> communications = extractBundleResources(communicationsBundle, "Communication");
-            List<Map<String, Object>> relatedPersons = extractBundleResources(relatedPersonsBundle, "RelatedPerson");
-
-            List<Map<String, Object>> questionnaireResponses = new ArrayList<>();
-            questionnaireResponses.addAll(extractBundleResources(questionnaireResponsesBySubject, "QuestionnaireResponse"));
-            questionnaireResponses.addAll(extractBundleResources(questionnaireResponsesByPatient, "QuestionnaireResponse"));
-            questionnaireResponses = deduplicateById(questionnaireResponses);
-
-            StringBuilder result = new StringBuilder();
-            result.append("PATIENT SYNTHESIS CONTEXT\n");
-            result.append("patientId=").append(resolvedPatientId).append("\n");
-            result.append("patientInput=").append(patientId).append("\n\n");
-
-            result.append("[Patient]\n");
-            result.append(patientSummary(patient)).append("\n\n");
-
-            appendSection(result, "CarePlans", carePlanSummaries(carePlans));
-            appendSection(result, "CareTeam", careTeamSummaries(careTeams));
-            appendSection(result, "Appointments", appointmentSummaries(appointments));
-            appendSection(result, "Documents (sans contenu)", documentSummaries(documents));
-            appendSection(result, "Correspondances", communicationSummaries(communications));
-            appendSection(result, "Entourage", relatedPersonSummaries(relatedPersons));
-            appendSection(result, "Questionnaires", questionnaireResponseSummaries(questionnaireResponses));
-
-            String output = result.toString().trim();
-            logger.info("[buildPatientSynthesisContext] Response size={} chars", output.length());
-            return output;
-        } catch (Exception ex) {
-            logger.warn("[buildPatientSynthesisContext] Error for patientId={}: {}", patientId, ex.getMessage());
-            return "Unable to collect synthesis context for patientId=" + patientId;
-        }
-    }
-
-    @Tool(description = "Navigate to a FHIR resource URL with its type and id")
-    public String navigateToResource(String resourceType, String resourceId) {
-        logger.info("[navigateToResource] Navigating: resourceType={}, resourceId={}", resourceType, resourceId);
-        String result = "http://localhost:8081/fhir/" + resourceType + "/" + resourceId;
-        logger.info("[navigateToResource] Response: {}", result);
-        return result;
-    }
-
-    private String resolvePatientId(String patientInput) {
-        String value = asString(patientInput).trim();
-        if (value.isBlank()) {
-            return "";
-        }
-
-        try {
-            Map<String, Object> byId = fhirWebClient.get()
-                    .uri("/Patient/{id}", value)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
-            if (byId != null && !byId.isEmpty()) {
-                String id = asString(byId.get("id")).trim();
-                if (!id.isBlank()) {
-                    return id;
+                String familyInverted = parts[parts.length - 1];
+                String givenInverted = String.join(" ", java.util.Arrays.copyOfRange(parts, 0, parts.length - 1));
+                Map<String, Object> byInvertedName = searchPatientBundle(Map.of("family", familyInverted, "given", givenInverted));
+                if (hasEntries(byInvertedName)) {
+                    return summarizeBundle(byInvertedName, "Patient");
                 }
             }
-        } catch (Exception ignored) {
-            // Input is probably not a raw Patient id, continue with name-based search.
-        }
 
-        String byIdentifier = findPatientIdByIdentifier(value);
-        if (!byIdentifier.isBlank()) {
-            return byIdentifier;
-        }
-
-        String normalized = value.replace(',', ' ').trim();
-        String[] parts = normalized.split("\\s+");
-        if (parts.length >= 2) {
-            String family = parts[0];
-            String given = String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length));
-
-            String found = findPatientIdByName(family, given);
-            if (!found.isBlank()) {
-                return found;
+            Map<String, Object> byIdentifier = searchPatientBundle(Map.of("identifier", normalizedQuery));
+            if (hasEntries(byIdentifier)) {
+                return summarizeBundle(byIdentifier, "Patient");
             }
 
-            // fallback inverted order: "Prenom Nom"
-            found = findPatientIdByName(parts[parts.length - 1], String.join(" ", java.util.Arrays.copyOfRange(parts, 0, parts.length - 1)));
-            if (!found.isBlank()) {
-                return found;
-            }
-        }
-
-        return "";
+            Map<String, Object> byName = searchPatientBundle(Map.of("name", normalizedQuery));
+            return summarizeBundle(byName, "Patient");
+        });
     }
 
-    private String findPatientIdByIdentifier(String identifier) {
-        if (identifier == null || identifier.isBlank()) {
-            return "";
-        }
-
-        Map<String, Object> bundle = safeFetchBundle("/Patient", Map.of(
-                "identifier", identifier,
-                "_count", "5"
-        ));
-        List<Map<String, Object>> patients = extractBundleResources(bundle, "Patient");
-        if (patients.isEmpty()) {
-            return "";
-        }
-        return asString(patients.get(0).get("id")).trim();
-    }
-
-    private Map<String, Object> safeFetchBundle(String path, Map<String, String> params) {
-        try {
-            return fetchBundle(path, params);
-        } catch (Exception ex) {
-            logger.warn("[safeFetchBundle] path={} params={} error={}", path, params, ex.getMessage());
-            return Map.of();
-        }
-    }
-
-    private Map<String, Object> safeFetchResource(String pathTemplate, String id) {
-        try {
-            return fhirWebClient.get()
-                    .uri(pathTemplate, id)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
-        } catch (Exception ex) {
-            logger.warn("[safeFetchResource] pathTemplate={} id={} error={}", pathTemplate, id, ex.getMessage());
-            return Map.of();
-        }
-    }
-
-    private String findPatientIdByName(String family, String given) {
-        if (family == null || family.isBlank() || given == null || given.isBlank()) {
-            return "";
-        }
-
-        Map<String, Object> bundle = fetchBundle("/Patient", Map.of(
-                "family", family,
-                "given", given,
-                "_count", "5"
-        ));
-        List<Map<String, Object>> patients = extractBundleResources(bundle, "Patient");
-        if (patients.isEmpty()) {
-            return "";
-        }
-        return asString(patients.get(0).get("id")).trim();
-    }
-
-    private Map<String, Object> fetchBundle(String path, Map<String, String> params) {
+    @SuppressWarnings("null")
+    private Map<String, Object> searchPatientBundle(Map<String, String> criteria) {
         return fhirWebClient.get()
                 .uri(uriBuilder -> {
-                    var b = uriBuilder.path(path);
-                    params.forEach(b::queryParam);
-                    return b.build();
+                    var builder = uriBuilder.path("/Patient")
+                            .queryParam("_count", 5)
+                            .queryParam("_summary", "true");
+                    criteria.forEach((k, v) -> {
+                        if (v != null && !v.isBlank()) {
+                            builder.queryParam(Objects.requireNonNull(k), Objects.requireNonNull(v));
+                        }
+                    });
+                    return builder.build();
                 })
                 .retrieve()
-                .bodyToMono(Map.class)
+                .bodyToMono(MAP_TYPE)
+                .timeout(TOOL_TIMEOUT)
                 .block();
     }
 
-    private List<Map<String, Object>> extractBundleResources(Map<String, Object> bundle, String resourceType) {
-        List<Map<String, Object>> resources = new ArrayList<>();
+    private boolean hasEntries(Map<String, Object> bundle) {
         if (bundle == null || bundle.isEmpty()) {
-            return resources;
+            return false;
         }
-
         Object entriesObj = bundle.get("entry");
-        if (!(entriesObj instanceof List<?> entries)) {
-            return resources;
-        }
+        return entriesObj instanceof List<?> entries && !entries.isEmpty();
+    }
 
-        for (Object entry : entries) {
-            if (!(entry instanceof Map<?, ?> entryMap)) {
-                continue;
+    @Tool("Searches resources of a given FHIR type with query params formatted as key=value&key2=value2.")
+    public String searchResource(
+            @P("FHIR resource type, for example Patient, CarePlan or Appointment") String resourceType,
+            @P("Query params, for example name=Dupont&status=active") String query
+    ) {
+        return executeTool("searchResource", Map.of("resourceType", safe(resourceType), "query", safe(query)), () -> {
+            String type = normalizeResourceType(resourceType);
+            Map<String, String> params = parseQuery(query);
+
+            Map<String, Object> bundle = fhirWebClient.get()
+                    .uri(uriBuilder -> {
+                        var builder = uriBuilder.path("/" + type).queryParam("_count", 30);
+                        params.forEach(builder::queryParam);
+                        return builder.build();
+                    })
+                    .retrieve()
+                    .bodyToMono(MAP_TYPE)
+                    .timeout(TOOL_TIMEOUT)
+                    .block();
+
+            return summarizeBundle(bundle, type);
+        });
+    }
+
+    @Tool("Reads one FHIR resource by type and id.")
+    public String getResource(
+            @P("FHIR resource type") String resourceType,
+            @P("FHIR resource id") String resourceId
+    ) {
+        return executeTool("getResource", Map.of("resourceType", safe(resourceType), "resourceId", safe(resourceId)), () -> {
+            String type = normalizeResourceType(resourceType);
+            String id = normalizeRequired(resourceId, "resourceId");
+
+            Map<String, Object> resource = fhirWebClient.get()
+                    .uri("/" + type + "/" + id)
+                    .retrieve()
+                    .bodyToMono(MAP_TYPE)
+                    .timeout(TOOL_TIMEOUT)
+                    .block();
+
+            if (resource == null || resource.isEmpty()) {
+                return "No resource found for " + type + "/" + id;
             }
-            Object resourceObj = entryMap.get("resource");
-            if (!(resourceObj instanceof Map<?, ?> resourceMap)) {
-                continue;
+            return compactJson(resource);
+        });
+    }
+
+    @Tool("Creates a FHIR resource from a JSON payload string.")
+    public String createResource(
+            @P("FHIR resource type") String resourceType,
+            @P("JSON payload of the resource") String jsonPayload
+    ) {
+        return executeTool("createResource", Map.of("resourceType", safe(resourceType)), () -> {
+            String type = normalizeResourceType(resourceType);
+            Map<String, Object> payload = parseJsonObject(jsonPayload);
+            payload.put("resourceType", type);
+
+            Map<String, Object> created = fhirWebClient.post()
+                    .uri("/" + type)
+                    .bodyValue(payload)
+                    .retrieve()
+                    .bodyToMono(MAP_TYPE)
+                    .timeout(TOOL_TIMEOUT)
+                    .block();
+
+            if (created == null || created.isEmpty()) {
+                return "Creation failed for " + type;
             }
 
-            String currentType = asString(resourceMap.get("resourceType"));
-            if (!resourceType.equals(currentType)) {
-                continue;
+            String createdId = safe(asString(created.get("id")));
+            return "Created " + type + " with id=" + createdId;
+        });
+    }
+
+    @Tool("Creates a Questionnaire (QST) with title/status and optional description/items JSON array.")
+    public String createQuestionnaire(
+            @P("Questionnaire title") String title,
+            @P("Questionnaire status (draft|active|retired|unknown)") String status,
+            @P("Optional description") String description,
+            @P("Optional items JSON array matching FHIR Questionnaire.item") String itemsJson
+    ) {
+        return executeTool("createQuestionnaire", Map.of(
+                "title", safe(title),
+                "status", safe(status)
+        ), () -> {
+            String normalizedTitle = safe(title).trim();
+            String normalizedStatus = safe(status).trim();
+
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("resourceType", "Questionnaire");
+            payload.put("status", normalizedStatus.isBlank() ? "draft" : normalizedStatus);
+            payload.put("title", normalizedTitle.isBlank() ? "Untitled questionnaire" : normalizedTitle);
+            payload.put("subjectType", List.of("Patient"));
+
+            String normalizedDescription = safe(description).trim();
+            if (!normalizedDescription.isBlank()) {
+                payload.put("description", normalizedDescription);
             }
 
-            resources.add((Map<String, Object>) resourceMap);
-        }
-        return resources;
+            String normalizedItems = safe(itemsJson).trim();
+            if (!normalizedItems.isBlank()) {
+                payload.put("item", parseJsonArrayOfObjects(normalizedItems, "itemsJson"));
+            } else {
+                String sessionId = safe(chatSessionContext.getCurrentSessionId());
+                List<Map<String, Object>> generatedItems = autoGenerateQuestionnaireItems(
+                        normalizedTitle,
+                        normalizedDescription,
+                        sessionId
+                );
+                if (!generatedItems.isEmpty()) {
+                    payload.put("item", generatedItems);
+                }
+            }
+
+            Map<String, Object> created = fhirWebClient.post()
+                    .uri("/Questionnaire")
+                    .bodyValue(payload)
+                    .retrieve()
+                    .bodyToMono(MAP_TYPE)
+                    .timeout(TOOL_TIMEOUT)
+                    .block();
+
+            if (created == null || created.isEmpty()) {
+                return "Creation failed for Questionnaire";
+            }
+
+            String createdId = safe(asString(created.get("id")));
+            return "Created Questionnaire with id=" + createdId;
+        });
     }
 
-    private List<Map<String, Object>> deduplicateById(List<Map<String, Object>> resources) {
-        List<Map<String, Object>> unique = new ArrayList<>();
-        Set<String> seen = new LinkedHashSet<>();
-        for (Map<String, Object> resource : resources) {
-            String id = asString(resource.get("id"));
-            if (id.isBlank() || seen.add(id)) {
-                unique.add(resource);
+    private List<Map<String, Object>> autoGenerateQuestionnaireItems(String title, String description, String sessionId) {
+        String normalizedTitle = safe(title).trim();
+        String normalizedDescription = safe(description).trim();
+        String seed = (normalizedTitle + "\n" + normalizedDescription).trim();
+
+        List<String> contextChunks = sessionId.isBlank()
+                ? List.of()
+                : contextFileSessionStore.findRelevantChunks(sessionId, seed, null, 8);
+
+        StringBuilder merged = new StringBuilder(seed);
+        for (String chunk : contextChunks) {
+            if (chunk != null && !chunk.isBlank()) {
+                merged.append("\n").append(chunk);
             }
         }
-        return unique;
-    }
 
-    private String patientSummary(Map<String, Object> patient) {
-        String id = asString(patient.get("id"));
-        String birthDate = asString(patient.get("birthDate"));
-        String gender = asString(patient.get("gender"));
-        String active = asString(patient.get("active"));
-        String name = humanName(patient.get("name"));
-        String telecom = telecomSummary(patient.get("telecom"));
-        String identifiers = identifierSummary(patient.get("identifier"));
-        return "id=" + id + ", name=" + name + ", birthDate=" + birthDate + ", gender=" + gender +
-                ", active=" + active + ", telecom=" + telecom + ", identifiers=" + identifiers;
-    }
-
-    private List<String> carePlanSummaries(List<Map<String, Object>> carePlans) {
-        List<String> lines = new ArrayList<>();
-        for (Map<String, Object> cp : carePlans) {
-            lines.add("id=" + asString(cp.get("id"))
-                    + ", status=" + asString(cp.get("status"))
-                    + ", intent=" + asString(cp.get("intent"))
-                    + ", title=" + asString(cp.get("title"))
-                    + ", category=" + categorySummary(cp.get("category"))
-                    + ", created=" + asString(cp.get("created"))
-                    + ", note=" + firstNoteText(cp.get("note")));
+        List<String> extractedQuestions = extractQuestionLines(merged.toString());
+        if (extractedQuestions.isEmpty()) {
+            extractedQuestions = defaultQuestionTemplates(seed);
         }
-        return lines;
-    }
 
-    private List<String> careTeamSummaries(List<Map<String, Object>> careTeams) {
-        List<String> lines = new ArrayList<>();
-        for (Map<String, Object> ct : careTeams) {
-            lines.add("id=" + asString(ct.get("id"))
-                    + ", status=" + asString(ct.get("status"))
-                    + ", subject=" + referenceSummary(ct.get("subject"))
-                    + ", participants=" + participantSummary(ct.get("participant")));
+        List<Map<String, Object>> items = new ArrayList<>();
+        int maxItems = Math.min(10, extractedQuestions.size());
+        for (int i = 0; i < maxItems; i++) {
+            String question = extractedQuestions.get(i);
+            String type = inferQuestionType(question);
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("linkId", String.valueOf(i + 1));
+            item.put("text", question);
+            item.put("type", type);
+            item.put("required", i < 4);
+            items.add(item);
         }
-        return lines;
+
+        return items;
     }
 
-    private List<String> appointmentSummaries(List<Map<String, Object>> appointments) {
-        List<String> lines = new ArrayList<>();
-        for (Map<String, Object> appt : appointments) {
-            lines.add("id=" + asString(appt.get("id"))
-                    + ", status=" + asString(appt.get("status"))
-                    + ", start=" + asString(appt.get("start"))
-                    + ", end=" + asString(appt.get("end"))
-                    + ", description=" + asString(appt.get("description"))
-                    + ", participants=" + participantSummary(appt.get("participant")));
+    private List<String> extractQuestionLines(String text) {
+        if (text == null || text.isBlank()) {
+            return List.of();
         }
-        return lines;
-    }
 
-    private List<String> documentSummaries(List<Map<String, Object>> documents) {
-        List<String> lines = new ArrayList<>();
-        for (Map<String, Object> doc : documents) {
-            lines.add("id=" + asString(doc.get("id"))
-                    + ", date=" + asString(doc.get("date"))
-                    + ", title=" + asString(doc.get("description"))
-                    + ", class=" + categorySummary(doc.get("category"))
-                    + ", type=" + codingSummary(doc.get("type"))
-                    + ", author=" + firstAuthor(doc.get("author"))
-                    + ", attachments=" + documentAttachmentSummary(doc.get("content")));
-        }
-        return lines;
-    }
-
-    private List<String> communicationSummaries(List<Map<String, Object>> communications) {
-        List<String> lines = new ArrayList<>();
-        for (Map<String, Object> comm : communications) {
-            lines.add("id=" + asString(comm.get("id"))
-                    + ", sent=" + asString(comm.get("sent"))
-                    + ", sender=" + referenceSummary(comm.get("sender"))
-                    + ", recipients=" + recipientSummary(comm.get("recipient"))
-                    + ", content=" + firstCommunicationPayload(comm.get("payload")));
-        }
-        return lines;
-    }
-
-    private List<String> relatedPersonSummaries(List<Map<String, Object>> relatedPersons) {
-        List<String> lines = new ArrayList<>();
-        for (Map<String, Object> rp : relatedPersons) {
-            lines.add("id=" + asString(rp.get("id"))
-                    + ", name=" + humanName(rp.get("name"))
-                    + ", relationship=" + relationshipSummary(rp.get("relationship"))
-                    + ", telecom=" + telecomSummary(rp.get("telecom"))
-                    + ", gender=" + asString(rp.get("gender"))
-                    + ", birthDate=" + asString(rp.get("birthDate")));
-        }
-        return lines;
-    }
-
-    private List<String> questionnaireResponseSummaries(List<Map<String, Object>> responses) {
-        List<String> lines = new ArrayList<>();
-        for (Map<String, Object> qr : responses) {
-            int itemCount = 0;
-            Object itemsObj = qr.get("item");
-            if (itemsObj instanceof List<?> items) {
-                itemCount = items.size();
+        Set<String> unique = new LinkedHashSet<>();
+        Matcher matcher = QUESTION_LINE_PATTERN.matcher(text);
+        while (matcher.find()) {
+            String candidate = safe(matcher.group(1)).trim();
+            if (candidate.length() >= 6 && candidate.length() <= 220) {
+                unique.add(candidate);
             }
-            lines.add("id=" + asString(qr.get("id"))
-                    + ", status=" + asString(qr.get("status"))
-                    + ", authored=" + asString(qr.get("authored"))
-                    + ", questionnaire=" + asString(qr.get("questionnaire"))
-                    + ", itemCount=" + itemCount);
         }
-        return lines;
-    }
 
-    private void appendSection(StringBuilder sb, String title, List<String> lines) {
-        sb.append("[").append(title).append("] count=").append(lines.size()).append("\n");
-        if (lines.isEmpty()) {
-            sb.append("- none\n\n");
-            return;
-        }
-        for (String line : lines) {
-            sb.append("- ").append(line).append("\n");
-        }
-        sb.append("\n");
-    }
-
-    private String humanName(Object namesObj) {
-        if (namesObj instanceof List<?> names && !names.isEmpty() && names.get(0) instanceof Map<?, ?> name) {
-            String text = asString(name.get("text"));
-            if (!text.isBlank()) {
-                return text;
-            }
-            String family = asString(name.get("family"));
-            Object givenObj = name.get("given");
-            String given = "";
-            if (givenObj instanceof List<?> givenList && !givenList.isEmpty()) {
-                given = asString(givenList.get(0));
-            }
-            String merged = (given + " " + family).trim();
-            return merged.isBlank() ? "unknown" : merged;
-        }
-        return "unknown";
-    }
-
-    private String telecomSummary(Object telecomObj) {
-        if (!(telecomObj instanceof List<?> telecomList)) {
-            return "none";
-        }
-        List<String> values = new ArrayList<>();
-        for (Object item : telecomList) {
-            if (item instanceof Map<?, ?> telecom) {
-                String system = asString(telecom.get("system"));
-                String value = asString(telecom.get("value"));
-                if (!value.isBlank()) {
-                    values.add((system.isBlank() ? "contact" : system) + ":" + value);
+        // Also accept "Q: ..." style lines from plain text context.
+        for (String rawLine : text.split("\\R")) {
+            String line = safe(rawLine).trim();
+            if (line.toLowerCase(Locale.ROOT).startsWith("q:") || line.toLowerCase(Locale.ROOT).startsWith("question:")) {
+                String candidate = line.substring(line.indexOf(':') + 1).trim();
+                if (!candidate.endsWith("?")) {
+                    candidate = candidate + " ?";
+                }
+                if (candidate.length() >= 6 && candidate.length() <= 220) {
+                    unique.add(candidate);
                 }
             }
         }
-        return values.isEmpty() ? "none" : String.join(", ", values);
+
+        return new ArrayList<>(unique);
     }
 
-    private String identifierSummary(Object identifierObj) {
-        if (!(identifierObj instanceof List<?> identifiers)) {
-            return "none";
+    private List<String> defaultQuestionTemplates(String seed) {
+        String lower = safe(seed).toLowerCase(Locale.ROOT);
+
+        if (lower.contains("asthme") || lower.contains("copd") || lower.contains("respir")) {
+            return List.of(
+                    "Avez-vous eu une gene respiratoire cette semaine ?",
+                    "Avez-vous utilise votre traitement de secours ces 7 derniers jours ?",
+                    "Combien de fois vous etes-vous reveille a cause de vos symptomes respiratoires ?",
+                    "Avez-vous identifie un facteur declenchant recent ?",
+                    "Souhaitez-vous decrire un symptome particulier ?"
+            );
         }
-        List<String> values = new ArrayList<>();
-        for (Object item : identifiers) {
-            if (item instanceof Map<?, ?> identifier) {
-                String system = asString(identifier.get("system"));
-                String value = asString(identifier.get("value"));
-                if (!value.isBlank()) {
-                    values.add((system.isBlank() ? "id" : system) + ":" + value);
+
+        if (lower.contains("douleur")) {
+            return List.of(
+                    "Ressentez-vous une douleur actuellement ?",
+                    "Sur une echelle de 0 a 10, quel est le niveau de douleur ?",
+                    "Depuis combien de jours cette douleur est-elle presente ?",
+                    "La douleur impacte-t-elle vos activites quotidiennes ?",
+                    "Souhaitez-vous preciser le contexte de cette douleur ?"
+            );
+        }
+
+        return List.of(
+                "Quel est le principal objectif de ce questionnaire ?",
+                "Depuis quand la situation actuelle est-elle presente ?",
+                "Avez-vous observe une evolution recente ?",
+                "Ce point affecte-t-il votre quotidien ?",
+                "Souhaitez-vous ajouter une precision utile ?"
+        );
+    }
+
+    private String inferQuestionType(String question) {
+        String lower = safe(question).toLowerCase(Locale.ROOT);
+
+        if (lower.contains("date") || lower.contains("quand")) {
+            return "date";
+        }
+        if (lower.contains("combien") || lower.contains("nombre") || lower.contains("niveau") || lower.contains("echelle") || lower.contains("fois")) {
+            return "integer";
+        }
+        if (lower.startsWith("avez-vous") || lower.startsWith("est-ce") || lower.startsWith("ressentez-vous") || lower.contains("oui") || lower.contains("non")) {
+            return "boolean";
+        }
+        if (lower.contains("decrire") || lower.contains("preciser") || lower.contains("ajouter")) {
+            return "text";
+        }
+
+        return "string";
+    }
+
+    @Tool("Updates a FHIR resource by type/id with full JSON payload.")
+    public String updateResource(
+            @P("FHIR resource type") String resourceType,
+            @P("FHIR resource id") String resourceId,
+            @P("JSON payload of the full updated resource") String jsonPayload
+    ) {
+        return executeTool(
+                "updateResource",
+                Map.of("resourceType", safe(resourceType), "resourceId", safe(resourceId)),
+                () -> {
+                    String type = normalizeResourceType(resourceType);
+                    String id = normalizeRequired(resourceId, "resourceId");
+                    Map<String, Object> payload = parseJsonObject(jsonPayload);
+                    payload.put("resourceType", type);
+                    payload.put("id", id);
+
+                    Map<String, Object> updated = fhirWebClient.put()
+                            .uri("/" + type + "/" + id)
+                            .bodyValue(payload)
+                            .retrieve()
+                            .bodyToMono(MAP_TYPE)
+                            .timeout(TOOL_TIMEOUT)
+                            .block();
+
+                    if (updated == null || updated.isEmpty()) {
+                        return "Update failed for " + type + "/" + id;
+                    }
+                    return "Updated " + type + "/" + id;
                 }
-            }
-        }
-        return values.isEmpty() ? "none" : String.join(", ", values);
+        );
     }
 
-    private String categorySummary(Object categoryObj) {
-        if (!(categoryObj instanceof List<?> categories) || categories.isEmpty()) {
-            return "none";
-        }
-        Object first = categories.get(0);
-        if (first instanceof Map<?, ?> category) {
-            String text = asString(category.get("text"));
-            if (!text.isBlank()) {
-                return text;
+    @Tool("Returns API capability statement and main FHIR server metadata.")
+    public String getFhirMetadata() {
+        return executeTool("getFhirMetadata", Map.of(), () -> {
+            Map<String, Object> metadata = fhirWebClient.get()
+                    .uri("/metadata")
+                    .retrieve()
+                    .bodyToMono(MAP_TYPE)
+                    .timeout(TOOL_TIMEOUT)
+                    .block();
+
+            if (metadata == null || metadata.isEmpty()) {
+                return "No metadata returned by FHIR server.";
             }
-            return codingSummary(category);
-        }
-        return asString(first);
+            return compactJson(metadata);
+        });
     }
 
-    private String codingSummary(Object codingContainer) {
-        if (!(codingContainer instanceof Map<?, ?> codingMap)) {
-            return asString(codingContainer);
-        }
-        Object codingObj = codingMap.get("coding");
-        if (codingObj instanceof List<?> codings && !codings.isEmpty() && codings.get(0) instanceof Map<?, ?> firstCoding) {
-            String display = asString(firstCoding.get("display"));
-            if (!display.isBlank()) {
-                return display;
-            }
-            String code = asString(firstCoding.get("code"));
-            if (!code.isBlank()) {
-                return code;
-            }
-        }
-        return asString(codingMap.get("text"));
-    }
+    private String executeTool(String toolName, Map<String, String> input, ToolSupplier supplier) {
+        toolEventPublisher.emit(toolName + ":start", compactJson(input));
+        try {
+            long start = System.nanoTime();
+            String output = supplier.get();
+            long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+            String normalized = output == null ? "" : output;
 
-    private String firstNoteText(Object noteObj) {
-        if (noteObj instanceof List<?> notes && !notes.isEmpty() && notes.get(0) instanceof Map<?, ?> note) {
-            return asString(note.get("text"));
+            toolEventPublisher.emit(toolName + ":result", normalized);
+            logger.info("[tool] {} done in {}ms", toolName, elapsedMs);
+            return normalized;
+        } catch (Exception ex) {
+            String error = "Tool " + toolName + " failed: " + safe(ex.getMessage());
+            toolEventPublisher.emit(toolName + ":error", error);
+            logger.warn("[tool] {} failed: {}", toolName, ex.getMessage());
+            return error;
         }
-        return "";
-    }
-
-    private String referenceSummary(Object obj) {
-        if (obj instanceof Map<?, ?> map) {
-            String reference = asString(map.get("reference"));
-            String display = asString(map.get("display"));
-            if (!display.isBlank()) {
-                return display + " (" + reference + ")";
-            }
-            return reference;
-        }
-        return asString(obj);
-    }
-
-    private String participantSummary(Object participantObj) {
-        if (!(participantObj instanceof List<?> participants)) {
-            return "none";
-        }
-        List<String> values = new ArrayList<>();
-        for (Object participantObjEntry : participants) {
-            if (participantObjEntry instanceof Map<?, ?> participant) {
-                String actor = referenceSummary(participant.get("actor"));
-                if (actor.isBlank()) {
-                    actor = referenceSummary(participant.get("member"));
-                }
-                String status = asString(participant.get("status"));
-                values.add(actor + (status.isBlank() ? "" : " [" + status + "]"));
-            }
-        }
-        return values.isEmpty() ? "none" : String.join(" | ", values);
-    }
-
-    private String firstAuthor(Object authorObj) {
-        if (authorObj instanceof List<?> authors && !authors.isEmpty()) {
-            return referenceSummary(authors.get(0));
-        }
-        return "";
-    }
-
-    private String documentAttachmentSummary(Object contentObj) {
-        if (!(contentObj instanceof List<?> contents)) {
-            return "none";
-        }
-        List<String> values = new ArrayList<>();
-        for (Object content : contents) {
-            if (!(content instanceof Map<?, ?> contentMap)) {
-                continue;
-            }
-            Object attachmentObj = contentMap.get("attachment");
-            if (!(attachmentObj instanceof Map<?, ?> attachment)) {
-                continue;
-            }
-            String title = asString(attachment.get("title"));
-            String contentType = asString(attachment.get("contentType"));
-            String url = asString(attachment.get("url"));
-            String size = asString(attachment.get("size"));
-            values.add("title=" + title + ", type=" + contentType + ", url=" + url + ", size=" + size);
-        }
-        return values.isEmpty() ? "none" : String.join(" | ", values);
-    }
-
-    private String recipientSummary(Object recipientObj) {
-        if (!(recipientObj instanceof List<?> recipients)) {
-            return "none";
-        }
-        List<String> values = new ArrayList<>();
-        for (Object recipient : recipients) {
-            values.add(referenceSummary(recipient));
-        }
-        return values.isEmpty() ? "none" : String.join(" | ", values);
-    }
-
-    private String firstCommunicationPayload(Object payloadObj) {
-        if (payloadObj instanceof List<?> payloads && !payloads.isEmpty() && payloads.get(0) instanceof Map<?, ?> payload) {
-            String contentString = asString(payload.get("contentString"));
-            if (!contentString.isBlank()) {
-                return contentString;
-            }
-            return asString(payload.get("contentReference"));
-        }
-        return "";
-    }
-
-    private String relationshipSummary(Object relationshipObj) {
-        if (!(relationshipObj instanceof List<?> relationships) || relationships.isEmpty()) {
-            return "none";
-        }
-        Object first = relationships.get(0);
-        if (first instanceof Map<?, ?> rel) {
-            String text = asString(rel.get("text"));
-            if (!text.isBlank()) {
-                return text;
-            }
-            return codingSummary(rel);
-        }
-        return asString(first);
     }
 
     private String summarizeBundle(Map<String, Object> bundle, String resourceType) {
         if (bundle == null || bundle.isEmpty()) {
-            return "No response from FHIR server for " + resourceType;
+            return "No " + resourceType + " result.";
         }
 
-        Object total = bundle.get("total");
+        Object totalObj = bundle.get("total");
+        int total = totalObj instanceof Number ? ((Number) totalObj).intValue() : -1;
+
         Object entriesObj = bundle.get("entry");
-        List<String> summaries = new ArrayList<>();
-        
-        if (entriesObj instanceof List<?> entries) {
-            int shown = Math.min(entries.size(), 5);
-            for (int i = 0; i < shown; i++) {
-                Object entry = entries.get(i);
-                if (entry instanceof Map<?, ?> entryMap) {
-                    Object resource = entryMap.get("resource");
-                    if (resource instanceof Map<?, ?> resourceMap) {
-                        summaries.add(formatResourceSummary(resourceMap));
-                    }
-                }
-            }
+        if (!(entriesObj instanceof List<?> entries) || entries.isEmpty()) {
+            return total >= 0 ? "0 result for " + resourceType + " (total=" + total + ")" : "0 result for " + resourceType;
         }
 
-        String totalText = total == null ? String.valueOf(summaries.size()) : String.valueOf(total);
-        StringBuilder result = new StringBuilder("Found " + totalText + " " + resourceType + " resources");
-        
-        if (!summaries.isEmpty()) {
-            result.append(":\n");
-            for (int i = 0; i < summaries.size(); i++) {
-                result.append((i + 1)).append(". ").append(summaries.get(i)).append("\n");
+        StringJoiner joiner = new StringJoiner("\n");
+        int max = Math.min(entries.size(), 10);
+        for (int i = 0; i < max; i++) {
+            Object item = entries.get(i);
+            if (!(item instanceof Map<?, ?> entry)) {
+                continue;
             }
+            Object resource = entry.get("resource");
+            if (!(resource instanceof Map<?, ?> map)) {
+                continue;
+            }
+            String id = asString(map.get("id"));
+            String code = asString(map.get("resourceType"));
+            joiner.add("- " + code + "/" + id);
         }
-        
-        return result.toString().trim();
+
+        String prefix = total >= 0
+                ? "Found " + entries.size() + " entries (total=" + total + ") for " + resourceType
+                : "Found " + entries.size() + " entries for " + resourceType;
+        return prefix + "\n" + joiner;
     }
 
-    private String formatResourceSummary(Map<?, ?> resource) {
-        String resourceType = asString(resource.get("resourceType"));
-        String id = asString(resource.get("id"));
-        
-        switch (resourceType) {
-            case "Patient":
-                Object nameObj = resource.get("name");
-                if (nameObj instanceof List<?> names && !((List<?>) names).isEmpty()) {
-                    Map<?, ?> name = (Map<?, ?>) ((List<?>) names).get(0);
-                    String family = asString(name.get("family"));
-                    Object given = name.get("given");
-                    String givenName = "";
-                    if (given instanceof List<?> givenList && !givenList.isEmpty()) {
-                        givenName = " " + asString(givenList.get(0));
-                    }
-                    return id + ": " + family + givenName;
-                }
-                return id + " (Patient)";
-            case "Practitioner":
-                nameObj = resource.get("name");
-                if (nameObj instanceof List<?> names && !((List<?>) names).isEmpty()) {
-                    Map<?, ?> name = (Map<?, ?>) ((List<?>) names).get(0);
-                    String family = asString(name.get("family"));
-                    Object given = name.get("given");
-                    String givenName = "";
-                    if (given instanceof List<?> givenList && !givenList.isEmpty()) {
-                        givenName = " " + asString(givenList.get(0));
-                    }
-                    return id + ": " + family + givenName;
-                }
-                return id + " (Practitioner)";
-            case "Questionnaire":
-                String title = asString(resource.get("title"));
-                String status = asString(resource.get("status"));
-                return id + ": " + title + " [" + status + "]";
-            case "CarePlan":
-                String cpStatus = asString(resource.get("status"));
-                String subject = asString(resource.get("subject"));
-                return id + " [" + cpStatus + "] for " + subject;
-            case "Appointment":
-                String apptStatus = asString(resource.get("status"));
-                String start = asString(resource.get("start"));
-                return id + " [" + apptStatus + "] at " + start;
-            default:
-                return id + " (" + resourceType + ")";
+    private Map<String, String> parseQuery(String query) {
+        Map<String, String> params = new LinkedHashMap<>();
+        if (query == null || query.isBlank()) {
+            return params;
         }
-    }
 
-    private String formatResourceDetails(Map<?, ?> resource) {
-        if (resource == null || resource.isEmpty()) {
-            return "Resource not found";
-        }
-        
-        String resourceType = asString(resource.get("resourceType"));
-        String id = asString(resource.get("id"));
-        StringBuilder result = new StringBuilder(resourceType + " " + id + ":\n");
-        
-        // Common fields
-        for (Map.Entry<?, ?> entry : resource.entrySet()) {
-            String keyStr = asString(entry.getKey());
-            if (!keyStr.equals("resourceType") && !keyStr.equals("id") && !keyStr.equals("meta") && !keyStr.equals("text")) {
-                String valueStr = asString(entry.getValue());
-                int maxLen = Math.min(100, valueStr.length());
-                result.append("  - ").append(keyStr).append(": ").append(valueStr.substring(0, maxLen)).append("\n");
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            if (pair == null || pair.isBlank()) {
+                continue;
             }
+            String[] split = pair.split("=", 2);
+            String key = URLDecoder.decode(split[0].trim(), StandardCharsets.UTF_8);
+            if (key.isBlank()) {
+                continue;
+            }
+            String value = split.length > 1 ? URLDecoder.decode(split[1].trim(), StandardCharsets.UTF_8) : "";
+            params.put(key, value);
         }
-        
-        return result.toString();
+        return params;
     }
 
-    @Tool(description = "Generate a synthesized summary of a patient's complete medical record including care plans, care team, related persons, documents, and questionnaires")
-    public String synthesis(String patientId) {
-        logger.info("[synthesis] Generating synthesis for patientId={}", patientId);
-        if (patientId == null || patientId.isBlank()) {
-            return "patientId is required";
-        }
-
+    private Map<String, Object> parseJsonObject(String jsonPayload) {
         try {
-            String contextStr = buildPatientSynthesisContext(patientId);
-            if (contextStr.startsWith("Unable") || contextStr.startsWith("Patient not found")) {
-                return contextStr;
-            }
-
-            // Parse the context to extract key metrics
-            String[] lines = contextStr.split("\n");
-            Map<String, Integer> counts = new HashMap<>();
-            counts.put("carePlans", 0);
-            counts.put("careTeam", 0);
-            counts.put("appointments", 0);
-            counts.put("documents", 0);
-            counts.put("communications", 0);
-            counts.put("relatedPersons", 0);
-            counts.put("questionnaires", 0);
-
-            String currentSection = "";
-            StringBuilder result = new StringBuilder();
-            result.append("=== SYNTHÈSE PATIENT ===\n\n");
-
-            String patientName = "";
-            String patientBirthDate = "";
-            String patientGender = "";
-            String patientActive = "";
-
-            for (String line : lines) {
-                if (line.startsWith("[Patient]")) {
-                    currentSection = "patient";
-                } else if (line.startsWith("[CarePlans]")) {
-                    currentSection = "carePlans";
-                } else if (line.startsWith("[CareTeam]")) {
-                    currentSection = "careTeam";
-                } else if (line.startsWith("[Appointments]")) {
-                    currentSection = "appointments";
-                } else if (line.startsWith("[Documents")) {
-                    currentSection = "documents";
-                } else if (line.startsWith("[Correspondances]")) {
-                    currentSection = "communications";
-                } else if (line.startsWith("[Entourage]")) {
-                    currentSection = "relatedPersons";
-                } else if (line.startsWith("[Questionnaires]")) {
-                    currentSection = "questionnaires";
-                } else if (line.startsWith("id=") && currentSection.equals("patient")) {
-                    // Extract patient info
-                    if (line.contains("name=")) {
-                        patientName = extractValue(line, "name=");
-                    }
-                    if (line.contains("birthDate=")) {
-                        patientBirthDate = extractValue(line, "birthDate=");
-                    }
-                    if (line.contains("gender=")) {
-                        patientGender = extractValue(line, "gender=");
-                    }
-                    if (line.contains("active=")) {
-                        patientActive = extractValue(line, "active=");
-                    }
-                } else if (!line.isBlank() && !line.startsWith("--") && !line.startsWith("patientId")) {
-                    if (currentSection.equals("carePlans") && line.startsWith("id=")) {
-                        counts.put("carePlans", counts.get("carePlans") + 1);
-                    } else if (currentSection.equals("careTeam") && line.startsWith("id=")) {
-                        counts.put("careTeam", counts.get("careTeam") + 1);
-                    } else if (currentSection.equals("appointments") && line.startsWith("id=")) {
-                        counts.put("appointments", counts.get("appointments") + 1);
-                    } else if (currentSection.equals("documents") && line.startsWith("id=")) {
-                        counts.put("documents", counts.get("documents") + 1);
-                    } else if (currentSection.equals("communications") && line.startsWith("id=")) {
-                        counts.put("communications", counts.get("communications") + 1);
-                    } else if (currentSection.equals("relatedPersons") && line.startsWith("id=")) {
-                        counts.put("relatedPersons", counts.get("relatedPersons") + 1);
-                    } else if (currentSection.equals("questionnaires") && line.startsWith("id=")) {
-                        counts.put("questionnaires", counts.get("questionnaires") + 1);
-                    }
-                }
-            }
-
-            // Format the synthesis
-            result.append("📋 PATIENT : ").append(patientName.isBlank() ? "Unknown" : patientName).append("\n");
-            if (!patientBirthDate.isBlank()) {
-                result.append("   Né(e) le : ").append(patientBirthDate).append("\n");
-            }
-            if (!patientGender.isBlank()) {
-                result.append("   Sexe : ").append(patientGender).append("\n");
-            }
-            result.append("   Statut : ").append(patientActive.isBlank() || patientActive.equals("true") ? "Actif" : "Inactif").append("\n\n");
-
-            result.append("📊 RÉCAPITULATIF :\n");
-            result.append("   • Plans de soin : ").append(counts.get("carePlans")).append("\n");
-            result.append("   • Équipe soignante : ").append(counts.get("careTeam")).append(" intervenant(s)\n");
-            result.append("   • Rendez-vous : ").append(counts.get("appointments")).append("\n");
-            result.append("   • Documents : ").append(counts.get("documents")).append("\n");
-            result.append("   • Entourage : ").append(counts.get("relatedPersons")).append(" personne(s)\n");
-            result.append("   • Questionnaires saisis : ").append(counts.get("questionnaires")).append("\n");
-            result.append("   • Correspondances : ").append(counts.get("communications")).append("\n\n");
-
-            result.append("Pour plus de détails, demande-moi des informations précises sur un élément spécifique.");
-
-            String output = result.toString();
-            logger.info("[synthesis] Response size={} chars", output.length());
-            return output;
+            String payload = normalizeRequired(jsonPayload, "jsonPayload");
+            return objectMapper.readValue(payload, new TypeReference<>() {});
         } catch (Exception ex) {
-            logger.warn("[synthesis] Error for patientId={}: {}", patientId, ex.getMessage());
-            return "Impossible de générer la synthèse pour le patient " + patientId;
+            throw new IllegalArgumentException("jsonPayload must be a valid JSON object", ex);
         }
     }
 
-    private String extractValue(String line, String key) {
-        int startIndex = line.indexOf(key);
-        if (startIndex == -1) {
-            return "";
+    private List<Map<String, Object>> parseJsonArrayOfObjects(String jsonPayload, String fieldName) {
+        try {
+            String payload = normalizeRequired(jsonPayload, fieldName);
+            return objectMapper.readValue(payload, new TypeReference<>() {});
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(fieldName + " must be a valid JSON array", ex);
         }
-        startIndex += key.length();
-        int endIndex = line.indexOf(",", startIndex);
-        if (endIndex == -1) {
-            endIndex = line.length();
+    }
+
+    private String compactJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (Exception ex) {
+            return String.valueOf(value);
         }
-        String value = line.substring(startIndex, endIndex).trim();
-        return value.startsWith("\"") && value.endsWith("\"") ? value.substring(1, value.length() - 1) : value;
+    }
+
+    private String normalizeResourceType(String resourceType) {
+        String type = normalizeRequired(resourceType, "resourceType");
+        return type.replaceAll("[^A-Za-z0-9]", "");
+    }
+
+    private String normalizeRequired(String value, String field) {
+        String normalized = safe(value).trim();
+        if (normalized.isBlank()) {
+            throw new IllegalArgumentException(field + " is required");
+        }
+        return normalized;
     }
 
     private String asString(Object value) {
         return value == null ? "" : String.valueOf(value);
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
+
+    @FunctionalInterface
+    private interface ToolSupplier {
+        String get();
     }
 }

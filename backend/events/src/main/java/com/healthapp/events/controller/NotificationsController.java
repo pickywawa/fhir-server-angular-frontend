@@ -180,7 +180,28 @@ public class NotificationsController {
             null
         ));
 
-        return Map.of("status", "ok", "sent", 4);
+        notificationCreationService.createAndDispatch(new UserNotificationCreateCommand(
+            userId,
+            null,
+            "CHAT_MESSAGE_RECEIVED",
+            "Nouveau message de discussion",
+            "Vous avez recu un nouveau message dans la discussion du patient P1002.",
+            null,
+            "chat",
+            "new-message",
+            NotificationPriority.MEDIUM,
+            EnumSet.of(NotificationChannel.PUSH),
+            Map.of(
+                "discussionId", "DISC-1002-01",
+                "patientId", "P1002",
+                "sender", "Infirmiere Julie",
+                "category", "chat",
+                "subcategory", "new-message"
+            ),
+            null
+        ));
+
+        return Map.of("status", "ok", "sent", 5);
     }
 
     @GetMapping("/metadata-schemas")
@@ -189,7 +210,8 @@ public class NotificationsController {
             "intervenants.member-added", List.of("patientId", "practitionerId", "practitionerName"),
             "questionnaires.questionnaire-added", List.of("questionnaireId", "questionnaireTitle", "patientId"),
             "agenda.appointment-updated", List.of("appointmentId", "startsAt", "patientId"),
-            "visio-conferences.invitation", List.of("conferenceId", "meetingUrl", "startsAt", "hostName", "requiresResponse")
+            "visio-conferences.invitation", List.of("conferenceId", "meetingUrl", "startsAt", "hostName", "requiresResponse"),
+            "chat.new-message", List.of("discussionId", "patientId", "sender")
         );
     }
 }

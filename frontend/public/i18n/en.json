@@ -368,6 +368,7 @@
       },
       "viewer": {
         "title": "Document viewer",
+        "selectDocument": "Select a document from the list to view its preview and details.",
         "tabs": {
           "aria": "Document tabs",
           "preview": "Preview",
@@ -393,6 +394,22 @@
         "documentId": "Document ID",
         "download": "Download",
         "notProvided": "Not provided"
+      },
+      "summary": {
+        "title": "AI document summary",
+        "generate": "Generate summary",
+        "regenerate": "Regenerate summary",
+        "generating": "Generating...",
+        "placeholder": "The AI summary appears here. You can edit it before saving.",
+        "empty": "No summary is stored for this document yet. You can generate one.",
+        "save": "Validate and save",
+        "saving": "Saving...",
+        "errors": {
+          "generate": "Unable to generate document summary.",
+          "save": "Unable to save summary to the document.",
+          "loadBinary": "Unable to load document binary content for generation.",
+          "loadDocumentReference": "Unable to load DocumentReference."
+        }
       },
       "errors": {
         "patientNotFound": "Patient not found for document upload.",

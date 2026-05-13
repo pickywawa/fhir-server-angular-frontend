@@ -38,7 +38,19 @@
         <div class="loading-pill">{{ 'visio.lobby.connecting' | translate }}</div>
       }
       @if (floating.error()) {
-        <div class="error-pill">{{ floating.error() | translate }}</div>
+        <div class="error-pill">
+          <div>{{ floating.error() | translate }}</div>
+          @if (floating.error() === 'visio.error.sdkLoad') {
+            <div class="cert-actions">
+              <a [href]="jitsiBaseUrl" target="_blank" rel="noopener" class="cert-link">
+                {{ 'visio.error.certHint' | translate }}
+              </a>
+              <button type="button" class="cert-btn" (click)="openJitsiCertPage()">
+                {{ 'visio.error.certOpenPopup' | translate }}
+              </button>
+            </div>
+          }
+        </div>
       }
       <div class="jitsi-container" #jitsiContainer></div>
     </div>

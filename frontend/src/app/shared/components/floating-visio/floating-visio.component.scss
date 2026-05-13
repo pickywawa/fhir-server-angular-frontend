@@ -115,6 +115,37 @@
 .error-pill {
   background: rgba(127, 29, 29, 0.85);
   color: #fff;
+  max-width: calc(100% - 16px);
+}
+
+.cert-actions {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cert-link {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+.cert-btn {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.24);
+  }
 }
 
 .resize-handle {

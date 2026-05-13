@@ -5,11 +5,35 @@
   min-height: 0;
 }
 
+:host.embedded-mode {
+  background: linear-gradient(180deg, var(--card-bg-soft) 0%, var(--card-bg) 36%);
+}
+
 app-bubble-card {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+
+  &.narrow {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+  }
+}
+
+.discussions-bare {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+
+  &.narrow {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
 }
 
 .state {
@@ -27,6 +51,53 @@ app-bubble-card {
   flex: 1;
   min-height: 0;
   height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.discussions-layout.narrow {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+}
+
+.narrow-selector-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  margin: 0;
+  background: var(--card-bg-soft);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.narrow-thread-select {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.85rem;
+  background: var(--input-bg, #ffffff);
+  color: var(--input-text, #0f172a);
+  font-family: inherit;
+  font-weight: 500;
+
+  &:focus {
+    outline: none;
+    border-color: var(--focus-ring, #1c808d);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #1c808d) 18%, transparent);
+  }
+}
+
+.narrow-new-btn {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
 }
 
 .threads-pane {
@@ -63,8 +134,8 @@ app-bubble-card {
 
     &:focus {
       outline: none;
-      border-color: var(--focus-ring, #3b82f6);
-      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+      border-color: var(--focus-ring, #1c808d);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #1c808d) 18%, transparent);
     }
   }
 }
@@ -100,8 +171,8 @@ app-bubble-card {
 }
 
 .thread-item.active {
-  border-color: var(--focus-ring, #3b82f6);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+  border-color: var(--focus-ring, #1c808d);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--focus-ring, #1c808d) 18%, transparent);
 }
 
 .thread-avatar {
@@ -174,6 +245,12 @@ app-bubble-card {
   overflow: hidden;
 }
 
+.discussions-layout.narrow .messages-pane {
+  border: none;
+  background: transparent;
+  padding: 0.8rem;
+}
+
 .messages-header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.5rem;
@@ -222,8 +299,8 @@ app-bubble-card {
 
   &:focus {
     outline: none;
-    border-color: var(--focus-ring, #3b82f6);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+    border-color: var(--focus-ring, #1c808d);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #1c808d) 18%, transparent);
   }
 }
 
@@ -395,8 +472,8 @@ app-bubble-card {
 
     &:focus {
       outline: none;
-      border-color: var(--focus-ring, #3b82f6);
-      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #3b82f6) 18%, transparent);
+      border-color: var(--focus-ring, #1c808d);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus-ring, #1c808d) 18%, transparent);
     }
 
     &:disabled {

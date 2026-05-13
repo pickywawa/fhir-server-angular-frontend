@@ -18,7 +18,7 @@
   box-shadow: none;
 }
 
-app-chat-assistant {
+app-right-utility-dock {
   display: flex;
   height: 100%;
   min-width: 0;
@@ -34,9 +34,9 @@ app-chat-assistant {
     min-height: 0;
   }
 
-  app-chat-assistant {
-    width: 100%;
-    height: auto;
+  app-right-utility-dock {
+    width: 0;
+    height: 0;
   }
 }
 

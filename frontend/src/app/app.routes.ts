@@ -21,6 +21,9 @@ import { SupportPageComponent } from './features/support/components/support-page
 import { SettingsPageComponent } from './features/settings/components/settings-page.component';
 import { PatientQuestionnairePageComponent } from './features/my-patients/features/questionnaires/components/patient-questionnaire-page.component';
 import { CreateCarePlanPageComponent } from './features/my-patients/features/careplan/components/create-careplan-page.component';
+import { PatientConsentsPageComponent } from './features/my-patients/features/consents/components/patient-consents-page.component';
+import { PatientObservationPageComponent } from './features/my-patients/features/observations/components/patient-observation-page.component';
+import { PatientProcedurePageComponent } from './features/my-patients/features/procedures/components/patient-procedure-page.component';
 import { ProfilePageComponent } from './features/profile/components/profile-page.component';
 import { authGuard } from './core/guards/auth.guard';
 import { VisioExternalWindowComponent } from './features/my-patients/features/visio/components/visio-external-window.component';
@@ -33,6 +36,11 @@ export const routes: Routes = [
   { path: 'my-patients/careplan/new', component: CreateCarePlanPageComponent, canActivate: [authGuard] },
   { path: 'my-patients/:id/questionnaires/new', component: PatientQuestionnairePageComponent, canActivate: [authGuard] },
   { path: 'my-patients/:id/questionnaires/response/:responseId', component: PatientQuestionnairePageComponent, canActivate: [authGuard] },
+  { path: 'my-patients/:id/consents', component: PatientConsentsPageComponent, canActivate: [authGuard] },
+  { path: 'my-patients/:id/observations/new', component: PatientObservationPageComponent, canActivate: [authGuard] },
+  { path: 'my-patients/:id/observations/:obsId', component: PatientObservationPageComponent, canActivate: [authGuard] },
+  { path: 'my-patients/:id/procedures/new', component: PatientProcedurePageComponent, canActivate: [authGuard] },
+  { path: 'my-patients/:id/procedures/:procId', component: PatientProcedurePageComponent, canActivate: [authGuard] },
   { path: 'my-patients/:id', component: PatientDetailComponent, canActivate: [authGuard] },
   { path: 'patients', component: PatientAdminListComponent, canActivate: [authGuard] },
   { path: 'patients/:id', component: PatientDetailPageComponent, canActivate: [authGuard] },

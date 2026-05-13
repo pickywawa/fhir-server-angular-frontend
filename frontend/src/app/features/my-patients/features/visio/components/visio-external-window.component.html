@@ -4,7 +4,19 @@
   }
 
   @if (error) {
-    <div class="status error">{{ error | translate }}</div>
+    <div class="status error">
+      <div>{{ error | translate }}</div>
+      @if (error === 'visio.error.sdkLoad') {
+        <div class="cert-actions">
+          <a [href]="jitsiBaseUrl" target="_blank" rel="noopener" class="cert-link">
+            {{ 'visio.error.certHint' | translate }}
+          </a>
+          <button type="button" class="cert-btn" (click)="openJitsiCertPage()">
+            {{ 'visio.error.certOpenPopup' | translate }}
+          </button>
+        </div>
+      }
+    </div>
   }
 
   <div class="jitsi-host" #jitsiContainer></div>

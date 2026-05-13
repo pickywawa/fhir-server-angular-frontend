@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 
-export type AppTheme = 'light' | 'dark' | 'purple' | 'midnight' | 'forest' | 'sunrise';
+export type AppTheme = 'light' | 'dark' | 'purple' | 'midnight' | 'forest' | 'sunrise' | 'white-and-black';
 export type AppLanguage = 'fr' | 'en' | 'it' | 'de';
 export type AccessibilityContrast = 'normal' | 'high';
 export type AccessibilityColorMode = 'none' | 'daltonian-friendly';
@@ -19,7 +19,7 @@ export interface AccessibilityPreferences {
   providedIn: 'root'
 })
 export class AppPreferencesService {
-  private readonly availableThemes: AppTheme[] = ['light', 'dark', 'purple', 'midnight', 'forest', 'sunrise'];
+  private readonly availableThemes: AppTheme[] = ['light', 'dark', 'purple', 'midnight', 'forest', 'sunrise', 'white-and-black'];
   private readonly themeStorageKey = 'healthapp.theme';
   private readonly languageStorageKey = 'healthapp.language';
   private readonly accessibilityStorageKey = 'healthapp.accessibility';

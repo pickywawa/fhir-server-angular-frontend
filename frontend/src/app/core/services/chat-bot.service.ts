@@ -9,6 +9,14 @@ export interface ChatRequest {
   practitionerId?: string;
   patientId?: string;
   fromUrl?: string;
+  contextFiles?: ChatContextFile[];
+}
+
+export interface ChatContextFile {
+  name: string;
+  contentType?: string;
+  content: string;
+  sizeBytes?: number;
 }
 
 export interface ChatResponse {
@@ -23,16 +31,50 @@ export interface ChatStreamEvent {
   content: string;
 }
 
+export interface PatientAnalysisRequest {
+  sessionId?: string;
+  patientId: string;
+  practitionerId?: string;
+  patientData: Record<string, unknown>;
+  options?: Record<string, unknown>;
+}
+
+export interface PatientAnalysisResponse {
+  title: string;
+  riskLevel: 'low' | 'moderate' | 'high' | 'critical';
+  riskScore: number;
+  clinicalSummary: string;
+  interventionsSummary: string;
+  followUpRecommendations: string[];
+  alerts: Array<{
+    label: string;
+    severity: 'info' | 'warning' | 'critical';
+    rationale: string;
+  }>;
+  nextActions: string[];
+  metadata: {
+    confidence: number;
+    generatedAt: string;
+    model: string;
+  };
+  rawJson: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ChatBotService {
   private readonly chatBaseUrl = `${environment.chatBotUrl}/api/v1/chat`;
+  private readonly patientAnalysisBaseUrl = `${environment.chatBotUrl}/api/v1/patient-analysis`;
 
   constructor(private readonly http: HttpClient) {}
 
   chat(request: ChatRequest): Observable<ChatResponse> {
     return this.http.post<ChatResponse>(this.chatBaseUrl, request);
+  }
+
+  analyzePatient(request: PatientAnalysisRequest): Observable<PatientAnalysisResponse> {
+    return this.http.post<PatientAnalysisResponse>(`${this.patientAnalysisBaseUrl}/generate`, request);
   }
 
   stream(request: ChatRequest): Observable<ChatStreamEvent> {

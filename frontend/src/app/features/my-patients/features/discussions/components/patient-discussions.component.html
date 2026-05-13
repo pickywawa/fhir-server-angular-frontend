@@ -1,4 +1,4 @@
-<app-bubble-card [title]="'myPatients.discussions.title' | translate">
+<ng-template #discussionsContent>
   @if (loading) {
     <div class="state">{{ 'myPatients.discussions.loading' | translate }}</div>
   }
@@ -7,12 +7,25 @@
   }
 
   @if (!loading && !error) {
-    <div class="discussions-layout">
-      <aside class="threads-pane">
+    <div class="discussions-layout" [class.narrow]="isNarrow">
+      @if (isNarrow) {
+        <div class="narrow-selector-bar">
+          <select
+            class="narrow-thread-select"
+            [value]="selectedDiscussionId"
+            (change)="selectDiscussion($any($event.target).value)"
+            [attr.aria-label]="'myPatients.discussions.searchPlaceholder' | translate">
+            @for (thread of filteredThreads; track thread.id) {
+              <option [value]="thread.id">
+                {{ getThreadDisplayTitle(thread) }}@if (isGlobalContext && getThreadPatientLabel(thread)) { · {{ getThreadPatientLabel(thread) }}}
+              </option>
+            }
+          </select>
+        </div>
+      }
+      @if (!isNarrow) {
+        <aside class="threads-pane">
         <div class="threads-header">
-          @if (!isGlobalContext) {
-            <app-button-primary (click)="createDiscussion()">{{ 'myPatients.discussions.newDiscussion' | translate }}</app-button-primary>
-          }
           <div class="threads-search">
             <input
               type="text"
@@ -52,6 +65,7 @@
           }
         </div>
       </aside>
+      }
       <section class="messages-pane">
         @if (selectedDiscussionId) {
           <header class="messages-header">
@@ -171,4 +185,19 @@
       </section>
     </div>
   }
-</app-bubble-card>
+</ng-template>
+
+@if (!bare) {
+  <app-bubble-card [title]="'myPatients.discussions.title' | translate" [class.narrow]="isNarrow">
+    @if (!isGlobalContext) {
+      <div bubbleActions>
+        <app-button-primary (click)="createDiscussion()">{{ 'myPatients.discussions.newDiscussion' | translate }}</app-button-primary>
+      </div>
+    }
+    <ng-container *ngTemplateOutlet="discussionsContent"></ng-container>
+  </app-bubble-card>
+} @else {
+  <section class="discussions-bare" [class.narrow]="isNarrow">
+    <ng-container *ngTemplateOutlet="discussionsContent"></ng-container>
+  </section>
+}

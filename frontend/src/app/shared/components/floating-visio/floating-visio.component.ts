@@ -49,6 +49,10 @@ export class FloatingVisioComponent implements AfterViewInit {
   readonly jitsiDomain = environment.jitsiDomain;
   readonly jitsiScriptUrl = environment.jitsiScriptUrl;
 
+  get jitsiBaseUrl(): string {
+    return `https://${this.jitsiDomain}`;
+  }
+
   width = 460;
   height = 300;
   left = 16;
@@ -178,6 +182,18 @@ export class FloatingVisioComponent implements AfterViewInit {
     }
 
     this.closeFloating();
+  }
+
+  openJitsiCertPage(): void {
+    const popup = window.open(
+      this.jitsiBaseUrl,
+      '_blank',
+      'popup=yes,width=980,height=760,resizable=yes,scrollbars=yes'
+    );
+
+    if (!popup) {
+      window.open(this.jitsiBaseUrl, '_blank');
+    }
   }
 
   closeFloating(): void {

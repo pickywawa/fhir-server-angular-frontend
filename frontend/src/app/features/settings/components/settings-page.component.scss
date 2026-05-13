@@ -134,6 +134,11 @@
   color: var(--theme-accent);
 }
 
+.theme-card.white-and-black {
+  --theme-accent: #1c808d;
+  color: var(--theme-accent);
+}
+
 .theme-card.active {
   border-color: var(--theme-accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 22%, transparent);

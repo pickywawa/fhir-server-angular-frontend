@@ -1,7 +1,23 @@
-<div class="chat-rail" [class.closed]="!isOpen">
+<div class="chat-rail" [class.closed]="!isOpen" [class.embedded]="embedded">
   @if (isOpen) {
-    <section class="chat-panel" [style.width.px]="!isMobile ? chatWidth : null" aria-label="chatbot panel">
-      @if (!isMobile) {
+    <section
+      class="chat-panel"
+      [class.embedded]="embedded"
+      [class.drag-active]="isChatDragActive"
+      [style.width.px]="!isMobile && !embedded ? chatWidth : null"
+      aria-label="chatbot panel"
+      (dragenter)="onChatDragEnter($event)"
+      (dragover)="onChatDragOver($event)"
+      (dragleave)="onChatDragLeave($event)"
+      (drop)="onChatDrop($event)"
+    >
+      @if (isChatDragActive) {
+        <div class="chat-drop-overlay" aria-hidden="true">
+          {{ 'chatbot.contextFileDropHint' | translate }}
+        </div>
+      }
+
+      @if (!isMobile && !embedded) {
         <div
           class="chat-resizer"
           role="separator"
@@ -13,21 +29,21 @@
       }
 
       <header class="chat-header">
-        <div>
-          <h3>{{ 'chatbot.title' | translate }}</h3>
-          <p>{{ 'chatbot.subtitle' | translate }}</p>
-        </div>
-        <button type="button" class="btn btn-neutral" (click)="toggleOpen()" [attr.aria-label]="'chatbot.collapse' | translate">
-          {{ 'chatbot.collapse' | translate }}
-        </button>
+        @if (!embedded) {
+          <button type="button" class="btn btn-neutral" (click)="toggleOpen()" [attr.aria-label]="'chatbot.collapse' | translate">
+            {{ 'chatbot.collapse' | translate }}
+          </button>
+        }
       </header>
 
       <div #messagesContainer class="chat-messages" aria-live="polite">
         @for (message of messages; track $index) {
-          <article class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
-            <p class="message-role">
-              {{ (message.role === 'user' ? 'chatbot.user' : 'chatbot.assistant') | translate }}
-            </p>
+          <article class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'" [class.action]="message.kind === 'action'">
+            @if (message.kind !== 'action') {
+              <p class="message-role">
+                {{ (message.role === 'user' ? 'chatbot.user' : 'chatbot.assistant') | translate }}
+              </p>
+            }
             <p class="message-text" [innerHTML]="message.text | linkify"></p>
           </article>
         }
@@ -38,6 +54,40 @@
       </div>
 
       <form class="chat-form" [formGroup]="form" (ngSubmit)="send()">
+        <div class="chat-context-file">
+          <button
+            type="button"
+            class="chat-context-file-trigger"
+            [attr.aria-label]="'chatbot.contextFileLabel' | translate"
+            [attr.title]="'chatbot.contextFileLabel' | translate"
+            (click)="chatContextFileInput.click()"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21.44 11.05 12.25 20.24a6 6 0 1 1-8.49-8.49l9.19-9.19a4 4 0 1 1 5.66 5.66l-9.2 9.2a2 2 0 0 1-2.83-2.83l8.49-8.49" />
+            </svg>
+          </button>
+          <input
+            #chatContextFileInput
+            id="chat-context-file-input"
+            type="file"
+            class="chat-context-file-input"
+            (change)="onContextFileSelected($event)"
+          />
+
+          @if (selectedContextFile) {
+            <div class="chat-context-file-chip">
+              <span>{{ selectedContextFile.name }}</span>
+              <button type="button" class="btn btn-neutral" (click)="removeContextFile()">
+                {{ 'chatbot.contextFileRemove' | translate }}
+              </button>
+            </div>
+          }
+
+          @if (selectedContextFileWarning) {
+            <p class="chat-context-file-warning">{{ selectedContextFileWarning }}</p>
+          }
+        </div>
+
         <label for="chat-message" class="sr-only">{{ 'chatbot.inputLabel' | translate }}</label>
         <textarea
           id="chat-message"

@@ -29,6 +29,9 @@ export class PatientDetailsFormComponent implements OnChanges {
     this.form = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
+      ins: [''],
+      identityStatus: [''],
+      attendingPhysician: [''],
       birthDate: [''],
       gender: ['unknown'],
       email: [''],
@@ -59,6 +62,9 @@ export class PatientDetailsFormComponent implements OnChanges {
       this.form.patchValue({
         firstName: this.patient.firstName || '',
         lastName: this.patient.lastName || '',
+        ins: this.patient.ins || '',
+        identityStatus: this.patient.identityStatus || 'Provisoire',
+        attendingPhysician: this.patient.attendingPhysician || '',
         birthDate: this.patient.birthDate || '',
         gender: this.patient.gender || 'unknown',
         email: this.patient.email || '',
@@ -70,7 +76,8 @@ export class PatientDetailsFormComponent implements OnChanges {
       });
     } else {
       this.form.reset({
-        gender: 'unknown'
+        gender: 'unknown',
+        identityStatus: 'Provisoire'
       });
     }
   }

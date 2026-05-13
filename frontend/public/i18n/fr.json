@@ -42,7 +42,9 @@
       "forest": "Foret",
       "forestDesc": "Palette naturelle verte, lisible et apaisante",
       "sunrise": "Aurore",
-      "sunriseDesc": "Theme chaud et lumineux avec accents ambre"
+      "sunriseDesc": "Theme chaud et lumineux avec accents ambre",
+      "whiteAndBlack": "Blanc et Noir",
+      "whiteAndBlackDesc": "Interface propre et minimaliste avec boutons teal"
     },
     "language": {
       "title": "Langue",
@@ -367,6 +369,31 @@
       "title": "Creation d'un plan de soin"
     },
     "add": "Ajouter",
+    "consent": {
+      "stepLabel": "Consentement",
+      "title": "Consentement du patient",
+      "explanation": "Saisissez le consentement recueilli aupres du patient ou de sa famille. Ce consentement sera enregistre comme ressource FHIR Consent liee a ce parcours de soin.",
+      "granted": "Accord du patient / de la famille",
+      "grantedYes": "Accord donne",
+      "grantedNo": "Refus",
+      "actions": "Actions couvertes",
+      "actionsHint": "Toutes les actions sont selectionnees par defaut. Decochez celles qui ne s'appliquent pas.",
+      "actionCollect": "Collecter",
+      "actionAccess": "Acceder",
+      "actionUse": "Utiliser",
+      "actionDisclose": "Divulguer",
+      "actionCorrect": "Corriger",
+      "confidentiality": "Niveau de confidentialite",
+      "confidentialityNormal": "Normal",
+      "confidentialityRestricted": "Restreint",
+      "period": "Periode de validite",
+      "periodOptional": "(facultatif)",
+      "periodStart": "Debut",
+      "periodEnd": "Fin",
+      "note": "Commentaire",
+      "noteOptional": "(facultatif)",
+      "notePlaceholder": "Informations complementaires sur le recueil du consentement..."
+    },
     "tabs": {
       "plans": "Plans",
       "actions": "Actions",
@@ -442,6 +469,9 @@
       "title": "Informations du patient",
       "firstName": "Prenom",
       "lastName": "Nom",
+      "ins": "INS",
+      "identityStatus": "Statut identite",
+      "attendingPhysician": "Medecin traitant",
       "birthDate": "Date de naissance",
       "genderLabel": "Genre",
       "email": "Email",
@@ -463,6 +493,7 @@
     "search": {
       "title": "Recherche avancee",
       "titleSingle": "Recherche avancee",
+      "close": "Fermer la recherche avancee",
       "family": "Nom",
       "given": "Prenom",
       "birthDate": "Date de naissance",
@@ -471,8 +502,10 @@
       "reset": "Reinitialiser"
     },
     "worklist": {
-      "title": "Worklist patients",
-      "add": "Ajouter un patient",
+      "title": "Suivi de parcours patient",
+      "add": "Inclure un nouveau patient",
+      "filter": "Filtres",
+      "quickSearchPlaceholder": "Rechercher par nom, IPP, numero de dossier...",
       "empty": "Aucun patient trouve",
       "prompt": "Lancez une recherche pour afficher des patients.",
       "error": "Erreur"
@@ -494,10 +527,12 @@
       "tabs": {
         "overview": "Resume",
         "careTeam": "Intervenants",
-        "careplan": "Plan de soin",
+        "careplan": "Plan",
         "visio": "Visioconference",
         "relatedPerson": "Entourage",
         "questionnaires": "Questionnaires",
+        "observations": "Observations",
+        "procedures": "Actes",
         "discussions": "Discussions",
         "timeline": "Ligne de vie",
         "identity": "Fiche d'identite",
@@ -592,16 +627,27 @@
           "title": "Titre",
           "class": "Classe XDS",
           "type": "Type XDS",
-          "file": "Fichier local"
+          "file": "Fichier local",
+          "dropTitle": "Glisser-deposer le fichier ici",
+          "dropSubtitle": "ou cliquer pour choisir un fichier"
         }
       },
       "viewer": {
         "title": "Visualisation document",
+        "selectDocument": "Selectionnez un document dans la liste pour afficher son apercu et ses details.",
         "tabs": {
           "aria": "Onglets document",
           "preview": "Apercu",
-          "details": "Details"
+          "details": "Details",
+          "history": "Historique"
         },
+        "saveDocument": "Enregistrer",
+        "replaceDocument": "Changer le document",
+        "modifyDocument": "Modifier le document",
+        "replacing": "Remplacement...",
+        "moreActions": "Plus d'actions",
+        "savePdfVersion": "Sauvegarder une nouvelle version PDF",
+        "savePdfVersionConfirm": "Confirmer la creation d'une nouvelle version du PDF modifie.",
         "fullscreen": "Plein ecran",
         "exitFullscreen": "Quitter plein ecran",
         "loading": "Chargement du document...",
@@ -623,15 +669,121 @@
         "download": "Telecharger",
         "notProvided": "Non renseigne"
       },
+      "summary": {
+        "title": "Resume IA du document",
+        "generate": "Generer le resume",
+        "regenerate": "Regenerer le resume",
+        "generating": "Generation en cours...",
+        "placeholder": "Le resume IA apparait ici. Vous pouvez le modifier avant validation.",
+        "empty": "Aucun resume enregistre pour ce document. Vous pouvez en generer un.",
+        "save": "Valider et enregistrer",
+        "saving": "Enregistrement...",
+        "errors": {
+          "generate": "Impossible de generer le resume du document.",
+          "save": "Impossible d'enregistrer le resume dans le document.",
+          "loadBinary": "Impossible de charger le contenu du document pour la generation.",
+          "loadDocumentReference": "Impossible de charger le DocumentReference."
+        }
+      },
+      "history": {
+        "loading": "Chargement de l'historique...",
+        "empty": "Aucune version historique disponible.",
+        "version": "Version",
+        "downloadVersion": "Telecharger cette version",
+        "errors": {
+          "load": "Impossible de charger l'historique du document.",
+          "download": "Impossible de telecharger cette version du document."
+        }
+      },
       "errors": {
         "patientNotFound": "Patient introuvable pour enregistrer le document.",
         "invalidClassType": "Classe/type de document invalide.",
         "authorNotFound": "Auteur introuvable pour deposer ce document.",
         "save": "Erreur lors de l'enregistrement du document",
+        "replace": "Erreur lors du remplacement du document",
         "load": "Erreur lors du chargement des documents",
         "noBinary": "Document sans contenu binaire.",
         "loadViewer": "Impossible de charger le document",
         "textDecode": "Impossible d'afficher le contenu texte."
+      }
+    },
+    "observations": {
+      "title": "Observations",
+      "add": "Nouvelle observation",
+      "empty": "Aucune observation pour ce patient.",
+      "allCategories": "Toutes categories",
+      "filterCode": "Filtrer par code / libelle...",
+      "newTitle": "Nouvelle observation",
+      "editTitle": "Modifier l'observation",
+      "subtitle": "Renseignez les informations de l'observation FHIR.",
+      "save": "Enregistrer",
+      "savedSuccess": "Observation enregistree avec succes.",
+      "fields": {
+        "category": "Categorie",
+        "selectCategory": "Selectionner une categorie",
+        "what": "Ce qu'on mesure",
+        "loincSearch": "Rechercher un code LOINC",
+        "loincSearchPlaceholder": "Taper le libelle ou le code (ex: taille, poids, 8302-2...)",
+        "codeDisplay": "Libelle",
+        "codeDisplayPlaceholder": "Ex: Taille, Poids, IMC...",
+        "codeCode": "Code",
+        "codeSystem": "Systeme",
+        "valueType": "Type de valeur",
+        "value": "Valeur",
+        "valuePlaceholder": "Entrez la valeur",
+        "effectiveDate": "Date de mesure",
+        "interpretation": "Interpretation",
+        "noInterpretation": "Aucune",
+        "note": "Note",
+        "notePlaceholder": "Commentaires libres...",
+        "performerInfo": "La mesure sera attribuee au professionnel connecte."
+      },
+      "errors": {
+        "categoryRequired": "La categorie est obligatoire.",
+        "codeRequired": "Le code est obligatoire.",
+        "codeDisplayRequired": "Le libelle est obligatoire."
+      }
+    },
+    "procedures": {
+      "title": "Actes medicaux",
+      "add": "Nouvel acte",
+      "empty": "Aucun acte pour ce patient.",
+      "allCategories": "Toutes categories",
+      "allStatuses": "Tous statuts",
+      "newTitle": "Nouvel acte",
+      "editTitle": "Modifier l'acte",
+      "subtitle": "Renseignez les informations de l'acte FHIR.",
+      "save": "Enregistrer",
+      "savedSuccess": "Acte enregistre avec succes.",
+      "hasReport": "Rapport",
+      "fields": {
+        "status": "Statut",
+        "category": "Categorie",
+        "selectCategory": "Selectionner une categorie",
+        "what": "Acte realise",
+        "snomedSearch": "Rechercher un acte (SNOMED CT)",
+        "snomedSearchPlaceholder": "Taper le libelle ou le code...",
+        "codeDisplay": "Libelle",
+        "codeDisplayPlaceholder": "Ex: Consultation, Chirurgie...",
+        "codeCode": "Code",
+        "occurrenceStart": "Debut",
+        "occurrenceEnd": "Fin",
+        "recorded": "Date d'enregistrement",
+        "performers": "Intervenants",
+        "performerSearchPlaceholder": "Rechercher un professionnel...",
+        "location": "Lieu",
+        "locationPlaceholder": "Ex: Bloc operatoire, Cabinet...",
+        "note": "Note",
+        "notePlaceholder": "Commentaires libres...",
+        "createReport": "Creer un rapport diagnostique (DiagnosticReport)",
+        "reportConclusion": "Conclusion du rapport",
+        "reportConclusionPlaceholder": "Saisir la conclusion..."
+      },
+      "errors": {
+        "categoryRequired": "La categorie est obligatoire.",
+        "codeRequired": "Le code est obligatoire.",
+        "codeDisplayRequired": "Le libelle est obligatoire.",
+        "startRequired": "La date de debut est obligatoire."
       }
     },
     "questionnaires": {
@@ -684,6 +836,68 @@
         "renameTitle": "Erreur lors de la mise à jour du titre",
         "send": "Erreur lors de l'envoi du message",
         "load": "Erreur lors du chargement des discussions"
+      }
+    },
+    "patientAnalysis": {
+      "title": "Analyse patient",
+      "subtitle": "Synthese globale generee par IA a partir des ressources patient",
+      "launchTitle": "Pret a analyser le parcours du patient",
+      "launchDescription": "Cette analyse va recuperer les ressources du patient, generer les resumes des documents manquants, puis produire une synthese clinique globale avec niveau de risque, interventions et recommandations.",
+      "launchButton": "Lancer l'analyse du parcours",
+      "dataCollectionTitle": "Recuperation des donnees",
+      "documentsTitle": "Generation des resumes de documents",
+      "documentsEmpty": "Aucun document disponible pour ce patient.",
+      "resultTitle": "Resultat de l'analyse",
+      "generating": "Generation de l'analyse patient en cours...",
+      "cancel": "Annuler",
+      "cancelling": "Annulation en cours...",
+      "retry": "Relancer l'analyse",
+      "riskLevel": "Niveau de risque",
+      "riskScore": "Score de risque",
+      "confidence": "Confiance",
+      "clinicalSummary": "Resume patient",
+      "interventionsSummary": "Resume interventions et suivi",
+      "recommendations": "Recommandations de suivi",
+      "alerts": "Alertes",
+      "noAlerts": "Aucune alerte remontee",
+      "expandSummary": "Afficher le resume",
+      "collapseSummary": "Masquer le resume",
+      "validationPrompt": "Valider cette analyse ?",
+      "edit": "Modifier",
+      "validate": "Valider",
+      "saveAnalysis": "Enregistrer l'analyse",
+      "reject": "Refuser",
+      "validationAccepted": "Analyse validee par l utilisateur.",
+      "validationRejected": "Analyse refusee par l utilisateur.",
+      "status": {
+        "pending": "En attente",
+        "loading": "Chargement",
+        "success": "Termine",
+        "error": "Erreur"
+      },
+      "steps": {
+        "identity": "Profil patient",
+        "documents": "Documents cliniques",
+        "procedures": "Actes et comptes rendus",
+        "observations": "Constantes et observations",
+        "questionnaires": "Questionnaires patients",
+        "careplan": "Plan de soins",
+        "actions": "Actions de suivi",
+        "appointments": "Rendez-vous",
+        "discussions": "Discussions de prise en charge",
+        "intervenants": "Equipe soignante"
+      },
+      "stepDescriptions": {
+        "identity": "Recuperation de l'identite, des informations administratives et des contacts.",
+        "documents": "Lecture des documents partages et de leurs resumes deja disponibles.",
+        "procedures": "Chargement des actes realises et des rapports diagnostiques associes.",
+        "observations": "Collecte des observations cliniques et mesures recentes.",
+        "questionnaires": "Consolidation des reponses de questionnaires patient.",
+        "careplan": "Analyse du plan de soins et des activites programmees.",
+        "actions": "Recuperation des taches et actions de parcours en cours.",
+        "appointments": "Recuperation des rendez-vous planifies ou passes.",
+        "discussions": "Lecture des messages et echanges de coordination.",
+        "intervenants": "Recuperation des intervenants impliques dans la prise en charge."
       }
     },
     "timeline": {
@@ -759,6 +973,7 @@
     "error": {
       "sdkLoad": "Impossible de charger Jitsi Meet. Verifiez que le serveur est demarré et que le certificat est accepté.",
       "certHint": "Ouvrir Jitsi pour accepter le certificat →",
+      "certOpenPopup": "Ouvrir Jitsi dans une nouvelle fenetre",
       "container": "Erreur d'initialisation du composant video.",
       "start": "Impossible de demarrer la conference."
     },
@@ -782,6 +997,11 @@
     "voiceRecording": "Parlez... relachez pour envoyer",
     "voiceNoTranscript": "Aucune voix detectee. Verifiez votre microphone puis reessayez.",
     "voiceUnsupported": "La saisie vocale n'est pas disponible dans ce navigateur.",
+    "contextFileLabel": "Fichier de contexte",
+    "contextFileRemove": "Retirer",
+    "contextFileDropHint": "Deposez votre fichier de contexte ici",
+    "contextFileTooLarge": "Le fichier depasse la taille maximale autorisee (3 Mo).",
+    "contextFileReadError": "Impossible de lire le fichier selectionne.",
     "streaming": "Generation de la reponse...",
     "greeting": "Bonjour, je peux vous aider a rechercher un patient, creer un rendez-vous, mettre a jour des donnees d'identite ou naviguer vers une ressource.",
     "unavailable": "Le service de chat est actuellement indisponible."
@@ -816,5 +1036,33 @@
         "decline": "Refuser"
       }
     }
+  },
+  "consents": {
+    "title": "Consentement",
+    "badgeGranted": "Accord",
+    "badgeDenied": "Refus",
+    "badgeNone": "Consentement",
+    "noConsent": "Aucun consentement enregistré",
+    "saveSuccess": "Consentement sauvegardé",
+    "granted": "Accord du patient / de la famille",
+    "grantedYes": "Accord donné",
+    "grantedNo": "Refus",
+    "actions": "Actions couvertes",
+    "actionsHint": "Toutes les actions sont sélectionnées par défaut. Décochez celles qui ne s'appliquent pas.",
+    "actionCollect": "Collecter",
+    "actionAccess": "Accéder",
+    "actionUse": "Utiliser",
+    "actionDisclose": "Divulguer",
+    "actionCorrect": "Corriger",
+    "confidentiality": "Niveau de confidentialité",
+    "confidentialityNormal": "Normal",
+    "confidentialityRestricted": "Restreint",
+    "period": "Période de validité",
+    "periodOptional": "facultatif",
+    "periodStart": "Début",
+    "periodEnd": "Fin",
+    "note": "Commentaire",
+    "noteOptional": "facultatif",
+    "notePlaceholder": "Informations complémentaires sur le recueil du consentement..."
   }
 }

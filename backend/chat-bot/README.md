@@ -1,17 +1,25 @@
 # Chat Bot Backend Service
 
-This service exposes a chatbot API for healthcare workflows.
-It uses a local free LLM via Ollama and can call FHIR resources on `http://localhost:8081/fhir`.
+Service de chat backend refondu autour de LangChain4j + Ollama.
+Le mode de fonctionnement est iteratif: le modele peut enchaîner plusieurs appels tools FHIR avant de finaliser la reponse.
 
 ## Features
 
 - REST chat endpoint: `POST /api/v1/chat`
 - Streaming chat endpoint (SSE): `POST /api/v1/chat/stream`
-- Built-in tool actions for predefined workflows:
-  - search patient
-  - create appointment
-  - update patient identity
-  - navigate to created resources
+- Agent LangChain4j avec memoire de conversation
+- Modele par defaut: Mixtral 8x7B avec fenetre 32K (`num_ctx=32768`)
+- Tools FHIR iteratifs exposes au modele:
+  - recherche de ressources
+  - lecture de ressource
+  - creation / mise a jour
+  - lecture metadata FHIR
+- Streaming SSE avec evenements de progression:
+  - `start`
+  - `tool:*`
+  - `chunk`
+  - `error`
+  - `done`
 
 ## Prerequisites
 
@@ -20,19 +28,22 @@ It uses a local free LLM via Ollama and can call FHIR resources on `http://local
 - Running FHIR backend on `http://localhost:8081/fhir`
 - Ollama installed locally
 
-## Install a free local model
+## Installer le modele Mixtral
 
-Example with `qwen2.5:3b`:
+Exemple:
 
 ```bash
-ollama pull qwen2.5:3b
+ollama pull mixtral:8x7b-instruct-v0.1-q4_K_M
 ollama serve
 ```
 
-You can switch model with env var:
+Variables utiles:
 
 ```bash
-export OLLAMA_MODEL=llama3.2:3b
+export OLLAMA_BASE_URL=http://localhost:11434
+export OLLAMA_MODEL=mixtral:8x7b-instruct-v0.1-q4_K_M
+export OLLAMA_NUM_CTX=32768
+export FHIR_BASE_URL=http://localhost:8081/fhir
 ```
 
 ## Run locally
@@ -52,15 +63,15 @@ Chat request:
 ```bash
 curl -X POST http://localhost:8090/api/v1/chat \
   -H "Content-Type: application/json" \
-  -d '{"sessionId":"demo-1","message":"Recherche le patient Dupont"}'
+  -d '{"sessionId":"demo-1","message":"Donne-moi un resume du patient Dupont"}'
 ```
 
-Streaming chat request:
+Streaming chat request (SSE):
 
 ```bash
 curl -N -X POST http://localhost:8090/api/v1/chat/stream \
   -H "Content-Type: application/json" \
-  -d '{"sessionId":"demo-1","message":"Cree un rendez-vous demain a 10h pour le patient 123"}'
+  -d '{"sessionId":"demo-1","message":"Cherche les rendez-vous du patient 123 et propose un recap"}'
 ```
 
 ## Configuration
@@ -69,5 +80,7 @@ Main configuration file: `src/main/resources/application.yaml`
 
 Important keys:
 - `app.fhir.base-url` (default: `http://localhost:8081/fhir`)
-- `spring.ai.ollama.base-url` (default: `http://localhost:11434`)
-- `spring.ai.ollama.chat.options.model` (default: `qwen2.5:3b`)
+- `app.chatbot.ollama.base-url` (default: `http://localhost:11434`)
+- `app.chatbot.ollama.model` (default: `mixtral:8x7b-instruct-v0.1-q4_K_M`)
+- `app.chatbot.ollama.num-ctx` (default: `32768`)
+- `app.chatbot.system-prompt` (strategie agentique iterative)

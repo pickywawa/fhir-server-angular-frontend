@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostBinding, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
@@ -40,7 +40,9 @@ type AgendaViewMode = 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWee
   templateUrl: './agenda-page.component.html',
   styleUrl: './agenda-page.component.scss'
 })
-export class AgendaPageComponent implements OnInit, OnDestroy {
+export class AgendaPageComponent implements OnInit, AfterViewInit, OnDestroy {
+  @Input() embedded = false;
+  @Input() compact = false;
   readonly breadcrumbs = [{ label: 'agenda.title' }];
   readonly statusOptions = APPOINTMENT_STATUS_OPTIONS;
   readonly typeOptions = APPOINTMENT_TYPE_OPTIONS;
@@ -75,6 +77,7 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
   calendarOptions: CalendarOptions;
 
   @ViewChild('calendar') calendarComponent?: FullCalendarComponent;
+  private readonly host = inject(ElementRef<HTMLElement>);
 
   private readonly destroy$ = new Subject<void>();
   private readonly patientSearch$ = new Subject<string>();
@@ -82,6 +85,12 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
   private connectedPractitionerReference = '';
   private visibleRangeStart: Date | null = null;
   private visibleRangeEnd: Date | null = null;
+  private resizeObserver?: ResizeObserver;
+
+  @HostBinding('class.embedded-mode')
+  get embeddedMode(): boolean {
+    return this.embedded;
+  }
 
   constructor(
     private readonly fb: FormBuilder,
@@ -142,11 +151,33 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (this.compact) {
+      this.currentViewMode = 'timeGridDay';
+      this.calendarOptions = {
+        ...this.calendarOptions,
+        initialView: 'timeGridDay'
+      };
+    }
+
     this.initializeConnectedPractitioner();
     this.initializeSearchStreams();
   }
 
+  ngAfterViewInit(): void {
+    if (!this.embedded || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver(() => {
+      this.syncCalendarSize();
+    });
+
+    this.resizeObserver.observe(this.host.nativeElement);
+    this.syncCalendarSize();
+  }
+
   ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -364,6 +395,8 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
     request$.subscribe({
       next: (appointment) => {
         this.saving = false;
+        this.upsertAppointment(appointment);
+        this.updateCalendarEvents();
         if (this.isEditMode()) {
           this.selectedAppointment = appointment;
           this.appointmentModalMode = 'view';
@@ -372,7 +405,8 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
         } else {
           this.closeCreateModal();
         }
-        this.refreshVisibleRange();
+        this.resolveParticipantLabels([appointment]);
+        setTimeout(() => this.refreshVisibleRange(), 250);
       },
       error: (error: unknown) => {
         this.saving = false;
@@ -453,6 +487,7 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
     this.visibleRangeStart = new Date(arg.start);
     this.visibleRangeEnd = new Date(arg.end);
     this.loadAppointments(arg.start, arg.end);
+    this.syncCalendarSize();
   }
 
   private onEventClick(arg: EventClickArg): void {
@@ -649,6 +684,24 @@ export class AgendaPageComponent implements OnInit, OnDestroy {
       return String((error as { message: unknown }).message);
     }
     return fallback;
+  }
+
+  private upsertAppointment(appointment: AgendaAppointment): void {
+    const index = this.appointments.findIndex((item) => item.id === appointment.id);
+    if (index < 0) {
+      this.appointments = [...this.appointments, appointment];
+      return;
+    }
+
+    const next = [...this.appointments];
+    next[index] = appointment;
+    this.appointments = next;
+  }
+
+  private syncCalendarSize(): void {
+    requestAnimationFrame(() => {
+      this.calendarComponent?.getApi().updateSize();
+    });
   }
 }
 

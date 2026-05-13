@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription, take, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
-import { ChatBotService, ChatStreamEvent } from '../../../core/services/chat-bot.service';
+import { ChatBotService, ChatContextFile, ChatStreamEvent } from '../../../core/services/chat-bot.service';
 import { LinkifyPipe } from '../../pipes/linkify.pipe';
 import { ChatAssistantStateService } from '../../../core/services/chat-assistant-state.service';
 
@@ -60,6 +60,7 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
   createdAt: Date;
+  kind?: 'message' | 'action';
 }
 
 @Component({
@@ -70,6 +71,7 @@ interface ChatMessage {
   styleUrl: './chat-assistant.component.scss'
 })
 export class ChatAssistantComponent implements OnInit, OnDestroy {
+  @Input() embedded = false;
   @ViewChild('messagesContainer') messagesContainer?: ElementRef<HTMLDivElement>;
 
   private readonly fb = inject(FormBuilder);
@@ -81,21 +83,25 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   private streamSub?: Subscription;
+  private activeToolMessageIndex: number | null = null;
   private resizeStartX = 0;
   private resizeStartWidth = 420;
   private recognition?: SpeechRecognitionLike;
   private voiceBuffer = '';
   private shouldSendAfterStop = false;
   private holdToTalkActive = false;
+  private readonly maxContextFileBytes = 3 * 1024 * 1024;
+  private dragDepth = 0;
 
   isMobile = false;
   isStreaming = false;
   isResizing = false;
   isRecording = false;
   isVoiceArmed = false;
+  isChatDragActive = false;
   speechSupported = false;
   chatWidth = 420;
-  showVoiceDebug = true;
+  showVoiceDebug = false;
   voiceDebugLogs: string[] = [];
   voiceStatus = {
     started: false,
@@ -111,13 +117,15 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
 
   sessionId = this.createSessionId();
   messages: ChatMessage[] = [];
+  selectedContextFile?: ChatContextFile;
+  selectedContextFileWarning = '';
 
   form = this.fb.group({
     message: ['', [Validators.required, Validators.maxLength(2000)]]
   });
 
   get isOpen(): boolean {
-    return this.chatState.isOpen();
+    return this.embedded ? true : this.chatState.isOpen();
   }
 
   constructor() {
@@ -143,7 +151,11 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
   }
 
   toggleOpen(): void {
-    this.chatState.toggle();
+    if (this.embedded) {
+      this.chatState.close();
+      return;
+    }
+    this.chatState.toggle('chat');
   }
 
   startResize(event: MouseEvent): void {
@@ -183,8 +195,8 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
     this.applyViewportMode();
     this.chatWidth = this.clampChatWidth(this.chatWidth);
 
-    if (wasMobile && !this.isMobile) {
-      this.chatState.open();
+    if (wasMobile && !this.isMobile && !this.embedded) {
+      this.chatState.open('chat');
     }
   }
 
@@ -326,17 +338,20 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
         message,
         practitionerId: practitionerId || undefined,
         patientId: patientId || undefined,
-        fromUrl: fromUrl || undefined
+        fromUrl: fromUrl || undefined,
+        contextFiles: this.selectedContextFile ? [this.selectedContextFile] : undefined
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (event) => this.handleStreamEvent(event, assistantIndex),
         error: () => {
+          this.clearActiveToolAction();
           this.messages[assistantIndex].text = this.translateService.instant('chatbot.unavailable');
           this.isStreaming = false;
           this.scrollToBottom();
         },
         complete: () => {
+          this.clearActiveToolAction();
           if (!this.messages[assistantIndex].text.trim()) {
             this.messages[assistantIndex].text = this.translateService.instant('chatbot.unavailable');
           }
@@ -346,21 +361,168 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
       });
   }
 
+  async onContextFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    await this.setContextFile(file);
+
+    input.value = '';
+  }
+
+  onChatDragEnter(event: DragEvent): void {
+    if (!this.isFileDragEvent(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    this.dragDepth += 1;
+    this.isChatDragActive = true;
+  }
+
+  onChatDragOver(event: DragEvent): void {
+    if (!this.isFileDragEvent(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    this.isChatDragActive = true;
+  }
+
+  onChatDragLeave(event: DragEvent): void {
+    if (!this.isFileDragEvent(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    this.dragDepth = Math.max(0, this.dragDepth - 1);
+    if (this.dragDepth === 0) {
+      this.isChatDragActive = false;
+    }
+  }
+
+  async onChatDrop(event: DragEvent): Promise<void> {
+    if (!this.isFileDragEvent(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    this.dragDepth = 0;
+    this.isChatDragActive = false;
+
+    const file = event.dataTransfer?.files?.[0];
+    await this.setContextFile(file);
+  }
+
+  removeContextFile(): void {
+    this.selectedContextFile = undefined;
+    this.selectedContextFileWarning = '';
+  }
+
+  private isFileDragEvent(event: DragEvent): boolean {
+    const types = event.dataTransfer?.types;
+    return !!types && Array.from(types).includes('Files');
+  }
+
+  private async setContextFile(file?: File): Promise<void> {
+    this.selectedContextFileWarning = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (file.size > this.maxContextFileBytes) {
+      this.selectedContextFile = undefined;
+      this.selectedContextFileWarning = this.translateService.instant('chatbot.contextFileTooLarge');
+      return;
+    }
+
+    try {
+      const content = await file.text();
+
+      this.selectedContextFile = {
+        name: file.name,
+        contentType: file.type || 'text/plain',
+        content,
+        sizeBytes: file.size
+      };
+    } catch {
+      this.selectedContextFile = undefined;
+      this.selectedContextFileWarning = this.translateService.instant('chatbot.contextFileReadError');
+    }
+  }
+
   private handleStreamEvent(event: ChatStreamEvent, assistantIndex: number): void {
+    if (this.handleToolActionEvent(event)) {
+      this.scrollToBottom();
+      return;
+    }
+
     if (event.type === 'chunk') {
+      this.clearActiveToolAction();
       this.messages[assistantIndex].text += event.content;
       this.scrollToBottom();
       return;
     }
 
     if (event.type === 'done') {
+      this.clearActiveToolAction();
       this.isStreaming = false;
       this.scrollToBottom();
     }
   }
 
+  private handleToolActionEvent(event: ChatStreamEvent): boolean {
+    if (!event.type.includes(':')) {
+      return false;
+    }
+
+    if (event.type.endsWith(':start')) {
+      const toolName = event.type.slice(0, -':start'.length);
+      this.showActiveToolAction(`Action: ${this.humanizeToolName(toolName)}...`);
+      return true;
+    }
+
+    if (event.type.endsWith(':result') || event.type.endsWith(':error')) {
+      this.clearActiveToolAction();
+      return true;
+    }
+
+    return false;
+  }
+
+  private showActiveToolAction(text: string): void {
+    if (this.activeToolMessageIndex !== null && this.messages[this.activeToolMessageIndex]) {
+      this.messages[this.activeToolMessageIndex].text = text;
+      return;
+    }
+
+    this.messages.push({
+      role: 'assistant',
+      text,
+      createdAt: new Date(),
+      kind: 'action'
+    });
+    this.activeToolMessageIndex = this.messages.length - 1;
+  }
+
+  private clearActiveToolAction(): void {
+    if (this.activeToolMessageIndex === null) {
+      return;
+    }
+
+    if (this.messages[this.activeToolMessageIndex]?.kind === 'action') {
+      this.messages.splice(this.activeToolMessageIndex, 1);
+    }
+    this.activeToolMessageIndex = null;
+  }
+
+  private humanizeToolName(toolName: string): string {
+    const withSpaces = toolName.replace(/([a-z])([A-Z])/g, '$1 $2');
+    return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
+  }
+
   private pushAssistantPlaceholder(): number {
-    this.messages.push({ role: 'assistant', text: '', createdAt: new Date() });
+    this.messages.push({ role: 'assistant', text: '', createdAt: new Date(), kind: 'message' });
     return this.messages.length - 1;
   }
 
@@ -529,7 +691,7 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
       .subscribe((greeting) => {
         const fallbackGreeting = 'Bonjour, je peux vous aider a rechercher un patient, creer un rendez-vous, mettre a jour une identite ou naviguer vers une ressource.';
         const text = greeting === 'chatbot.greeting' ? fallbackGreeting : greeting;
-        this.messages.push({ role: 'assistant', text, createdAt: new Date() });
+        this.messages.push({ role: 'assistant', text, createdAt: new Date(), kind: 'message' });
       });
   }
 
@@ -552,7 +714,8 @@ export class ChatAssistantComponent implements OnInit, OnDestroy {
       this.messages.push({
         role: 'assistant',
         text: this.translateService.instant('chatbot.voiceNoTranscript'),
-        createdAt: new Date()
+        createdAt: new Date(),
+        kind: 'message'
       });
       this.scrollToBottom();
       return;
